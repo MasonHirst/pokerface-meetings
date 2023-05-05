@@ -27,7 +27,7 @@ const GameRoom = () => {
       .post('game/player_name', { gameId: game_id, name: playerName })
       .then(({ data }) => {
         console.log('set player name res: ', data)
-        setShowNameDialog(false)
+        setShowNameDialog(true)
       })
       .catch(console.error)
   }

@@ -5,7 +5,7 @@ const wss = new WebSocketServer({ port: 8086 })
 const gameRooms = {}
 const clientsList = {}
 
-function sendMessageToGameRoom(gameRoomId, event_type, message) {
+function broadcastToRoom(gameRoomId, event_type, message) {
   const gameRoom = gameRooms[gameRoomId]
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
 
@@ -21,7 +21,7 @@ function sendMessageToGameRoom(gameRoomId, event_type, message) {
 }
 
 module.exports = {
-  sendMessageToGameRoom,
+  broadcastToRoom,
   gameRooms,
   clientsList,
   startSocketServer: async () => {
@@ -72,7 +72,7 @@ module.exports = {
       if (!gameName || !gameId)
         return res.status(403).send('missing gameName or gameId')
       gameRooms[gameId] = { gameRoomName: gameName }
-      console.log('gameRooms: ', gameRooms)
+      broadcastToRoom(gameId, 'newGameCreated', gameRooms[gameId])
       res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
@@ -93,6 +93,8 @@ module.exports = {
       gameRooms[gameId][localUserToken] = joiningPlayerObj
       console.log('gameRooms: ', gameRooms)
       clientsList[localUserToken] = joiningPlayerObj
+      broadcastToRoom(gameId, 'playerJoined', gameRooms[gameId])
+      res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(403).send(err)
@@ -103,6 +105,7 @@ module.exports = {
     const { localUserToken, name, gameId } = req.body
     try {
       gameRooms[gameId][localUserToken].playerName = name
+      broadcastToRoom(gameId, 'playerNameSet', gameRooms[gameId])
       res.send(`player name set to ${name}`)
     } catch (err) {
       console.error(err)
@@ -113,8 +116,10 @@ module.exports = {
   leaveGame: async (req, res) => {
     const { localUserToken, gameId } = req.body
     try {
+      console.log('leaving data: ', localUserToken, gameId)
       console.log('leaving game: ', gameRooms[gameId])
       delete gameRooms[gameId][localUserToken]
+      broadcastToRoom(gameId, 'playerLeft', gameRooms[gameId])
       if (Object.keys(gameRooms[gameId]).length < 2) {
         delete gameRooms[gameId]
       }

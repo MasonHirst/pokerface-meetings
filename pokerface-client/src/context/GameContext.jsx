@@ -11,6 +11,7 @@ export const GameProvider = ({ children }) => {
   const [participantEvent, setParticipantEvent] = useState({})
   const [appIsLoading, setAppIsLoading] = useState(false)
   const [socket, setSocket] = useState(null)
+  const [gameName, setGameName] = useState('')
 
   console.success = function(message) {
     console.log("%c✅ " + message, "color: #04A57D; font-weight: bold;")
@@ -36,6 +37,7 @@ export const GameProvider = ({ children }) => {
       ws.addEventListener('message', function (event) {
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
+        console.log('messageData: ', messageData)
         if (messageData.event_type === 'newMessage') {
 
         } else if (messageData.event_type === 'updatedMessage') {
@@ -67,6 +69,7 @@ export const GameProvider = ({ children }) => {
         participantEvent,
         appIsLoading,
         setAppIsLoading,
+        gameName,
       }}
     >
       {children}
