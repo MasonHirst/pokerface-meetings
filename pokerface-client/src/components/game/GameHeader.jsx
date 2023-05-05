@@ -1,11 +1,14 @@
-import React from 'react'
+import React, { useEffect, useContext, useState } from 'react'
+import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
 const { AppBar, Toolbar, Typography, Button, Box } = muiStyles
 
 const GameHeader = () => {
+  
+
   return (
     <Box
-      className='game-header-container'
+      className="game-header-container"
       sx={{
         width: '100vw',
         height: '80px',
@@ -16,7 +19,7 @@ const GameHeader = () => {
       }}
     >
       <Box
-        className='game-header'
+        className="game-header"
         sx={{
           width: 'min(100%, 1200px)',
           height: '100%',

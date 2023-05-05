@@ -7,7 +7,7 @@ function App() {
     <div className="App" style={{backgroundColor: '#F4F5FF', }}>
       <Routes>
         <Route path='/*' element={<HomeRouter />}/>
-        <Route path='/game/:id' element={<GameRouter />}/>
+        <Route path='/game/*' element={<GameRouter />}/>
         <Route path='*' element={<Navigate to="/" />}/>
       </Routes>
     </div>

@@ -9,7 +9,7 @@ const Header = () => {
   
   return (
     <div>
-      <Button onClick={() => navigate(`/create`)}>Host new game</Button>
+      <Button onClick={() => navigate(`/game/create`)}>Host new game</Button>
     </div>
   )
 }

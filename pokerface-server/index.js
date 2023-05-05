@@ -12,9 +12,17 @@ app.use(express.static(join))
 app.use(express.json())
 app.use(cors())
 
+//! Endpoints
+// const { createNewGame, leaveGame, playerJoinGame, setPlayerName } = require('./controllers/gameController')
+const { startSocketServer, extractToken, createNewGame, leaveGame, playerJoinGame, setPlayerName } = require('./controllers/socketController')
+
+app.post('/game/create', extractToken, createNewGame)
+app.put('/game/leave', extractToken, leaveGame)
+app.post('/game/join', extractToken, playerJoinGame)
+app.post('/game/player_name', extractToken, setPlayerName)
+
 
 //! Socket server
-const { startSocketServer } = require('./controllers/socketController')
 startSocketServer()
 
 //! Server listen

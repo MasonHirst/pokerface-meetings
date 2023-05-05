@@ -1,17 +1,25 @@
-import React from 'react'
-import GameHeader from './GameHeader'
-import GameBody from './GameBody'
-import GameFooter from './GameFooter'
+import React, { useContext } from 'react'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import muiStyles from '../../style/muiStyles'
+import { GameProvider } from '../../context/GameContext'
+import CreateGamePage from '../home/CreateGamePage'
+import GameRoom from './GameRoom'
 const { Box } = muiStyles
 
 const GameRouter = () => {
   return (
-    <Box sx={{ minHeight: '100vh',}}>
-      <GameHeader />
-      <GameBody />
-      <GameFooter />
-    </Box>
+    <GameProvider>
+      <Routes>
+        <Route
+          path="/:game_id"
+          element={
+            <GameRoom />
+          }
+        />
+        <Route path="/create" element={<CreateGamePage />} />
+        <Route path='*' element={<Navigate to='/home' />} />
+      </Routes>
+    </GameProvider>
   )
 }
 
