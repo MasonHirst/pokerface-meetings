@@ -38,7 +38,7 @@ startSocketServer()
 //! Server listen
 const { SERVER_PORT } = process.env
 // db.sync().then(() => {
-app.listen(SERVER_PORT, () =>
+app.listen(SERVER_PORT || 8080, () =>
   console.log(`SERVER RUNNING ON SERVER_PORT ${SERVER_PORT}`)
 )
 // })
