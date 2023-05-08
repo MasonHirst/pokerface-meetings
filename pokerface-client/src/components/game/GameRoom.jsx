@@ -11,25 +11,25 @@ const GameRoom = () => {
   const [playerName, setPlayerName] = useState(
     localStorage.getItem('playerName')
   )
-  const [showNameDialog, setShowNameDialog] = useState(
-    Boolean(localStorage.getItem('playerName'))
-  )
+  const [nameLoading, setNameLoading] = useState(false)
   const [nameError, setNameError] = useState('')
   const nameInputRef = useRef()
   const { game_id } = useParams()
 
   function updateName(e) {
     e.preventDefault()
-    if (!playerName) return setNameError('Please enter a name')
+    setNameLoading(true)
+    const name = nameInputRef.current.value
+    if (!name) return setNameError('Please enter a name')
     setNameError('')
-    localStorage.setItem('playerName', playerName)
     axios
-      .post('game/player_name', { gameId: game_id, name: playerName })
+      .post('game/player_name', { gameId: game_id, name })
       .then(({ data }) => {
-        console.log('set player name res: ', data)
-        setShowNameDialog(true)
+        localStorage.setItem('playerName', name)
+        setPlayerName(name)
       })
       .catch(console.error)
+      .finally(() => setNameLoading(false))
   }
 
   useEffect(() => {
@@ -38,7 +38,6 @@ const GameRoom = () => {
         .post('game/join', { gameId: game_id, name: playerName })
         .then(({ data }) => {
           console.log('join game res: ', data)
-          setShowNameDialog(false)
         })
         .catch(console.error)
     }, 400)
@@ -46,7 +45,7 @@ const GameRoom = () => {
     return () => {
       axios
         .put('game/leave', { gameId: game_id })
-        .then(({ data }) => console.log('leave game res: ', data))
+        .then(({ data }) => {})
         .catch(console.error)
     }
   }, [])
@@ -66,7 +65,7 @@ const GameRoom = () => {
             height: 250,
           },
         }}
-        open={!showNameDialog}
+        open={!playerName}
       >
         <form
           onSubmit={updateName}
@@ -82,7 +81,7 @@ const GameRoom = () => {
           }}
         >
           <TextField
-            onChange={(e) => setPlayerName(e.target.value)}
+            inputRef={nameInputRef}
             fullWidth
             autoFocus
             error={!!nameError}

@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react'
+import React, { useEffect, useContext, useState, useRef } from 'react'
 import axios from 'axios'
 import useClipboard from 'react-use-clipboard'
 import { GameContext } from '../../context/GameContext'
@@ -7,12 +7,21 @@ const { AppBar, Toolbar, Typography, Button, Box, Dialog, TextField } =
   muiStyles
 
 const GameHeader = () => {
-  const { gameName } = useContext(GameContext)
+  const { roomName } = useContext(GameContext)
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1000ms.
     successDuration: 1000,
   })
+  const inviteLinkInputRef = useRef()
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (inviteLinkInputRef.current) {
+        inviteLinkInputRef.current.select()
+      }
+    }, 150)
+  }, [showInviteDialog, inviteLinkInputRef])
 
   return (
     <Box
@@ -38,7 +47,7 @@ const GameHeader = () => {
         }}
       >
         <Button variant="contained">Something else</Button>
-        <Typography>{gameName ? gameName : 'No game name bro'}</Typography>
+        <Typography>{roomName ? roomName : 'No game name bro'}</Typography>
         <Button
           onClick={() => setShowInviteDialog(!showInviteDialog)}
           variant="contained"
@@ -50,6 +59,10 @@ const GameHeader = () => {
           PaperProps={{
             style: {
               borderRadius: 15,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              gap: 20,
               width: 350,
               padding: 35,
               height: 250,
@@ -57,9 +70,12 @@ const GameHeader = () => {
           }}
           open={showInviteDialog}
         >
-          <TextField fullWidth value={window.location.href} />
+          <TextField inputRef={inviteLinkInputRef} fullWidth value={window.location.href} />
           <Button variant="contained" fullWidth onClick={setCopied}>
             {isCopied ? 'Copied!' : 'Copy invite link'}
+          </Button>
+          <Button sx={{marginBottom: '-10px'}} variant="" fullWidth onClick={() => setShowInviteDialog(false)}>
+            Close
           </Button>
         </Dialog>
       </Box>

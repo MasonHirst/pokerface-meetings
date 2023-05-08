@@ -7,19 +7,20 @@ const path = require('path')
 
 //! Middleware
 const join = path.join(__dirname, '.', 'build')
-// console.log(join)
 app.use(express.static(join))
 app.use(express.json())
 app.use(cors())
 
 //! Endpoints
-// const { createNewGame, leaveGame, playerJoinGame, setPlayerName } = require('./controllers/gameController')
-const { startSocketServer, extractToken, createNewGame, leaveGame, playerJoinGame, setPlayerName } = require('./controllers/socketController')
+const { startSocketServer, extractToken, startNewVoting, createNewGame, leaveGame, toggleShowChoices, playerJoinGame, setPlayerName, updateCardChoice } = require('./controllers/socketController')
 
 app.post('/game/create', extractToken, createNewGame)
 app.put('/game/leave', extractToken, leaveGame)
 app.post('/game/join', extractToken, playerJoinGame)
 app.post('/game/player_name', extractToken, setPlayerName)
+app.put('/game/show_choices/toggle', extractToken, toggleShowChoices)
+app.put('/game/submit_choice', extractToken, updateCardChoice)
+app.put('/game/start_new_voting', extractToken, startNewVoting)
 
 
 //! Socket server

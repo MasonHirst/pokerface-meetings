@@ -4,7 +4,7 @@ const { Grid, Box, Card, Typography } = muiStyles
 
 const PlayingTable = () => {
   return (
-    <Box>
+    // <Box>
       <Card
         className='playing-table'
         sx={{
@@ -22,7 +22,7 @@ const PlayingTable = () => {
           Playing Table
         </Typography>
       </Card>
-    </Box>
+    // {/* </Box> */}
   )
 }
 

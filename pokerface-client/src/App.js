@@ -4,7 +4,7 @@ import GameRouter from './components/game/GameRouter'
 
 function App() {
   return (
-    <div className="App" style={{backgroundColor: '#F4F5FF', }}>
+    <div className="App" style={{}}>
       <Routes>
         <Route path='/*' element={<HomeRouter />}/>
         <Route path='/game/*' element={<GameRouter />}/>

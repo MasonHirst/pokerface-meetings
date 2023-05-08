@@ -11,7 +11,11 @@ export const GameProvider = ({ children }) => {
   const [participantEvent, setParticipantEvent] = useState({})
   const [appIsLoading, setAppIsLoading] = useState(false)
   const [socket, setSocket] = useState(null)
-  const [gameName, setGameName] = useState('')
+  const [roomName, setRoomName] = useState('')
+  const [playersData, setPlayersData] = useState([])
+  const [showChoices, setShowChoices] = useState(false)
+  const [gameDeck, setGameDeck] = useState([])
+  const [thisUserObj, setThisUserObj] = useState({})
 
   console.success = function(message) {
     console.log("%c✅ " + message, "color: #04A57D; font-weight: bold;")
@@ -22,7 +26,9 @@ export const GameProvider = ({ children }) => {
 
   let connectCounter = 0
   const localUserToken = localStorage.getItem('localUserToken')
+
   useEffect(() => {
+    let websocket
     console.log('socket use effect started')
     function connectClient() {
       const ws = new WebSocket('ws://localhost:8086')
@@ -37,9 +43,16 @@ export const GameProvider = ({ children }) => {
       ws.addEventListener('message', function (event) {
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
-        console.log('messageData: ', messageData)
-        if (messageData.event_type === 'newMessage') {
-
+        const body = messageData.message
+        // console.log('messageData: ', messageData)
+        if (messageData.event_type === 'gameUpdated') {
+          // console.log('gameUpdated: ', messageData)
+          setRoomName(body.gameRoomName)
+          setShowChoices(body.showingChoices)
+          setPlayersData(Object.values(body.players)) 
+          setThisUserObj(body.players[localUserToken])
+          const deckArray = [...new Set(body.deck.split(','))]
+          setGameDeck(deckArray)
         } else if (messageData.event_type === 'updatedMessage') {
 
         } else if (messageData.event_type === 'newReaction') {
@@ -57,10 +70,16 @@ export const GameProvider = ({ children }) => {
       })
 
       setSocket(ws)
+      websocket = ws
     }
     connectClient()
-  }, [localUserToken])
 
+    // return () => {
+    //     websocket.close()
+    //     console.log('Socket connection closed')
+    // }
+  }, [localUserToken])
+  
   return (
     <GameContext.Provider
       value={{
@@ -69,7 +88,11 @@ export const GameProvider = ({ children }) => {
         participantEvent,
         appIsLoading,
         setAppIsLoading,
-        gameName,
+        playersData,
+        roomName,
+        gameDeck,
+        showChoices,
+        thisUserObj,
       }}
     >
       {children}

@@ -1,30 +1,58 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import muiStyles from '../../style/muiStyles'
+import axios from 'axios'
+import DeckCard from './DeckCard'
+import { GameContext } from '../../context/GameContext'
 const { Box } = muiStyles
 
 const GameFooter = () => {
+  const { gameDeck, playersData, thisUserObj } = useContext(GameContext)
+
+  function submitChoice(card) {
+    console.log('card: ', card)
+    axios.put('game/submit_choice', {choice: card}).then(({data}) => {
+      console.log('data: ', data)
+    }).catch(console.error)
+  }
+
+  console.log('this user obj: ', thisUserObj)
+
+  const mappedDeckCards = gameDeck.length ? (
+    gameDeck.map((card, index) => {
+      return <DeckCard key={index} submitChoice={submitChoice} thisUserObj={thisUserObj} card={card} />
+    })
+  ) : (
+    <h6>No cards</h6>
+  )
+
   return (
     <Box
-      className='game-header-container'
+      className="game-header-container"
       sx={{
         width: '100vw',
         height: '120px',
-        backgroundColor: 'rgb(198, 203, 231)',
+        // border: '1px solid black',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
       }}
     >
       <Box
-        className='game-header'
+        className="game-header"
         sx={{
           width: 'min(100%, 900px)',
           height: '100%',
           display: 'flex',
-          justifyContent: 'space-between',
+          padding: '0, 10px',
+          justifyContent: 'center',
           alignItems: 'center',
+          gap: '25px',
+          flexWrap: 'nowrap',
+          overflowX: 'auto',
         }}
-      ></Box>
+      >
+        {playersData.length && mappedDeckCards}
+      </Box>
     </Box>
   )
 }
