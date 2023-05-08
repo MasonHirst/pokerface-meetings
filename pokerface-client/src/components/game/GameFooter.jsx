@@ -9,13 +9,10 @@ const GameFooter = () => {
   const { gameDeck, playersData, thisUserObj } = useContext(GameContext)
 
   function submitChoice(card) {
-    console.log('card: ', card)
     axios.put('game/submit_choice', {choice: card}).then(({data}) => {
-      console.log('data: ', data)
     }).catch(console.error)
   }
 
-  console.log('this user obj: ', thisUserObj)
 
   const mappedDeckCards = gameDeck.length ? (
     gameDeck.map((card, index) => {

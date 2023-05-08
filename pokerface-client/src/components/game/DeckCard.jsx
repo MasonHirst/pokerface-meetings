@@ -25,7 +25,6 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
   return (
     <Box
       onClick={() => {
-        console.log('clicked')
         submitChoice(card)
       }}
       className="deck-card"
@@ -37,11 +36,15 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
         marginTop: selected ? '-35px' : '0',
         display: 'flex',
         justifyContent: 'center',
+        backgroundColor: selected ? '#902bf5' : 'transparent',
+        color: selected && 'white',
         alignItems: 'center',
         borderRadius: '10px',
       }}
     >
-      <Typography variant="h6" sx={{fontSize: isNativeEmoji(card) ? 15 : 25}}>{card}</Typography>
+      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) ? 35 : 23,  }}>
+        {card}
+      </Typography>
     </Box>
   )
 }

@@ -47,7 +47,7 @@ const GameHeader = () => {
         }}
       >
         <Button variant="contained">Something else</Button>
-        <Typography>{roomName ? roomName : 'No game name bro'}</Typography>
+        <Typography variant='h5' sx={{color: 'white',}}>{roomName ? roomName : 'No game name bro'}</Typography>
         <Button
           onClick={() => setShowInviteDialog(!showInviteDialog)}
           variant="contained"

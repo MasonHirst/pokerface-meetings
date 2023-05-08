@@ -3,7 +3,7 @@ import purpleAbstract from '../../assets/purple-abstract.jpg'
 import muiStyles from '../../style/muiStyles'
 const { Card, Typography, Box } = muiStyles
 
-const PlayerCard = ({ player, showChoices }) => {
+const PlayerCard = ({ player, gameState }) => {
   const name = player.playerName
   const choice = player.currentChoice
   const { isSpectator } = player
@@ -31,7 +31,7 @@ const PlayerCard = ({ player, showChoices }) => {
           backgroundColor: '#E8E9EA',
         }}
       >
-        <Typography>{showChoices && choice}</Typography>
+        <Typography>{gameState === 'show' && choice}</Typography>
       </Card>
       <Typography>{name}</Typography>
     </Box>

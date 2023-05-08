@@ -1,3 +1,7 @@
 .deck-card:hover {
   cursor: pointer;
 }
+
+.playing-table:hover {
+  cursor: pointer;
+}

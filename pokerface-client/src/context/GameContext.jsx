@@ -13,7 +13,7 @@ export const GameProvider = ({ children }) => {
   const [socket, setSocket] = useState(null)
   const [roomName, setRoomName] = useState('')
   const [playersData, setPlayersData] = useState([])
-  const [showChoices, setShowChoices] = useState(false)
+  const [gameState, setGameState] = useState('')
   const [gameDeck, setGameDeck] = useState([])
   const [thisUserObj, setThisUserObj] = useState({})
 
@@ -48,7 +48,7 @@ export const GameProvider = ({ children }) => {
         if (messageData.event_type === 'gameUpdated') {
           // console.log('gameUpdated: ', messageData)
           setRoomName(body.gameRoomName)
-          setShowChoices(body.showingChoices)
+          setGameState(body.gameState)
           setPlayersData(Object.values(body.players)) 
           setThisUserObj(body.players[localUserToken])
           const deckArray = [...new Set(body.deck.split(','))]
@@ -91,7 +91,7 @@ export const GameProvider = ({ children }) => {
         playersData,
         roomName,
         gameDeck,
-        showChoices,
+        gameState,
         thisUserObj,
       }}
     >

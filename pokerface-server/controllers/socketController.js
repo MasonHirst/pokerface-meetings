@@ -108,13 +108,26 @@ module.exports = {
         return res.status(403).send('missing gameName or gameId')
       gameRooms[gameId] = {
         gameRoomName: gameName,
-        showingChoices: false,
+        gameState: 'voting',
         lastAction: Date.now(),
         deck,
         players: {},
       }
       broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
       res.send(gameRooms[gameId])
+    } catch (err) {
+      console.error(err)
+      res.status(403).send(err)
+    }
+  },
+
+  updateGameState: async (req, res) => {
+    const { localUserToken, gameState } = req.body
+    try {
+      const gameId = clientsList[localUserToken].currentGameId
+      gameRooms[gameId].gameState = gameState
+      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      res.send('game state updated')
     } catch (err) {
       console.error(err)
       res.status(403).send(err)
@@ -172,36 +185,15 @@ module.exports = {
     }
   },
 
-  toggleShowChoices: async (req, res) => {
-    try {
-      const { localUserToken } = req.body
-      const gameId = clientsList[localUserToken].currentGameId
-      showChoices = gameRooms[gameId].showingChoices
-      showChoices = !showChoices
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
-    } catch (err) {
-      console.error(err)
-      res.status(403).send(err)
-    }
-  },
-
   updateCardChoice: async (req, res) => {
     try {
       const { localUserToken, choice } = req.body
       const gameId = clientsList[localUserToken].currentGameId
-      // const player = gameRooms[gameId].players[localUserToken]
-      console.log('new choice: ', choice)
-      console.log('recorded choice: ', gameRooms[gameId].players[localUserToken].currentChoice)
-
-      console.log(gameRooms[gameId].players[localUserToken].currentChoice === choice)
       if (gameRooms[gameId].players[localUserToken].currentChoice === choice) {
         gameRooms[gameId].players[localUserToken].currentChoice = null
       } else {
         gameRooms[gameId].players[localUserToken].currentChoice = choice
       }
-      // player.currentChoice = player === choice ? choice : null
-
-      console.log('updated choice: ', gameRooms[gameId].players[localUserToken].currentChoice)
       broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
       res.send('choice updated')
     } catch (err) {
@@ -210,14 +202,14 @@ module.exports = {
     }
   },
 
-  startNewVoting: async (req, res) => {
-    const { localUserToken } = req.body
-    try {
-      const gameId = clientsList[localUserToken].currentGameId
-      gameRooms[gameId].showingChoices = false
-    } catch (err) {
-      console.error(err)
-      res.status(403).send(err)
-    }
-  },
+  // startNewVoting: async (req, res) => {
+  //   const { localUserToken } = req.body
+  //   try {
+  //     const gameId = clientsList[localUserToken].currentGameId
+  //     gameRooms[gameId].showingChoices = false
+  //   } catch (err) {
+  //     console.error(err)
+  //     res.status(403).send(err)
+  //   }
+  // },
 }

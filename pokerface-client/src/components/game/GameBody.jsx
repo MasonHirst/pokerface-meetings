@@ -7,13 +7,8 @@ import PlayerCard from './PlayerCard'
 const { Box, Grid, Paper, Typography, Card } = muiStyles
 
 const GameBody = () => {
-  const { playersData, showChoices } = useContext(GameContext)
+  const { playersData, gameState } = useContext(GameContext)
 
-  function toggleShowChoices() {
-    axios.put('game/show_choices/toggle')
-      .then()
-      .catch(console.error)
-  }
 
   function startNewVotingRound() {
     axios.put('game/start_new_voting')
@@ -23,7 +18,7 @@ const GameBody = () => {
 
   const mappedPlayerCards = playersData.map((player, index) => {
     if (!player) return
-    return <PlayerCard key={index} showChoices={showChoices} player={player} />
+    return <PlayerCard key={index} gameState={gameState} player={player} />
   })
 
   return (
@@ -48,7 +43,7 @@ const GameBody = () => {
           alignItems: 'center',
         }}
       >
-        <PlayingTable />
+        <PlayingTable  />
         <Box
           sx={{
             width: '100%',
