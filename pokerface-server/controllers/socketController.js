@@ -7,7 +7,7 @@ let gameRooms = {}
 let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type, message) {
-  // console.log('current game room status: ', gameRooms[gameRoomId])
+  console.log('current game room status: ', gameRooms[gameRoomId])
   const gameRoom = gameRooms[gameRoomId]
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
   gameRooms[gameRoomId].lastAction = Date.now()
@@ -81,6 +81,7 @@ module.exports = {
           if (clientsList[userToken]) {
             delete clientsList[userToken]
           }
+          broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
         })
       } catch (err) {
         console.error(err)
@@ -110,6 +111,7 @@ module.exports = {
         gameRoomName: gameName,
         gameState: 'voting',
         lastAction: Date.now(),
+        voteResults: [],
         deck,
         players: {},
       }
@@ -125,6 +127,21 @@ module.exports = {
     const { localUserToken, gameState } = req.body
     try {
       const gameId = clientsList[localUserToken].currentGameId
+      if (gameState === 'voting') {
+        Object.values(gameRooms[gameId].players).forEach((player) => {
+          player.currentChoice = null
+        })
+      }
+      if (gameState === 'reveal') {
+        const cardCounts = {}
+        Object.values(gameRooms[gameId].players).forEach((player) => {
+          // const obj = {
+          //   choice: player.currentChoice,
+          // }
+          cardCounts[player.playerName] = player.currentChoice
+        })
+        gameRooms[gameId].voteResults.push(cardCounts)
+      }
       gameRooms[gameId].gameState = gameState
       broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
       res.send('game state updated')
@@ -136,6 +153,8 @@ module.exports = {
 
   playerJoinGame: async (req, res) => {
     const { localUserToken, gameId, name } = req.body
+    // console.log('gameRooms-----------', gameRooms)
+    // console.log('playerJoinGame', localUserToken, gameId)
     try {
       const joiningPlayerObj = {
         localUserToken,

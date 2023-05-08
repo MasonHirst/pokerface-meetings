@@ -15,6 +15,7 @@ export const GameProvider = ({ children }) => {
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
   const [gameDeck, setGameDeck] = useState([])
+  const [pastVotings, setPastVotings] = useState([])
   const [thisUserObj, setThisUserObj] = useState({})
 
   console.success = function(message) {
@@ -51,6 +52,7 @@ export const GameProvider = ({ children }) => {
           setGameState(body.gameState)
           setPlayersData(Object.values(body.players)) 
           setThisUserObj(body.players[localUserToken])
+          setPastVotings(body.voteResults)
           const deckArray = [...new Set(body.deck.split(','))]
           setGameDeck(deckArray)
         } else if (messageData.event_type === 'updatedMessage') {
@@ -93,6 +95,7 @@ export const GameProvider = ({ children }) => {
         gameDeck,
         gameState,
         thisUserObj,
+        pastVotings,
       }}
     >
       {children}

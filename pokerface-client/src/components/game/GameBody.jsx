@@ -26,7 +26,7 @@ const GameBody = () => {
       className="game-body-container"
       sx={{
         width: '100vw',
-        minHeight: 'calc(100vh - 200px)',
+        minHeight: 'calc(100vh - 250px)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

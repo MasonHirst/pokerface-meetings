@@ -4,20 +4,10 @@ import muiStyles from '../../style/muiStyles'
 const { Box, Typography, Button } = muiStyles
 
 const DeckCard = ({ card, submitChoice, thisUserObj }) => {
-  const { playersData } = useContext(GameContext)
-  let localPlayer
-
-  // playersData.forEach((item) => {
-  //   if (item.localUserToken === localStorage.getItem('localUserToken')) {
-  //     localPlayer = item
-  //   }
-  // })
-
-  const emojiRegex =
-    /[\u{1F300}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}]/u
+  const { playersData, gameState } = useContext(GameContext)
 
   function isNativeEmoji(str) {
-    return emojiRegex.test(str)
+    return /\p{Emoji}/u.test(str)
   }
 
   const selected = thisUserObj.currentChoice === card
@@ -25,9 +15,10 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
   return (
     <Box
       onClick={() => {
+        if (gameState !== 'voting') return
         submitChoice(card)
       }}
-      className="deck-card"
+      className={gameState === 'voting' && "deck-card"}
       sx={{
         height: 84,
         width: 50,
@@ -42,7 +33,7 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
         borderRadius: '10px',
       }}
     >
-      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) ? 35 : 23,  }}>
+      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) && isNaN(Number(card)) ? 33 : 23,  }}>
         {card}
       </Typography>
     </Box>

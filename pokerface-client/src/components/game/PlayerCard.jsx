@@ -8,6 +8,10 @@ const PlayerCard = ({ player, gameState }) => {
   const choice = player.currentChoice
   const { isSpectator } = player
 
+  function isNativeEmoji(str) {
+    return /\p{Emoji}/u.test(str)
+  }
+
   return (
     <Box
       sx={{
@@ -19,19 +23,25 @@ const PlayerCard = ({ player, gameState }) => {
     >
       <Card
         sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           borderRadius: '10px',
           width: 55,
           height: 90,
           border: '2px solid #902BF5',
           boxShadow: 'none',
-          backgroundImage: choice && `url(${purpleAbstract})`,
+          backgroundImage:
+            choice && gameState === 'voting' && `url(${purpleAbstract})`,
           backgroundPosition: 'center',
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           backgroundColor: '#E8E9EA',
         }}
       >
-        <Typography>{gameState === 'show' && choice}</Typography>
+        <Typography sx={{ fontSize: isNativeEmoji(choice) && isNaN(Number(choice)) ? 30 : 23 }}>
+          {gameState === 'reveal' && choice}
+        </Typography>
       </Card>
       <Typography>{name}</Typography>
     </Box>

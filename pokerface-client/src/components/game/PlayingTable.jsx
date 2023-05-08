@@ -16,7 +16,6 @@ const PlayingTable = () => {
       choicesCount++
     }
   })
-  console.log(playersData.length, choicesCount, gameState)
   if (playersData.length === choicesCount && gameState === 'voting') {
     tableMessage = 'Reveal Cards'
     tableClass = 'glowing-table'
@@ -28,12 +27,14 @@ const PlayingTable = () => {
   ) {
     tableMessage = 'Reveal Cards'
   } else if (gameState === 'reveal') {
-    console.log('make reveal logic in game table')
+    tableMessage = 'Start new round'
   }
 
   function updateGameState() {
     if (gameState === 'voting') {
       axios.put('game/update_state', {gameState: 'reveal'})
+    } else if (gameState === 'reveal') {
+      axios.put('game/update_state', {gameState: 'voting'})
     }
   }
 
@@ -53,7 +54,7 @@ const PlayingTable = () => {
       }}
     >
       {tableMessage !== 'Pick your cards!' ? (
-        <Button variant="contained" onClick={updateGameState}>{tableMessage}</Button>
+        <Button variant="contained" disableElevation size='large' sx={{}} onClick={updateGameState}>{tableMessage}</Button>
       ) : (
         <Typography variant="subtitle1" sx={{ fontSize: 18 }} color="white">
           {tableMessage}
