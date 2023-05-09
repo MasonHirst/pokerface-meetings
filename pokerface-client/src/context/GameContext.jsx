@@ -1,4 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import axios from 'axios'
 
 export const GameContext = createContext()
 
@@ -16,7 +18,12 @@ export const GameProvider = ({ children }) => {
   const [gameState, setGameState] = useState('')
   const [gameDeck, setGameDeck] = useState([])
   const [pastVotings, setPastVotings] = useState([])
+  const [gameExists, setGameExists] = useState(false)
   const [thisUserObj, setThisUserObj] = useState({})
+  const { game_id } = useParams()
+  const [localUserToken, setLocalUserToken] = useState(
+    localStorage.getItem('localUserToken')
+  )
 
   console.success = function (message) {
     console.log('%c✅ ' + message, 'color: #04A57D; font-weight: bold;')
@@ -26,33 +33,48 @@ export const GameProvider = ({ children }) => {
   }
 
   let connectCounter = 0
-  const localUserToken = localStorage.getItem('localUserToken')
+
+  function getLatestGameInfo() {
+    axios
+      .get('game/latest')
+      .then(({ data }) => {
+        console.log('get latest game res: ', data)
+        if (data.gameRoomName) {
+          setRoomName(data.gameRoomName)
+          setGameState(data.gameState)
+          setPlayersData(Object.values(data.players))
+          setThisUserObj(data.players[localUserToken])
+          setPastVotings(data.voteResults)
+          const deckArray = [...new Set(data.deck.split(','))]
+          setGameDeck(deckArray)
+        }
+      })
+      .catch(console.error)
+  }
 
   useEffect(() => {
+    if (!gameExists) return
     let websocket
     console.log('socket use effect started')
     function connectClient() {
       let serverUrl
       let scheme = 'ws'
       let location = document.location
-
       if (location.protocol === 'https:') {
         scheme += 's'
       }
-
       serverUrl = `${scheme}://${location.hostname}:${location.port}`
       if (process.env.NODE_ENV === 'development') {
         serverUrl = 'ws://localhost:8080'
       }
       const ws = new WebSocket(serverUrl)
-      // const ws = new WebSocket('wss://pokerface-meet.fly.dev:8080')
-      // const ws = new WebSocket('ws://pokerface-meet.fly.dev')
 
       ws.addEventListener('open', function () {
         console.log('established socket connection')
         if (connectCounter > 0) console.success('Reconnected to socket server')
         send(ws, 'newLocalPlayer', {
           localUserToken,
+          gameId: game_id,
         })
       })
 
@@ -63,17 +85,9 @@ export const GameProvider = ({ children }) => {
       ws.addEventListener('message', function (event) {
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
-        const body = messageData.message
-        // console.log('messageData: ', messageData)
+        console.log('messageData: ', messageData)
         if (messageData.event_type === 'gameUpdated') {
-          // console.log('gameUpdated: ', messageData)
-          setRoomName(body.gameRoomName)
-          setGameState(body.gameState)
-          setPlayersData(Object.values(body.players))
-          setThisUserObj(body.players[localUserToken])
-          setPastVotings(body.voteResults)
-          const deckArray = [...new Set(body.deck.split(','))]
-          setGameDeck(deckArray)
+          getLatestGameInfo()
         } else if (messageData.event_type === 'updatedMessage') {
         }
       })
@@ -96,7 +110,7 @@ export const GameProvider = ({ children }) => {
     //     websocket.close()
     //     console.log('Socket connection closed')
     // }
-  }, [localUserToken])
+  }, [localUserToken, gameExists])
 
   return (
     <GameContext.Provider
@@ -112,6 +126,8 @@ export const GameProvider = ({ children }) => {
         gameState,
         thisUserObj,
         pastVotings,
+        localUserToken,
+        setGameExists,
       }}
     >
       {children}

@@ -1,5 +1,4 @@
 import React, { useEffect, useContext, useState, useRef } from 'react'
-import axios from 'axios'
 import useClipboard from 'react-use-clipboard'
 import { GameContext } from '../../context/GameContext'
 import muiStyles from '../../style/muiStyles'

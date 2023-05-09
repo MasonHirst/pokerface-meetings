@@ -4,20 +4,20 @@ const { v4: uuidv4, validate: validateUUID } = require('uuid')
 // const { verifyAccessToken } = require('./authController')
 
 let gameRooms = {}
-let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type, message) {
   console.log('current game room status: ', gameRooms[gameRoomId])
   const gameRoom = gameRooms[gameRoomId]
-  console.log('all gamerooms: ', gameRooms)
-  console.log('specific gameroom: ', gameRoom)
-  console.log('specified gameroomid: ', gameRoomId)
+  // console.log('all gamerooms: ', gameRooms)
+  // console.log('specific gameroom: ', gameRoom)
+  // console.log('specified gameroomid: ', gameRoomId)
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
   gameRooms[gameRoomId].lastAction = Date.now()
 
   // Loop through all clients in the game room and send the message
-  Object.keys(gameRoom.players).forEach((clientId) => {
-    const client = clientsList[clientId]
+  Object.entries(gameRoom.players).forEach((clientId) => {
+    console.log('gameroom players entry: ', clientId)
+    const client = gameRooms[gameRoomId].players[clientId]
     if (client && client.readyState === WebSocket.OPEN) {
       const body = JSON.stringify({ event_type, message })
       client.send(body)
@@ -52,13 +52,13 @@ function isMoreThanTwoHoursAgo(date) {
 }
 
 async function startSocketServer(app, port) {
-  const wss = new WebSocketServer({ server: app.listen(port, () => {
-    console.log(`SERVER LISTENING ON PORT ${port}`)
-  }) })
+  const wss = new WebSocketServer({
+    server: app.listen(port, () => {
+      console.log(`SERVER LISTENING ON PORT ${port}`)
+    }),
+  })
   wss.on('listening', () => {
-    console.log(
-      `WEBSOCKET SERVER IS LISTENING ON PORT ${wss.address().port}`
-    )
+    console.log(`WEBSOCKET SERVER IS LISTENING ON PORT ${wss.address().port}`)
   })
 
   wss.on('connection', function connection(ws, req) {
@@ -67,29 +67,32 @@ async function startSocketServer(app, port) {
       ws.on('error', console.error)
       ws.on('message', async function message(data, isBinary) {
         const { event, body } = JSON.parse(data)
-        const localUserToken = body.localUserToken
+        const { localUserToken, gameId } = body
         if (event === 'newLocalPlayer') {
           // associate userId to client
           // add to list of clients
           if (!localUserToken) return console.error('no authorization')
+          ws.currentGameId = gameId
           ws.userToken = localUserToken
-          clientsList[localUserToken] = ws
+          ws.currentChoice = null
+          ws.isSpectator = false
+          ws.playerName = null
+          gameRooms[gameId].players[localUserToken] = ws
+          console.log('gameRooms after player join: ', gameRooms[gameId])
         }
       })
 
       ws.on('close', function () {
         console.log(`client ${ws.userToken} disconnecting`)
-        const userToken = ws.userToken
-        let gameId = clientsList[userToken]?.currentGameId
-        // remove from game room if they are in one
-        if (gameId) {
-          delete gameRooms[gameId].players[userToken]
+        const { userToken, currentGameId } = ws
+        if (gameRooms[currentGameId]?.players[userToken]) {
+          delete gameRooms[currentGameId].players[userToken]
+        } else {
+          console.log(
+            `client ${userToken} not found in game room`
+          )
         }
-        // remove from list of clients
-        if (clientsList[userToken]) {
-          delete clientsList[userToken]
-        }
-        broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+        broadcastToRoom(currentGameId, 'gameUpdated')
       })
     } catch (err) {
       console.error(err)
@@ -100,8 +103,19 @@ async function startSocketServer(app, port) {
 module.exports = {
   broadcastToRoom,
   gameRooms,
-  clientsList,
   startSocketServer,
+  getUpdatedGame: async (req, res) => {
+    const { gameId, localUserToken } = req.params
+    try {
+      if (!gameRooms[gameId]) {
+        return res.status(500).send('game room not found')
+      }
+      res.send(gameRooms[gameId])
+    } catch (err) {
+      console.error(err)
+      res.status(500).send(err)
+    }
+  },
 
   extractToken: async (req, res, next) => {
     try {
@@ -117,12 +131,14 @@ module.exports = {
   },
 
   createNewGame: async (req, res) => {
-    const { gameName, gameId, deck } = req.body
+    const { gameName, deck } = req.body
     try {
+      const gameId = uuidv4()
       console.log('game room id from frontend: ', gameId)
       if (!gameName || !gameId)
         return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
+        gameRoomId: gameId,
         gameRoomName: gameName,
         gameState: 'voting',
         lastAction: Date.now(),
@@ -131,7 +147,7 @@ module.exports = {
         players: {},
       }
       console.log('gameRooms (from creategame function): ', gameRooms)
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      broadcastToRoom(gameId, 'gameUpdated')
       res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
@@ -139,10 +155,20 @@ module.exports = {
     }
   },
 
-  updateGameState: async (req, res) => {
-    const { localUserToken, gameState } = req.body
+  checkGameExists: async (req, res) => {
+    const { gameId } = req.body
     try {
-      const gameId = clientsList[localUserToken].currentGameId
+      if (!gameRooms[gameId]) return res.send(false)
+      res.send(true)
+    } catch (err) {
+      console.error(err)
+      res.status(500).send(err)
+    }
+  },
+
+  updateGameState: async (req, res) => {
+    const { gameState, gameId } = req.body
+    try {
       if (gameState === 'voting') {
         Object.values(gameRooms[gameId].players).forEach((player) => {
           player.currentChoice = null
@@ -151,42 +177,13 @@ module.exports = {
       if (gameState === 'reveal') {
         const cardCounts = {}
         Object.values(gameRooms[gameId].players).forEach((player) => {
-          // const obj = {
-          //   choice: player.currentChoice,
-          // }
           cardCounts[player.playerName] = player.currentChoice
         })
         gameRooms[gameId].voteResults.push(cardCounts)
       }
       gameRooms[gameId].gameState = gameState
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      broadcastToRoom(gameId, 'gameUpdated')
       res.send('game state updated')
-    } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
-    }
-  },
-
-  playerJoinGame: async (req, res) => {
-    const { localUserToken, gameId, name } = req.body
-    // console.log('gameRooms-----------', gameRooms)
-    // console.log('playerJoinGame', localUserToken, gameId)
-    try {
-      const joiningPlayerObj = {
-        localUserToken,
-        playerName: name || null,
-        currentChoice: null,
-        isSpectator: false,
-        currentGameId: gameId,
-      }
-      if (validateUUID(clientsList[localUserToken].currentGameId)) {
-        return res.status(500).send('client is already in a game')
-      }
-      console.log(`player joined game ${gameId}`)
-      gameRooms[gameId].players[localUserToken] = joiningPlayerObj
-      clientsList[localUserToken].currentGameId = gameId
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
-      res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)
@@ -197,7 +194,7 @@ module.exports = {
     const { localUserToken, name, gameId } = req.body
     try {
       gameRooms[gameId].players[localUserToken].playerName = name
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      broadcastToRoom(gameId, 'gameUpdated')
       res.send(`player name set to ${name}`)
     } catch (err) {
       console.error(err)
@@ -208,11 +205,11 @@ module.exports = {
   leaveGame: async (req, res) => {
     const { localUserToken, gameId } = req.body
     try {
+      console.log('---------------------', localUserToken, gameId)
       if (gameRooms[gameId] && gameRooms[gameId]?.players[localUserToken]) {
         delete gameRooms[gameId].players[localUserToken]
-        clientsList[localUserToken].currentGameId = null
       }
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      broadcastToRoom(gameId, 'gameUpdated')
       res.send(`player removed from game ${gameId}`)
     } catch (err) {
       console.error(err)
@@ -222,14 +219,13 @@ module.exports = {
 
   updateCardChoice: async (req, res) => {
     try {
-      const { localUserToken, choice } = req.body
-      const gameId = clientsList[localUserToken].currentGameId
+      const { localUserToken, choice, gameId } = req.body
       if (gameRooms[gameId].players[localUserToken].currentChoice === choice) {
         gameRooms[gameId].players[localUserToken].currentChoice = null
       } else {
         gameRooms[gameId].players[localUserToken].currentChoice = choice
       }
-      broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      broadcastToRoom(gameId, 'gameUpdated')
       res.send('choice updated')
     } catch (err) {
       console.error(err)
