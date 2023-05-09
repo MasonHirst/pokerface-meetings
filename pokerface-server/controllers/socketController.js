@@ -1,5 +1,5 @@
 const { WebSocketServer, WebSocket } = require('ws')
-const wss = new WebSocketServer({ port: 8086 })
+
 const { v4: uuidv4, validate: validateUUID } = require('uuid')
 // const { verifyAccessToken } = require('./authController')
 
@@ -48,46 +48,55 @@ function isMoreThanTwoHoursAgo(date) {
   return diffInMs > TWO_HOURS_IN_MS
 }
 
+async function startSocketServer() {
+  const wss = new WebSocketServer({ port: 8086 })
+  wss.on('listening', () => {
+    console.log(
+      `WebSocket server is running and listening on port ${wss.address().port}`
+    )
+  })
+
+  wss.on('connection', function connection(ws, req) {
+    try {
+      console.log('client connected')
+      ws.on('error', console.error)
+      ws.on('message', async function message(data, isBinary) {
+        const { event, body } = JSON.parse(data)
+        const localUserToken = body.localUserToken
+        if (event === 'newLocalPlayer') {
+          // associate userId to client
+          // add to list of clients
+          if (!localUserToken) return console.error('no authorization')
+          ws.userToken = localUserToken
+          clientsList[localUserToken] = ws
+        }
+      })
+
+      ws.on('close', function () {
+        console.log(`client ${ws.userToken} disconnecting`)
+        const userToken = ws.userToken
+        let gameId = clientsList[userToken]?.currentGameId
+        // remove from game room if they are in one
+        if (gameId) {
+          delete gameRooms[gameId].players[userToken]
+        }
+        // remove from list of clients
+        if (clientsList[userToken]) {
+          delete clientsList[userToken]
+        }
+        broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  })
+}
+
 module.exports = {
   broadcastToRoom,
   gameRooms,
   clientsList,
-  startSocketServer: async () => {
-    wss.on('connection', function connection(ws, req) {
-      try {
-        console.log('client connected')
-        ws.on('error', console.error)
-        ws.on('message', async function message(data, isBinary) {
-          const { event, body } = JSON.parse(data)
-          const localUserToken = body.localUserToken
-          if (event === 'newLocalPlayer') {
-            // associate userId to client
-            // add to list of clients
-            if (!localUserToken) return console.error('no authorization')
-            ws.userToken = localUserToken
-            clientsList[localUserToken] = ws
-          }
-        })
-
-        ws.on('close', function () {
-          console.log(`client ${ws.userToken} disconnecting`)
-          const userToken = ws.userToken
-          let gameId = clientsList[userToken]?.currentGameId
-          // remove from game room if they are in one
-          if (gameId) {
-            delete gameRooms[gameId].players[userToken]
-          }
-          // remove from list of clients
-          if (clientsList[userToken]) {
-            delete clientsList[userToken]
-          }
-          broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
-        })
-      } catch (err) {
-        console.error(err)
-      }
-    })
-  },
+  startSocketServer,
 
   extractToken: async (req, res, next) => {
     try {
@@ -220,15 +229,4 @@ module.exports = {
       res.status(403).send(err)
     }
   },
-
-  // startNewVoting: async (req, res) => {
-  //   const { localUserToken } = req.body
-  //   try {
-  //     const gameId = clientsList[localUserToken].currentGameId
-  //     gameRooms[gameId].showingChoices = false
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(403).send(err)
-  //   }
-  // },
 }

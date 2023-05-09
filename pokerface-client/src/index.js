@@ -11,7 +11,8 @@ if (!localUserToken) {
   localStorage.setItem('localUserToken', uuidv4())
 }
 
-axios.defaults.baseURL = 'http://localhost:8080/'
+// axios.defaults.baseURL = 'http://localhost:8080/'
+axios.defaults.baseURL = 'https://pokerface-meet.fly.dev:8080/'
 // axios.defaults.headers.common['Authorization'] =
 //   localStorage.getItem('jwtAccessToken')
 axios.interceptors.request.use(
