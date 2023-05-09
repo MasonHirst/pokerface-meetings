@@ -18,11 +18,11 @@ export const GameProvider = ({ children }) => {
   const [pastVotings, setPastVotings] = useState([])
   const [thisUserObj, setThisUserObj] = useState({})
 
-  console.success = function(message) {
-    console.log("%c✅ " + message, "color: #04A57D; font-weight: bold;")
+  console.success = function (message) {
+    console.log('%c✅ ' + message, 'color: #04A57D; font-weight: bold;')
   }
-  console.warning = function(message) {
-    console.log("%c⚠️ " + message, "color: yellow; font-weight: bold;")
+  console.warning = function (message) {
+    console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;')
   }
 
   let connectCounter = 0
@@ -32,16 +32,32 @@ export const GameProvider = ({ children }) => {
     let websocket
     console.log('socket use effect started')
     function connectClient() {
-      const ws = new WebSocket('ws://localhost:8086')
-      // const ws = new WebSocket('wss://pokerface-meet.fly.dev:8086')
+      let serverUrl
+      let scheme = 'ws'
+      let location = document.location
 
-      // const ws = new WebSocket('wss://pokerface-meet.fly.dev')
+      if (location.protocol === 'https:') {
+        scheme += 's'
+      }
+
+      serverUrl = `${scheme}://${location.hostname}:${location.port}`
+      if (process.env.NODE_ENV === 'development') {
+        serverUrl = 'ws://localhost:8080'
+      }
+      const ws = new WebSocket(serverUrl)
+      // const ws = new WebSocket('wss://pokerface-meet.fly.dev:8080')
+      // const ws = new WebSocket('ws://pokerface-meet.fly.dev')
 
       ws.addEventListener('open', function () {
+        console.log('established socket connection')
         if (connectCounter > 0) console.success('Reconnected to socket server')
         send(ws, 'newLocalPlayer', {
           localUserToken,
         })
+      })
+
+      ws.addEventListener('error', function (error) {
+        console.error('WebSocket Error ' + error)
       })
 
       ws.addEventListener('message', function (event) {
@@ -53,15 +69,12 @@ export const GameProvider = ({ children }) => {
           // console.log('gameUpdated: ', messageData)
           setRoomName(body.gameRoomName)
           setGameState(body.gameState)
-          setPlayersData(Object.values(body.players)) 
+          setPlayersData(Object.values(body.players))
           setThisUserObj(body.players[localUserToken])
           setPastVotings(body.voteResults)
           const deckArray = [...new Set(body.deck.split(','))]
           setGameDeck(deckArray)
         } else if (messageData.event_type === 'updatedMessage') {
-
-        } else if (messageData.event_type === 'newReaction') {
-
         }
       })
 
@@ -84,7 +97,7 @@ export const GameProvider = ({ children }) => {
     //     console.log('Socket connection closed')
     // }
   }, [localUserToken])
-  
+
   return (
     <GameContext.Provider
       value={{

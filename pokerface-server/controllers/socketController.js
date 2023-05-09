@@ -9,6 +9,9 @@ let clientsList = {}
 function broadcastToRoom(gameRoomId, event_type, message) {
   console.log('current game room status: ', gameRooms[gameRoomId])
   const gameRoom = gameRooms[gameRoomId]
+  console.log('all gamerooms: ', gameRooms)
+  console.log('specific gameroom: ', gameRoom)
+  console.log('specified gameroomid: ', gameRoomId)
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
   gameRooms[gameRoomId].lastAction = Date.now()
 
@@ -48,8 +51,10 @@ function isMoreThanTwoHoursAgo(date) {
   return diffInMs > TWO_HOURS_IN_MS
 }
 
-async function startSocketServer() {
-  const wss = new WebSocketServer({ port: 8086 })
+async function startSocketServer(app, port) {
+  const wss = new WebSocketServer({ server: app.listen(port, () => {
+    console.log(`SERVER LISTENING ON PORT ${port}`)
+  }) })
   wss.on('listening', () => {
     console.log(
       `WEBSOCKET SERVER IS LISTENING ON PORT ${wss.address().port}`
@@ -107,15 +112,16 @@ module.exports = {
       next()
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 
   createNewGame: async (req, res) => {
     const { gameName, gameId, deck } = req.body
     try {
+      console.log('game room id from frontend: ', gameId)
       if (!gameName || !gameId)
-        return res.status(403).send('missing gameName or gameId')
+        return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
         gameRoomName: gameName,
         gameState: 'voting',
@@ -124,11 +130,12 @@ module.exports = {
         deck,
         players: {},
       }
+      console.log('gameRooms (from creategame function): ', gameRooms)
       broadcastToRoom(gameId, 'gameUpdated', gameRooms[gameId])
       res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 
@@ -156,7 +163,7 @@ module.exports = {
       res.send('game state updated')
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 
@@ -173,7 +180,7 @@ module.exports = {
         currentGameId: gameId,
       }
       if (validateUUID(clientsList[localUserToken].currentGameId)) {
-        return res.status(403).send('client is already in a game')
+        return res.status(500).send('client is already in a game')
       }
       console.log(`player joined game ${gameId}`)
       gameRooms[gameId].players[localUserToken] = joiningPlayerObj
@@ -182,7 +189,7 @@ module.exports = {
       res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 
@@ -194,7 +201,7 @@ module.exports = {
       res.send(`player name set to ${name}`)
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 
@@ -209,7 +216,7 @@ module.exports = {
       res.send(`player removed from game ${gameId}`)
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 
@@ -226,7 +233,7 @@ module.exports = {
       res.send('choice updated')
     } catch (err) {
       console.error(err)
-      res.status(403).send(err)
+      res.status(500).send(err)
     }
   },
 }

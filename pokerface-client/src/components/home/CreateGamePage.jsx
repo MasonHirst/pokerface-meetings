@@ -21,6 +21,7 @@ const CreateGamePage = () => {
     const gameId = uuidv4()
     axios.post('game/create', { gameId, gameName, deck: cardsSelectRef.current.value })
       .then(({data}) => {
+        console.log('create game res: ', data)
         if (data.gameRoomName) {
           navigate(`/game/${gameId}`)
         }

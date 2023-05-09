@@ -33,14 +33,12 @@ const GameRoom = () => {
   }
 
   useEffect(() => {
-    setTimeout(() => {
-      axios
-        .post('game/join', { gameId: game_id, name: playerName })
-        .then(({ data }) => {
-          // console.log('join game res: ', data)
-        })
-        .catch(console.error)
-    }, 400)
+    axios
+      .post('game/join', { gameId: game_id, name: playerName })
+      .then(({ data }) => {
+        console.log('join game res: ', data)
+      })
+      .catch(console.error)
 
     return () => {
       axios

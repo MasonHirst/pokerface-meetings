@@ -34,15 +34,19 @@ app.get('/server/ping/8080', async (req, res) => {
   res.send('pong')
 })
 
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '.', 'build', 'index.html'))
+})
+
 
 
 //! Socket server
-startSocketServer()
+const PORT = process.env.PORT || 8080
+startSocketServer(app, PORT)
 
 //! Server listen
-const { SERVER_PORT } = process.env
 // db.sync().then(() => {
-app.listen(SERVER_PORT || 8080, () =>
-  console.log(`SERVER RUNNING ON SERVER_PORT ${SERVER_PORT}`)
-)
+// app.listen(PORT, () =>
+//   console.log(`SERVER RUNNING ON SERVER_PORT ${PORT}`)
+// )
 // })
