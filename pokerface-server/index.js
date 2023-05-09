@@ -29,8 +29,12 @@ app.put('/game/leave', extractToken, leaveGame)
 app.post('/game/join', extractToken, playerJoinGame)
 app.post('/game/player_name', extractToken, setPlayerName)
 app.put('/game/submit_choice', extractToken, updateCardChoice)
-// app.put('/game/start_new_voting', extractToken, startNewVoting)
 app.put('/game/update_state', extractToken, updateGameState)
+app.get('/server/ping/8080', async (req, res) => {
+  res.send('pong')
+})
+
+
 
 //! Socket server
 startSocketServer()

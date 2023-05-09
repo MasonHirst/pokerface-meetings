@@ -32,8 +32,10 @@ export const GameProvider = ({ children }) => {
     let websocket
     console.log('socket use effect started')
     function connectClient() {
-      // const ws = new WebSocket('ws://localhost:8086')
-      const ws = new WebSocket('wss://pokerface-meet.fly.dev:8086')
+      const ws = new WebSocket('ws://localhost:8086')
+      // const ws = new WebSocket('wss://pokerface-meet.fly.dev:8086')
+
+      // const ws = new WebSocket('wss://pokerface-meet.fly.dev')
 
       ws.addEventListener('open', function () {
         if (connectCounter > 0) console.success('Reconnected to socket server')

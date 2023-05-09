@@ -52,13 +52,13 @@ async function startSocketServer() {
   const wss = new WebSocketServer({ port: 8086 })
   wss.on('listening', () => {
     console.log(
-      `WebSocket server is running and listening on port ${wss.address().port}`
+      `WEBSOCKET SERVER IS LISTENING ON PORT ${wss.address().port}`
     )
   })
 
   wss.on('connection', function connection(ws, req) {
     try {
-      console.log('client connected')
+      console.log('A CLIENT CONNECTED')
       ws.on('error', console.error)
       ws.on('message', async function message(data, isBinary) {
         const { event, body } = JSON.parse(data)
