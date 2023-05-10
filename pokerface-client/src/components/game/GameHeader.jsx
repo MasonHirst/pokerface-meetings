@@ -6,11 +6,12 @@ const { AppBar, Toolbar, Typography, Button, Box, Dialog, TextField } =
   muiStyles
 
 const GameHeader = () => {
-  const { roomName } = useContext(GameContext)
+  const { gameData } = useContext(GameContext)
+  const roomName = gameData.gameRoomName
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [isCopied, setCopied] = useClipboard(window.location.href, {
-    // `isCopied` will go back to `false` after 1000ms.
-    successDuration: 1000,
+    // `isCopied` will go back to `false` after 1500ms.
+    successDuration: 1500,
   })
   const inviteLinkInputRef = useRef()
 
@@ -19,7 +20,7 @@ const GameHeader = () => {
       if (inviteLinkInputRef.current) {
         inviteLinkInputRef.current.select()
       }
-    }, 150)
+    }, 200)
   }, [showInviteDialog, inviteLinkInputRef])
 
   return (
@@ -45,7 +46,7 @@ const GameHeader = () => {
           alignItems: 'center',
         }}
       >
-        <Button variant="contained">Something else</Button>
+        <Button variant="contained">Game Settings</Button>
         <Typography variant='h5' sx={{color: 'white',}}>{roomName ? roomName : 'No game name bro'}</Typography>
         <Button
           onClick={() => setShowInviteDialog(!showInviteDialog)}

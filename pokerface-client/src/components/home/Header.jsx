@@ -9,12 +9,14 @@ const Header = () => {
   const navigate = useNavigate()
 
   function pingServer8080() {
-    axios.get('server/ping/8080').then(({ data }) => {
-      console.log('ping 8080 res: ', data)
-    }
-    ).catch(console.error)
+    axios
+      .get('server/ping/8080')
+      .then(({ data }) => {
+        console.log(data)
+      })
+      .catch(console.error)
   }
-  
+
   return (
     <div>
       <Button onClick={() => navigate(`/game/create`)}>Host new game</Button>

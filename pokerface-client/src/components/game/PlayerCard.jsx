@@ -6,7 +6,7 @@ const { Card, Typography, Box } = muiStyles
 const PlayerCard = ({ player, gameState }) => {
   const name = player.playerName
   const choice = player.currentChoice
-  const { isSpectator } = player
+  // const { isSpectator } = player
 
   function isNativeEmoji(str) {
     return /\p{Emoji}/u.test(str)

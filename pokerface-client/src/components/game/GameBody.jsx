@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 import PlayingTable from './PlayingTable'
 import { GameContext } from '../../context/GameContext'
@@ -7,16 +7,17 @@ import PlayerCard from './PlayerCard'
 const { Box, Grid, Paper, Typography, Card } = muiStyles
 
 const GameBody = () => {
-  const { playersData, gameState } = useContext(GameContext)
+  const { gameData } = useContext(GameContext)
+  const [playersData, setPlayersData] = useState([])
+  const [gameState, setGameState] = useState('')
 
+  useEffect(() => {
+    if (!gameData.gameRoomName) return
+    setPlayersData(Object.values(gameData.players))
+    setGameState(gameData.gameState)
+  }, [gameData])
 
-  function startNewVotingRound() {
-    axios.put('game/start_new_voting')
-      .then()
-      .catch(console.error)
-  }
-
-  const mappedPlayerCards = playersData.map((player, index) => {
+  const mappedPlayerCards = Object.values(playersData).map((player, index) => {
     if (!player) return
     return <PlayerCard key={index} gameState={gameState} player={player} />
   })
@@ -43,7 +44,7 @@ const GameBody = () => {
           alignItems: 'center',
         }}
       >
-        <PlayingTable  />
+        <PlayingTable />
         <Box
           sx={{
             width: '100%',

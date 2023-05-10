@@ -4,22 +4,21 @@ const { v4: uuidv4, validate: validateUUID } = require('uuid')
 // const { verifyAccessToken } = require('./authController')
 
 let gameRooms = {}
+let clientsList = {}
 
-function broadcastToRoom(gameRoomId, event_type, message) {
-  console.log('current game room status: ', gameRooms[gameRoomId])
+function broadcastToRoom(gameRoomId, userId, event_type) {
+  console.log('gamesRooms status: ', gameRooms)
   const gameRoom = gameRooms[gameRoomId]
-  // console.log('all gamerooms: ', gameRooms)
-  // console.log('specific gameroom: ', gameRoom)
-  // console.log('specified gameroomid: ', gameRoomId)
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
   gameRooms[gameRoomId].lastAction = Date.now()
 
   // Loop through all clients in the game room and send the message
-  Object.entries(gameRoom.players).forEach((clientId) => {
-    console.log('gameroom players entry: ', clientId)
-    const client = gameRooms[gameRoomId].players[clientId]
+  Object.values(gameRoom.players).forEach((playerObj) => {
+    if (playerObj.userToken === userId) return console.log('not sending to self')
+
+    const client = clientsList[playerObj.userToken]
     if (client && client.readyState === WebSocket.OPEN) {
-      const body = JSON.stringify({ event_type, message })
+      const body = JSON.stringify({ event_type })
       client.send(body)
     }
   })
@@ -67,32 +66,34 @@ async function startSocketServer(app, port) {
       ws.on('error', console.error)
       ws.on('message', async function message(data, isBinary) {
         const { event, body } = JSON.parse(data)
-        const { localUserToken, gameId } = body
+        const { localUserToken, gameId, playerName } = body
         if (event === 'newLocalPlayer') {
-          // associate userId to client
-          // add to list of clients
+          // add user to game room
           if (!localUserToken) return console.error('no authorization')
-          ws.currentGameId = gameId
           ws.userToken = localUserToken
-          ws.currentChoice = null
-          ws.isSpectator = false
-          ws.playerName = null
-          gameRooms[gameId].players[localUserToken] = ws
-          console.log('gameRooms after player join: ', gameRooms[gameId])
+          ws.currentGameId = gameId
+          clientsList[localUserToken] = ws
+          const joiningObj = {
+              currentGameId: gameId,
+              userToken: localUserToken,
+              currentChoice: null,
+              playerName: playerName,
+            }
+          gameRooms[gameId].players[localUserToken] = joiningObj
         }
       })
 
       ws.on('close', function () {
+        // remove user from gameroom
         console.log(`client ${ws.userToken} disconnecting`)
         const { userToken, currentGameId } = ws
         if (gameRooms[currentGameId]?.players[userToken]) {
           delete gameRooms[currentGameId].players[userToken]
         } else {
-          console.log(
-            `client ${userToken} not found in game room`
-          )
+          console.log(`client ${userToken} not found in game room`)
         }
-        broadcastToRoom(currentGameId, 'gameUpdated')
+        broadcastToRoom(currentGameId, userToken, 'gameUpdated')
+        delete clientsList[userToken]
       })
     } catch (err) {
       console.error(err)
@@ -105,12 +106,12 @@ module.exports = {
   gameRooms,
   startSocketServer,
   getUpdatedGame: async (req, res) => {
-    const { gameId, localUserToken } = req.params
+    const { game_id } = req.params
     try {
-      if (!gameRooms[gameId]) {
+      if (!gameRooms[game_id]) {
         return res.status(500).send('game room not found')
       }
-      res.send(gameRooms[gameId])
+      res.send(gameRooms[game_id])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)
@@ -131,10 +132,9 @@ module.exports = {
   },
 
   createNewGame: async (req, res) => {
-    const { gameName, deck } = req.body
+    const { gameName, deck, localUserToken } = req.body
     try {
       const gameId = uuidv4()
-      console.log('game room id from frontend: ', gameId)
       if (!gameName || !gameId)
         return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
@@ -146,8 +146,6 @@ module.exports = {
         deck,
         players: {},
       }
-      console.log('gameRooms (from creategame function): ', gameRooms)
-      broadcastToRoom(gameId, 'gameUpdated')
       res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
@@ -167,7 +165,7 @@ module.exports = {
   },
 
   updateGameState: async (req, res) => {
-    const { gameState, gameId } = req.body
+    const { gameState, gameId, localUserToken } = req.body
     try {
       if (gameState === 'voting') {
         Object.values(gameRooms[gameId].players).forEach((player) => {
@@ -182,8 +180,8 @@ module.exports = {
         gameRooms[gameId].voteResults.push(cardCounts)
       }
       gameRooms[gameId].gameState = gameState
-      broadcastToRoom(gameId, 'gameUpdated')
-      res.send('game state updated')
+      broadcastToRoom(gameId, localUserToken, 'gameUpdated')
+      res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)
@@ -194,8 +192,8 @@ module.exports = {
     const { localUserToken, name, gameId } = req.body
     try {
       gameRooms[gameId].players[localUserToken].playerName = name
-      broadcastToRoom(gameId, 'gameUpdated')
-      res.send(`player name set to ${name}`)
+      broadcastToRoom(gameId, localUserToken, 'gameUpdated')
+      res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)
@@ -205,11 +203,11 @@ module.exports = {
   leaveGame: async (req, res) => {
     const { localUserToken, gameId } = req.body
     try {
-      console.log('---------------------', localUserToken, gameId)
       if (gameRooms[gameId] && gameRooms[gameId]?.players[localUserToken]) {
         delete gameRooms[gameId].players[localUserToken]
       }
-      broadcastToRoom(gameId, 'gameUpdated')
+      delete clientsList[localUserToken]
+      broadcastToRoom(gameId, localUserToken, 'gameUpdated')
       res.send(`player removed from game ${gameId}`)
     } catch (err) {
       console.error(err)
@@ -225,8 +223,8 @@ module.exports = {
       } else {
         gameRooms[gameId].players[localUserToken].currentChoice = choice
       }
-      broadcastToRoom(gameId, 'gameUpdated')
-      res.send('choice updated')
+      broadcastToRoom(gameId, localUserToken, 'gameUpdated')
+      res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)

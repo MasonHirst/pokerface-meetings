@@ -15,13 +15,13 @@ app.use(cors())
 const {
   startSocketServer,
   extractToken,
-  // startNewVoting,
   updateGameState,
   createNewGame,
   leaveGame,
   checkGameExists,
   setPlayerName,
   updateCardChoice,
+  getUpdatedGame,
 } = require('./controllers/socketController')
 
 app.post('/game/create', extractToken, createNewGame)
@@ -30,6 +30,7 @@ app.post('/game/player_name', extractToken, setPlayerName)
 app.post('/game/check', extractToken, checkGameExists)
 app.put('/game/submit_choice', extractToken, updateCardChoice)
 app.put('/game/update_state', extractToken, updateGameState)
+app.get('/game/latest/:game_id', extractToken, getUpdatedGame)
 app.get('/server/ping/8080', async (req, res) => {
   res.send('pong')
 })

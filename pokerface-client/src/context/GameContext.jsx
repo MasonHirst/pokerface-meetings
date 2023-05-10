@@ -9,17 +9,11 @@ const send = (socket, event, body) => {
 }
 
 export const GameProvider = ({ children }) => {
-  const [voteEvent, setVoteEvent] = useState({})
-  const [participantEvent, setParticipantEvent] = useState({})
+
   const [appIsLoading, setAppIsLoading] = useState(false)
   const [socket, setSocket] = useState(null)
-  const [roomName, setRoomName] = useState('')
-  const [playersData, setPlayersData] = useState([])
-  const [gameState, setGameState] = useState('')
-  const [gameDeck, setGameDeck] = useState([])
-  const [pastVotings, setPastVotings] = useState([])
+  const [gameData, setGameData] = useState({})
   const [gameExists, setGameExists] = useState(false)
-  const [thisUserObj, setThisUserObj] = useState({})
   const { game_id } = useParams()
   const [localUserToken, setLocalUserToken] = useState(
     localStorage.getItem('localUserToken')
@@ -36,17 +30,10 @@ export const GameProvider = ({ children }) => {
 
   function getLatestGameInfo() {
     axios
-      .get('game/latest')
+      .get(`game/latest/${game_id}`)
       .then(({ data }) => {
-        console.log('get latest game res: ', data)
         if (data.gameRoomName) {
-          setRoomName(data.gameRoomName)
-          setGameState(data.gameState)
-          setPlayersData(Object.values(data.players))
-          setThisUserObj(data.players[localUserToken])
-          setPastVotings(data.voteResults)
-          const deckArray = [...new Set(data.deck.split(','))]
-          setGameDeck(deckArray)
+          setGameData(data)
         }
       })
       .catch(console.error)
@@ -71,10 +58,12 @@ export const GameProvider = ({ children }) => {
 
       ws.addEventListener('open', function () {
         console.log('established socket connection')
+        getLatestGameInfo()
         if (connectCounter > 0) console.success('Reconnected to socket server')
         send(ws, 'newLocalPlayer', {
           localUserToken,
           gameId: game_id,
+          playerName: localStorage.getItem('playerName')
         })
       })
 
@@ -83,12 +72,12 @@ export const GameProvider = ({ children }) => {
       })
 
       ws.addEventListener('message', function (event) {
+        console.log('Message from server ', event)
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
         console.log('messageData: ', messageData)
         if (messageData.event_type === 'gameUpdated') {
           getLatestGameInfo()
-        } else if (messageData.event_type === 'updatedMessage') {
         }
       })
 
@@ -108,7 +97,6 @@ export const GameProvider = ({ children }) => {
 
     // return () => {
     //     websocket.close()
-    //     console.log('Socket connection closed')
     // }
   }, [localUserToken, gameExists])
 
@@ -116,18 +104,11 @@ export const GameProvider = ({ children }) => {
     <GameContext.Provider
       value={{
         children,
-        voteEvent,
-        participantEvent,
         appIsLoading,
         setAppIsLoading,
-        playersData,
-        roomName,
-        gameDeck,
-        gameState,
-        thisUserObj,
-        pastVotings,
-        localUserToken,
         setGameExists,
+        gameData,
+        setGameData,
       }}
     >
       {children}

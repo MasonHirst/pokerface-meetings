@@ -14,7 +14,7 @@ const GameRoom = () => {
     localStorage.getItem('playerName')
   )
   const navigate = useNavigate()
-  const { localUserToken, setGameExists } = useContext(GameContext)
+  const { setGameExists, setGameData } = useContext(GameContext)
   const [nameLoading, setNameLoading] = useState(false)
   const [nameError, setNameError] = useState('')
   const nameInputRef = useRef()
@@ -31,6 +31,7 @@ const GameRoom = () => {
       .then(({ data }) => {
         localStorage.setItem('playerName', name)
         setPlayerName(name)
+        setGameData(data)
       })
       .catch(console.error)
       .finally(() => setNameLoading(false))
@@ -40,7 +41,6 @@ const GameRoom = () => {
     axios
       .post('game/check', { gameId: game_id })
       .then(({ data }) => {
-        // console.log('game check data: ', data)
         setGameExists(data)
         if (!data) {
           navigate(`/game/not_found`)
@@ -52,7 +52,7 @@ const GameRoom = () => {
       axios
         .put('game/leave', { gameId: game_id })
         .then(({ data }) => {
-          // console.log('leave game res: ', data)
+          setGameData(data)
         })
         .catch(console.error)
     }
