@@ -1,17 +1,31 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import './reset.css'
+import App from './App'
+import { BrowserRouter } from 'react-router-dom'
+import axios from 'axios'
+import { v4 as uuidv4 } from 'uuid'
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const localUserToken = localStorage.getItem('localUserToken')
+if (!localUserToken) {
+  localStorage.setItem('localUserToken', uuidv4())
+}
+
+const serverUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : document.location.origin
+axios.defaults.baseURL = serverUrl
+// axios.defaults.baseURL = 'https://pokerface-meet.fly.dev/'
+// axios.defaults.baseURL = 'https://pokerface-meet.fly.dev:8080/'
+// axios.defaults.headers.common['Authorization'] =
+//   localStorage.getItem('jwtAccessToken')
+axios.interceptors.request.use(function (config) {
+  config.headers.Authorization = localStorage.getItem('localUserToken')
+  // Do something before request is sent
+  return config
+})
+
+const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
-  <React.StrictMode>
+  <BrowserRouter>
     <App />
-  </React.StrictMode>
-);
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+  </BrowserRouter>
+)
