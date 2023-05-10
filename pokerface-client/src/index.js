@@ -12,7 +12,6 @@ if (!localUserToken) {
 }
 
 const serverUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : document.location.origin
-console.log('serverUrl: ', serverUrl)
 axios.defaults.baseURL = serverUrl
 // axios.defaults.baseURL = 'https://pokerface-meet.fly.dev/'
 // axios.defaults.baseURL = 'https://pokerface-meet.fly.dev:8080/'

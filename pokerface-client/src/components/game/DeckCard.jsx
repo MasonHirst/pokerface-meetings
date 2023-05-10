@@ -1,16 +1,27 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { GameContext } from '../../context/GameContext'
 import muiStyles from '../../style/muiStyles'
 const { Box, Typography, Button } = muiStyles
 
 const DeckCard = ({ card, submitChoice, thisUserObj }) => {
-  const { playersData, gameState } = useContext(GameContext)
+  const localUserToken = localStorage.getItem('localUserToken')
+  const [playersData, setPlayersData] = useState([])
+  const [gameState, setGameState] = useState('')
+  const [thisUser, setThisUser] = useState({})
+  const { gameData } = useContext(GameContext)
 
   function isNativeEmoji(str) {
     return /\p{Emoji}/u.test(str)
   }
 
-  const selected = thisUserObj.currentChoice === card
+  useEffect(() => {
+    if (!gameData.gameRoomName) return
+    setPlayersData(Object.values(gameData.players))
+    setGameState(gameData.gameState)
+    setThisUser(gameData.players[localUserToken])
+  }, [gameData])
+
+  const selected = thisUser.currentChoice === card
 
   return (
     <Box

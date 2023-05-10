@@ -1,4 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import axios from 'axios'
 
 export const GameContext = createContext()
 
@@ -7,16 +9,15 @@ const send = (socket, event, body) => {
 }
 
 export const GameProvider = ({ children }) => {
-  const [voteEvent, setVoteEvent] = useState({})
-  const [participantEvent, setParticipantEvent] = useState({})
+
   const [appIsLoading, setAppIsLoading] = useState(false)
   const [socket, setSocket] = useState(null)
-  const [roomName, setRoomName] = useState('')
-  const [playersData, setPlayersData] = useState([])
-  const [gameState, setGameState] = useState('')
-  const [gameDeck, setGameDeck] = useState([])
-  const [pastVotings, setPastVotings] = useState([])
-  const [thisUserObj, setThisUserObj] = useState({})
+  const [gameData, setGameData] = useState({})
+  const [gameExists, setGameExists] = useState(false)
+  const { game_id } = useParams()
+  const [localUserToken, setLocalUserToken] = useState(
+    localStorage.getItem('localUserToken')
+  )
 
   console.success = function (message) {
     console.log('%c✅ ' + message, 'color: #04A57D; font-weight: bold;')
@@ -26,33 +27,43 @@ export const GameProvider = ({ children }) => {
   }
 
   let connectCounter = 0
-  const localUserToken = localStorage.getItem('localUserToken')
+
+  function getLatestGameInfo() {
+    axios
+      .get(`game/latest/${game_id}`)
+      .then(({ data }) => {
+        if (data.gameRoomName) {
+          setGameData(data)
+        }
+      })
+      .catch(console.error)
+  }
 
   useEffect(() => {
+    if (!gameExists) return
     let websocket
     console.log('socket use effect started')
     function connectClient() {
       let serverUrl
       let scheme = 'ws'
       let location = document.location
-
       if (location.protocol === 'https:') {
         scheme += 's'
       }
-
       serverUrl = `${scheme}://${location.hostname}:${location.port}`
       if (process.env.NODE_ENV === 'development') {
         serverUrl = 'ws://localhost:8080'
       }
       const ws = new WebSocket(serverUrl)
-      // const ws = new WebSocket('wss://pokerface-meet.fly.dev:8080')
-      // const ws = new WebSocket('ws://pokerface-meet.fly.dev')
 
       ws.addEventListener('open', function () {
         console.log('established socket connection')
+        getLatestGameInfo()
         if (connectCounter > 0) console.success('Reconnected to socket server')
         send(ws, 'newLocalPlayer', {
           localUserToken,
+          gameId: game_id,
+          playerName: localStorage.getItem('playerName')
         })
       })
 
@@ -61,20 +72,12 @@ export const GameProvider = ({ children }) => {
       })
 
       ws.addEventListener('message', function (event) {
+        console.log('Message from server ', event)
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
-        const body = messageData.message
-        // console.log('messageData: ', messageData)
+        console.log('messageData: ', messageData)
         if (messageData.event_type === 'gameUpdated') {
-          // console.log('gameUpdated: ', messageData)
-          setRoomName(body.gameRoomName)
-          setGameState(body.gameState)
-          setPlayersData(Object.values(body.players))
-          setThisUserObj(body.players[localUserToken])
-          setPastVotings(body.voteResults)
-          const deckArray = [...new Set(body.deck.split(','))]
-          setGameDeck(deckArray)
-        } else if (messageData.event_type === 'updatedMessage') {
+          getLatestGameInfo()
         }
       })
 
@@ -94,24 +97,18 @@ export const GameProvider = ({ children }) => {
 
     // return () => {
     //     websocket.close()
-    //     console.log('Socket connection closed')
     // }
-  }, [localUserToken])
+  }, [localUserToken, gameExists])
 
   return (
     <GameContext.Provider
       value={{
         children,
-        voteEvent,
-        participantEvent,
         appIsLoading,
         setAppIsLoading,
-        playersData,
-        roomName,
-        gameDeck,
-        gameState,
-        thisUserObj,
-        pastVotings,
+        setGameExists,
+        gameData,
+        setGameData,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import './game.css'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import muiStyles from '../../style/muiStyles'
@@ -9,18 +9,19 @@ const { Box } = muiStyles
 
 const GameRouter = () => {
   return (
-    <GameProvider>
-      <Routes>
-        <Route
-          path="/:game_id"
-          element={
+    <Routes>
+      <Route
+        path="/:game_id"
+        element={
+          <GameProvider>
             <GameRoom />
-          }
-        />
-        <Route path="/create" element={<CreateGamePage />} />
-        <Route path='*' element={<Navigate to='/home' />} />
-      </Routes>
-    </GameProvider>
+          </GameProvider>
+        }
+      />
+      <Route path="/create" element={<CreateGamePage />} />
+      <Route path="/not_found" element={<h1>Game not found, please try again or make a new game</h1>} />
+      <Route path="*" element={<Navigate to="/home" />} />
+    </Routes>
   )
 }
 
