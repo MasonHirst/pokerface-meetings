@@ -1,7 +1,5 @@
 const { WebSocketServer, WebSocket } = require('ws')
-
 const { v4: uuidv4, validate: validateUUID } = require('uuid')
-// const { verifyAccessToken } = require('./authController')
 
 let gameRooms = {}
 let clientsList = {}
@@ -79,7 +77,10 @@ async function startSocketServer(app, port) {
               currentChoice: null,
               playerName: playerName,
             }
+          if (!gameRooms[gameId]) return console.log('game room not found, aborting join')
           gameRooms[gameId].players[localUserToken] = joiningObj
+          console.log('game room after join: ', gameRooms[gameId])
+          broadcastToRoom(gameId, null, 'playerJoinedGame')
         }
       })
 

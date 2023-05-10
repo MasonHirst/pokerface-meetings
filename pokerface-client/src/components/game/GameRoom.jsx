@@ -7,14 +7,14 @@ import axios from 'axios'
 import { GameContext } from '../../context/GameContext'
 import { Location, useParams } from 'react-router-dom'
 import muiStyles from '../../style/muiStyles'
-const { Box, Dialog, TextField, Button } = muiStyles
+const { Box, Dialog, TextField, Button, Typography } = muiStyles
 
 const GameRoom = () => {
   const [playerName, setPlayerName] = useState(
     localStorage.getItem('playerName')
   )
   const navigate = useNavigate()
-  const { setGameExists, setGameData } = useContext(GameContext)
+  const { gameExists, setGameExists, setGameData, gameData } = useContext(GameContext)
   const [nameLoading, setNameLoading] = useState(false)
   const [nameError, setNameError] = useState('')
   const nameInputRef = useRef()
@@ -26,6 +26,7 @@ const GameRoom = () => {
     const name = nameInputRef.current.value
     if (!name) return setNameError('Please enter a name')
     setNameError('')
+    console.log('running name change function')
     axios
       .post('game/player_name', { gameId: game_id, name })
       .then(({ data }) => {
@@ -41,6 +42,7 @@ const GameRoom = () => {
     axios
       .post('game/check', { gameId: game_id })
       .then(({ data }) => {
+        console.log('game exists', data)
         setGameExists(data)
         if (!data) {
           navigate(`/game/not_found`)
@@ -49,9 +51,11 @@ const GameRoom = () => {
       .catch(console.error)
 
     return () => {
+      console.log('leaving game')
       axios
         .put('game/leave', { gameId: game_id })
         .then(({ data }) => {
+          console.log('left game')
           setGameData(data)
         })
         .catch(console.error)
@@ -60,7 +64,8 @@ const GameRoom = () => {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <GameHeader />
+      {gameExists ? (gameData.players ? (<>
+        <GameHeader />
       <GameBody />
       <GameFooter />
       <Dialog
@@ -103,6 +108,8 @@ const GameRoom = () => {
           </Button>
         </form>
       </Dialog>
+      </>) : <Typography variant='h5'>Joining Game...</Typography>) : (<Typography variant='h5'>Finding Game...</Typography>)}
+      
     </Box>
   )
 }

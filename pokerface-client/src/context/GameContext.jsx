@@ -42,7 +42,6 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     if (!gameExists) return
     let websocket
-    console.log('socket use effect started')
     function connectClient() {
       let serverUrl
       let scheme = 'ws'
@@ -58,7 +57,6 @@ export const GameProvider = ({ children }) => {
 
       ws.addEventListener('open', function () {
         console.log('established socket connection')
-        getLatestGameInfo()
         if (connectCounter > 0) console.success('Reconnected to socket server')
         send(ws, 'newLocalPlayer', {
           localUserToken,
@@ -66,17 +64,17 @@ export const GameProvider = ({ children }) => {
           playerName: localStorage.getItem('playerName')
         })
       })
-
+      
       ws.addEventListener('error', function (error) {
         console.error('WebSocket Error ' + error)
       })
-
+      
       ws.addEventListener('message', function (event) {
-        console.log('Message from server ', event)
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
-        console.log('messageData: ', messageData)
-        if (messageData.event_type === 'gameUpdated') {
+        if (messageData.event_type === 'playerJoinedGame') {
+          getLatestGameInfo()
+        } else if (messageData.event_type === 'gameUpdated') {
           getLatestGameInfo()
         }
       })
@@ -107,6 +105,7 @@ export const GameProvider = ({ children }) => {
         appIsLoading,
         setAppIsLoading,
         setGameExists,
+        gameExists,
         gameData,
         setGameData,
       }}

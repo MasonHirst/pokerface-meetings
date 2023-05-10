@@ -8,7 +8,6 @@ const { Grid, Box, Card, Typography, Button } = muiStyles
 const PlayingTable = () => {
   const { gameData, setGameData } = useContext(GameContext)
   const { game_id } = useParams()
-
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
 
@@ -19,28 +18,34 @@ const PlayingTable = () => {
 
   useEffect(() => {
     if (!gameData.gameRoomName) return
+    // console.log(Object.values(gameData.players))
+    console.log('playingtable useeffect gameData: ', gameData)
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
+    
+    playersData.forEach((player) => {
+      if (player.currentChoice) {
+        choicesCount++
+      }
+    })
+    // console.log('choicesCount', choicesCount)
+    // console.log('playersData.length', playersData.length)
+    // console.log('gameState', gameState)
+    if (playersData.length === choicesCount && gameState === 'voting') {
+      tableMessage = 'Reveal Cards'
+      tableClass = 'glowing-table'
+      allVoted = true
+    } else if (
+      playersData.length > choicesCount &&
+      choicesCount > 0 &&
+      gameState === 'voting'
+    ) {
+      tableMessage = 'Reveal Cards'
+    } else if (gameState === 'reveal') {
+      tableMessage = 'Start new round'
+    }
   }, [gameData])
 
-  playersData.forEach((player) => {
-    if (player.currentChoice) {
-      choicesCount++
-    }
-  })
-  if (playersData.length === choicesCount && gameState === 'voting') {
-    tableMessage = 'Reveal Cards'
-    tableClass = 'glowing-table'
-    allVoted = true
-  } else if (
-    playersData.length > choicesCount &&
-    choicesCount > 0 &&
-    gameState === 'voting'
-  ) {
-    tableMessage = 'Reveal Cards'
-  } else if (gameState === 'reveal') {
-    tableMessage = 'Start new round'
-  }
 
   function updateGameState() {
     axios.put('game/update_state', {
