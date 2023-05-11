@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react'
+import React, { createContext, useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 
@@ -41,7 +41,7 @@ export const GameProvider = ({ children }) => {
 
   useEffect(() => {
     if (!gameExists) return
-    let websocket
+    const websocketRef = useRef(null)
     function connectClient() {
       let serverUrl
       let scheme = 'ws'
@@ -89,13 +89,9 @@ export const GameProvider = ({ children }) => {
       })
 
       setSocket(ws)
-      websocket = ws
+      websocketRef.current = ws
     }
     connectClient()
-
-    // return () => {
-    //     websocket.close()
-    // }
   }, [localUserToken, gameExists])
 
   return (

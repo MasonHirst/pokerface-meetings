@@ -18,8 +18,6 @@ const PlayingTable = () => {
 
   useEffect(() => {
     if (!gameData.gameRoomName) return
-    // console.log(Object.values(gameData.players))
-    console.log('playingtable useeffect gameData: ', gameData)
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
     
@@ -28,9 +26,6 @@ const PlayingTable = () => {
         choicesCount++
       }
     })
-    // console.log('choicesCount', choicesCount)
-    // console.log('playersData.length', playersData.length)
-    // console.log('gameState', gameState)
     if (playersData.length === choicesCount && gameState === 'voting') {
       tableMessage = 'Reveal Cards'
       tableClass = 'glowing-table'
@@ -59,7 +54,6 @@ const PlayingTable = () => {
   }
 
   return (
-    // <Box>
     <Card
       className={tableClass}
       sx={{
@@ -89,7 +83,6 @@ const PlayingTable = () => {
         </Typography>
       )}
     </Card>
-    // {/* </Box> */}
   )
 }
 

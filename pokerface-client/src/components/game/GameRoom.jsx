@@ -14,11 +14,13 @@ const GameRoom = () => {
     localStorage.getItem('playerName')
   )
   const navigate = useNavigate()
-  const { gameExists, setGameExists, setGameData, gameData } = useContext(GameContext)
+  const { gameExists, setGameExists, setGameData, gameData } =
+    useContext(GameContext)
   const [nameLoading, setNameLoading] = useState(false)
   const [nameError, setNameError] = useState('')
   const nameInputRef = useRef()
   const { game_id } = useParams()
+  const [validGame, setValidGame] = useState(true)
 
   function updateName(e) {
     e.preventDefault()
@@ -42,10 +44,9 @@ const GameRoom = () => {
     axios
       .post('game/check', { gameId: game_id })
       .then(({ data }) => {
-        console.log('game exists', data)
         setGameExists(data)
         if (!data) {
-          navigate(`/game/not_found`)
+          setValidGame(false)
         }
       })
       .catch(console.error)
@@ -63,54 +64,67 @@ const GameRoom = () => {
   }, [playerName])
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      {gameExists ? (gameData.players ? (<>
-        <GameHeader />
-      <GameBody />
-      <GameFooter />
-      <Dialog
-        disableEscapeKeyDown
-        onClose={() => {}}
-        PaperProps={{
-          style: {
-            borderRadius: 15,
-            width: 350,
-            height: 250,
-          },
-        }}
-        open={!playerName}
-      >
-        <form
-          onSubmit={updateName}
-          style={{
-            display: 'flex',
-            width: '100%',
-            height: '100%',
-            minHeight: '250px',
-            padding: '30px',
-            gap: '25px',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-        >
-          <TextField
-            inputRef={nameInputRef}
-            fullWidth
-            autoFocus
-            disabled={nameLoading}
-            error={!!nameError}
-            label="Player Name"
-            placeholder="Enter your name"
-            helperText={nameError}
-          />
-          <Button fullWidth disabled={nameLoading} variant="contained">
-            Join Game
-          </Button>
-        </form>
-      </Dialog>
-      </>) : <Typography variant='h5'>Joining Game...</Typography>) : (<Typography variant='h5'>Finding Game...</Typography>)}
-      
-    </Box>
+    <>
+      {gameExists && gameData.players && validGame ? (
+        <>
+          <Box sx={{ minHeight: '100vh' }}>
+            <GameHeader />
+            <GameBody />
+            <GameFooter />
+            <Dialog
+              disableEscapeKeyDown
+              onClose={() => {}}
+              PaperProps={{
+                style: {
+                  borderRadius: 15,
+                  width: 350,
+                  height: 250,
+                },
+              }}
+              open={!playerName}
+            >
+              <form
+                onSubmit={updateName}
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  height: '100%',
+                  minHeight: '250px',
+                  padding: '30px',
+                  gap: '25px',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <TextField
+                  inputRef={nameInputRef}
+                  fullWidth
+                  autoFocus
+                  disabled={nameLoading}
+                  error={!!nameError}
+                  label="Player Name"
+                  placeholder="Enter your name"
+                  helperText={nameError}
+                />
+                <Button fullWidth disabled={nameLoading} variant="contained">
+                  Join Game
+                </Button>
+              </form>
+            </Dialog>
+          </Box>
+        </>
+      ) : validGame ? (
+        gameExists ? (
+          !gameData.players && <Typography variant="h5">Joining Game...</Typography>
+        ) : (
+          <Typography variant="h5">Finding Game...</Typography>
+        )
+      ) : (
+        <Typography variant="h5">
+          Can't find game :(. Try refreshing or making a new game
+        </Typography>
+      )}
+    </>
   )
 }
 

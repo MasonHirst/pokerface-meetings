@@ -2,17 +2,20 @@ const { WebSocketServer, WebSocket } = require('ws')
 const { v4: uuidv4, validate: validateUUID } = require('uuid')
 
 let gameRooms = {}
+console.log('---------- GAMEROOMS INITIALIZED ----------------')
 let clientsList = {}
 
-function broadcastToRoom(gameRoomId, userId, event_type) {
-  console.log('gamesRooms status: ', gameRooms)
+function broadcastToRoom(gameRoomId, userId, event_type, message) {
+  // arguments: target game room, user to exclude, event type, message
+  console.log('gameRooms status: ', gameRooms)
   const gameRoom = gameRooms[gameRoomId]
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
   gameRooms[gameRoomId].lastAction = Date.now()
 
   // Loop through all clients in the game room and send the message
   Object.values(gameRoom.players).forEach((playerObj) => {
-    if (playerObj.userToken === userId) return console.log('not sending to self')
+    if (playerObj.userToken === userId)
+      return console.log('not sending to self')
 
     const client = clientsList[playerObj.userToken]
     if (client && client.readyState === WebSocket.OPEN) {
@@ -33,7 +36,7 @@ function removeUnusedGameRooms() {
         gameRooms[gameId].lastAction &&
         isMoreThanTwoHoursAgo(gameRooms[gameId].lastAction)
       ) {
-        console.log('deleting game room: ', gameId)
+        console.log('------------------------deleting game room: ', gameId)
         return false
       } else return true
     }
@@ -61,6 +64,7 @@ async function startSocketServer(app, port) {
   wss.on('connection', function connection(ws, req) {
     try {
       console.log('A CLIENT CONNECTED')
+      console.log('GAME ROOMS AT CLIENT CONNECTION: ', gameRooms)
       ws.on('error', console.error)
       ws.on('message', async function message(data, isBinary) {
         const { event, body } = JSON.parse(data)
@@ -72,21 +76,27 @@ async function startSocketServer(app, port) {
           ws.currentGameId = gameId
           clientsList[localUserToken] = ws
           const joiningObj = {
-              currentGameId: gameId,
-              userToken: localUserToken,
-              currentChoice: null,
-              playerName: playerName,
-            }
-          if (!gameRooms[gameId]) return console.log('game room not found, aborting join')
+            currentGameId: gameId,
+            userToken: localUserToken,
+            currentChoice: null,
+            playerName: playerName,
+          }
+          console.log('GAME ROOMS WHEN PLAYER IS TRYING TO JOIN', gameRooms)
+          // console.log('trying to join game room: ', gameId, gameRooms[gameId])
+          if (!gameRooms[gameId]) {
+            const body = JSON.stringify({ event_type: 'gameNotFound' })
+            ws.send(body)
+            return console.log('game room not found, aborting join')
+          }
           gameRooms[gameId].players[localUserToken] = joiningObj
-          console.log('game room after join: ', gameRooms[gameId])
+          // console.log('game room after join: ', gameRooms[gameId])
           broadcastToRoom(gameId, null, 'playerJoinedGame')
         }
       })
 
       ws.on('close', function () {
         // remove user from gameroom
-        console.log(`client ${ws.userToken} disconnecting`)
+        console.log(`CLIENT ${ws.userToken} DISCONNECTING`)
         const { userToken, currentGameId } = ws
         if (gameRooms[currentGameId]?.players[userToken]) {
           delete gameRooms[currentGameId].players[userToken]
@@ -109,6 +119,8 @@ module.exports = {
   getUpdatedGame: async (req, res) => {
     const { game_id } = req.params
     try {
+      console.log('game rooms at getUpdatedGame: ', gameRooms)
+      console.log('getUpdatedGame called with game_id: ', game_id)
       if (!gameRooms[game_id]) {
         return res.status(500).send('game room not found')
       }
@@ -133,6 +145,7 @@ module.exports = {
   },
 
   createNewGame: async (req, res) => {
+    console.log('------------CREATE NEW GAME CALLED --------------')
     const { gameName, deck, localUserToken } = req.body
     try {
       const gameId = uuidv4()
@@ -147,6 +160,7 @@ module.exports = {
         deck,
         players: {},
       }
+      console.log('GAMEROOMS AFTER GAME CREATION EVENT: ', gameRooms)
       res.send(gameRooms[gameId])
     } catch (err) {
       console.error(err)
@@ -155,6 +169,7 @@ module.exports = {
   },
 
   checkGameExists: async (req, res) => {
+    console.log('------------CHECK GAME EXISTS CALLED --------------')
     const { gameId } = req.body
     try {
       if (!gameRooms[gameId]) return res.send(false)
@@ -202,6 +217,7 @@ module.exports = {
   },
 
   leaveGame: async (req, res) => {
+    console.log('---- LEAVING GAME FUNCTION CALLED -------')
     const { localUserToken, gameId } = req.body
     try {
       if (gameRooms[gameId] && gameRooms[gameId]?.players[localUserToken]) {

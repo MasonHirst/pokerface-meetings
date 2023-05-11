@@ -19,7 +19,6 @@ const GameRouter = () => {
         }
       />
       <Route path="/create" element={<CreateGamePage />} />
-      <Route path="/not_found" element={<h1>Game not found, please try again or make a new game</h1>} />
       <Route path="*" element={<Navigate to="/home" />} />
     </Routes>
   )
