@@ -57,7 +57,7 @@ export const GameProvider = ({ children }) => {
       )
 
       ws.addEventListener('open', function () {
-        console.log('established socket connection')
+        console.success('established socket connection')
         if (connectCounter > 0) console.success('Reconnected to socket server')
       })
 

@@ -55,6 +55,11 @@ async function startSocketServer(app, port) {
   })
   wss.on('listening', () => {
     console.log(`SERVER IS LISTENING ON PORT ${wss.address().port}`)
+    setInterval(() => {
+      wss.clients.forEach((client) => {
+        client.ping()
+      }, 3000)
+    })
   })
 
   wss.on('connection', function connection(ws, req) {
@@ -93,7 +98,6 @@ async function startSocketServer(app, port) {
       console.log('game room not found at socket join, aborting join')
     }
 
-
     try {
       ws.on('error', console.error)
 
@@ -101,25 +105,27 @@ async function startSocketServer(app, port) {
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
         const { type, body, gameId, token } = dataBody
-        
+
         if (type === 'updatedChoice') {
-          if (!gameRooms[gameId]) return console.log('game room not found (updatedChoice) function')
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updatedChoice) function')
           if (gameRooms[gameId].players[token].currentChoice === body.card) {
             gameRooms[gameId].players[token].currentChoice = null
             return broadcastToRoom(gameId, 'gameUpdated')
           }
           gameRooms[gameId].players[token].currentChoice = body.card
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
-        
-        else if (type === 'playerLeaveGame') {
-          if (!gameRooms[gameId]) return console.log('game room not found (playerLeaveGame) function')
+        } else if (type === 'playerLeaveGame') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
-          console.log('gameRooms[gameId].players after leave: ', gameRooms[gameId].players)
-        }
-
-        else if (type === 'updateGameState') {
-          if (!gameRooms[gameId]) return console.log('game room not found (updateGameState) function')
+          console.log(
+            'gameRooms[gameId].players after leave: ',
+            gameRooms[gameId].players
+          )
+        } else if (type === 'updateGameState') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updateGameState) function')
           if (body.gameState === 'voting') {
             Object.values(gameRooms[gameId].players).forEach((player) => {
               player.currentChoice = null
@@ -134,15 +140,13 @@ async function startSocketServer(app, port) {
           }
           gameRooms[gameId].gameState = body.gameState
           broadcastToRoom(gameId, 'gameUpdated')
-        }
-
-        else if (type === 'playerLeaveGame') {
-          if (!gameRooms[gameId]) return console.log('game room not found (playerLeaveGame) function')
+        } else if (type === 'playerLeaveGame') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
           console.log('Removed player from game')
           broadcastToRoom(gameId, 'gameUpdated')
         }
-        
       })
       //! END MESSAGES HANLDERS
 

@@ -72,7 +72,6 @@ const CreateGamePage = () => {
     }
   )
 
-  console.log('mappedSelectedDeck', mappedSelectedDeck)
 
   // map through the default decks and return a Button for each one
   const defaultDecksButtons = defaultDecks.map((deck, index) => {
