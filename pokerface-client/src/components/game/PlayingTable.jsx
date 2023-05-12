@@ -6,7 +6,7 @@ import muiStyles from '../../style/muiStyles'
 const { Grid, Box, Card, Typography, Button } = muiStyles
 
 const PlayingTable = () => {
-  const { gameData, setGameData } = useContext(GameContext)
+  const { gameData, setGameData, sendMessage } = useContext(GameContext)
   const { game_id } = useParams()
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
@@ -20,37 +20,31 @@ const PlayingTable = () => {
     if (!gameData.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
-    
-    playersData.forEach((player) => {
-      if (player.currentChoice) {
-        choicesCount++
-      }
-    })
-    if (playersData.length === choicesCount && gameState === 'voting') {
-      tableMessage = 'Reveal Cards'
-      tableClass = 'glowing-table'
-      allVoted = true
-    } else if (
-      playersData.length > choicesCount &&
-      choicesCount > 0 &&
-      gameState === 'voting'
-    ) {
-      tableMessage = 'Reveal Cards'
-    } else if (gameState === 'reveal') {
-      tableMessage = 'Start new round'
-    }
   }, [gameData])
+  
+  playersData.forEach((player) => {
+    if (player.currentChoice) {
+      choicesCount++
+    }
+  })
+  if (playersData.length === choicesCount && gameState === 'voting') {
+    tableMessage = 'Reveal Cards'
+    tableClass = 'glowing-table'
+    allVoted = true
+  } else if (
+    playersData.length > choicesCount &&
+    choicesCount > 0 &&
+    gameState === 'voting'
+  ) {
+    tableMessage = 'Reveal Cards'
+  } else if (gameState === 'reveal') {
+    tableMessage = 'Start new round'
+  }
+  // console.log('numbers: ', playersData.length, choicesCount)
 
 
   function updateGameState() {
-    axios.put('game/update_state', {
-      gameId: game_id,
-      gameState: gameState === 'voting' ? 'reveal' : 'voting',
-    })
-    .then(({data}) => {
-      setGameData(data)
-    })
-    .catch(console.error)
+    sendMessage('updateGameState', {gameState: gameState === 'voting' ? 'reveal' : 'voting'})
   }
 
   return (

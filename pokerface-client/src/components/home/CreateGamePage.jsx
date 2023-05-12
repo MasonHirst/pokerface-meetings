@@ -16,6 +16,7 @@ const CreateGamePage = () => {
     e.preventDefault()
     if (!gameName) return setError('Please enter a game name')
     setAppIsLoading(true)
+
     axios.post('game/create', { gameName, deck: cardsSelectRef.current.value })
       .then(({data}) => {
         console.log('create game data', data)

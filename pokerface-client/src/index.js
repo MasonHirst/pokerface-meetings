@@ -13,10 +13,7 @@ if (!localUserToken) {
 
 const serverUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : document.location.origin
 axios.defaults.baseURL = serverUrl
-// axios.defaults.baseURL = 'https://pokerface-meet.fly.dev/'
-// axios.defaults.baseURL = 'https://pokerface-meet.fly.dev:8080/'
-// axios.defaults.headers.common['Authorization'] =
-//   localStorage.getItem('jwtAccessToken')
+
 axios.interceptors.request.use(function (config) {
   config.headers.Authorization = localStorage.getItem('localUserToken')
   // Do something before request is sent
