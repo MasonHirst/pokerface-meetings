@@ -62,13 +62,13 @@ export const GameProvider = ({ children }) => {
       })
 
       ws.addEventListener('error', function (error) {
-        console.error('WebSocket Error ' + error)
+        console.error('WebSocket Error: ', error)
       })
 
       ws.addEventListener('message', function (event) {
         if (!event?.data) return
         let messageData = JSON.parse(event.data)
-        
+
         if (messageData.event_type === 'playerJoinedGame') {
           setGameData(messageData.game)
         } 

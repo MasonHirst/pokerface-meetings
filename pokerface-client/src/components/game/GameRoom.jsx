@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import GameHeader from './GameHeader'
-import { useNavigate } from 'react-router-dom'
 import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
@@ -8,7 +7,6 @@ import muiStyles from '../../style/muiStyles'
 const { Box, Dialog, TextField, Button, Typography } = muiStyles
 
 const GameRoom = () => {
-  const navigate = useNavigate()
   const {
     playerName,
     setPlayerName,

@@ -64,8 +64,14 @@ import Dialog from '@mui/material/Dialog';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import ArrowCircleDownSharpIcon from '@mui/icons-material/ArrowCircleDownSharp';
 import Drawer from '@mui/material/Drawer';
+import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
+import StyleIcon from '@mui/icons-material/Style';
+import TvIcon from '@mui/icons-material/Tv';
 
 let muiStyles = {
+  TvIcon,
+  StyleIcon,
+  EmojiEmotionsOutlinedIcon,
   Drawer,
   SentimentSatisfiedAltIcon,
   ArrowCircleDownSharpIcon,

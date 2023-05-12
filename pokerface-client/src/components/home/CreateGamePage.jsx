@@ -2,23 +2,125 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
-const { Box, TextField, Button } = muiStyles
+const {
+  Box,
+  TextField,
+  Button,
+  Dialog,
+  Typography,
+  IconButton,
+  EmojiEmotionsOutlinedIcon,
+  StyleIcon,
+  TvIcon,
+} = muiStyles
 
 const CreateGamePage = () => {
-  const cardsSelectRef = useRef()
+  const [selectedDeck, setSelectedDeck] = useState(
+    '1,2,3,5,8,13,21,34,55,89,?,☕'
+  )
   const navigate = useNavigate()
+  const [showDeckDialog, setShowDeckDialog] = useState(false)
   const [gameName, setGameName] = useState('')
+  const [customDeck, setCustomDeck] = useState('')
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showCustomDeckForm, setShowCustomDeckForm] = useState(false)
+  const defaultDecks = [
+    '1,2,3,5,8,13,21,34,55,89,?,☕',
+    '1,2,3,4,5,6,7,8,9,10',
+    '🟢,🟡,🔴',
+    '👍,👎,😐',
+  ]
   const [error, setError] = useState('')
   const [appIsLoading, setAppIsLoading] = useState(false)
+
+  function setDeckInStorage() {
+    const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
+    if (savedDecks?.length) {
+      localStorage.setItem(
+        'savedDecks',
+        JSON.stringify([...savedDecks, customDeck])
+      )
+    } else {
+      localStorage.setItem('savedDecks', JSON.stringify([customDeck]))
+    }
+  }
+
+  const mappedSelectedDeck = [...new Set(selectedDeck.split(','))].map(
+    (card, index) => {
+      return (
+        <Box
+          key={index}
+          sx={{
+            height: 84,
+            width: 50,
+            border: '2px solid #902bf5',
+            transition: '0.2s',
+            marginTop: '0',
+            display: 'flex',
+            justifyContent: 'center',
+            backgroundColor: 'transparent',
+            color: 'black',
+            alignItems: 'center',
+            borderRadius: '10px',
+          }}
+        >
+          <Typography variant="h6" sx={{ fontSize: 18 }}>
+            {card}
+          </Typography>
+        </Box>
+      )
+    }
+  )
+
+  console.log('mappedSelectedDeck', mappedSelectedDeck)
+
+  // map through the default decks and return a Button for each one
+  const defaultDecksButtons = defaultDecks.map((deck, index) => {
+    return (
+      <Button
+        key={index}
+        onClick={() => {
+          setSelectedDeck(deck)
+          setShowDeckDialog(false)
+        }}
+      >
+        <Typography
+          sx={{ textTransform: 'none', color: 'black', fontSize: '20px' }}
+        >
+          {deck}
+        </Typography>
+      </Button>
+    )
+  })
+
+  // check if there is an array of saved decks in local storage, then map through them and return a Button for each one
+  const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
+  const savedDecksButtons = savedDecks?.map((deck, index) => {
+    return (
+      <Button
+        key={index}
+        onClick={() => {
+          setSelectedDeck(deck)
+          setShowDeckDialog(false)
+        }}
+      >
+        <Typography
+          sx={{ textTransform: 'none', fontSize: '20px', color: 'black' }}
+        >
+          {deck}
+        </Typography>
+      </Button>
+    )
+  })
 
   function handleHostGame(e) {
     setError('')
     e.preventDefault()
     if (!gameName) return setError('Please enter a game name')
     setAppIsLoading(true)
-
-    axios.post('game/create', { gameName, deck: cardsSelectRef.current.value })
-      .then(({data}) => {
+    axios
+      .post('game/create', { gameName, deck: selectedDeck })
+      .then(({ data }) => {
         console.log('create game data', data)
         if (data.gameRoomId) {
           navigate(`/game/${data.gameRoomId}`)
@@ -28,6 +130,36 @@ const CreateGamePage = () => {
       })
       .catch(console.error)
       .finally(() => setAppIsLoading(false))
+  }
+
+  let mappedCustomDeck
+  if (customDeck.includes(',')) {
+    mappedCustomDeck = [...new Set(customDeck.split(','))].map(
+      (card, index) => {
+        return (
+          <Box
+            key={index}
+            sx={{
+              height: 84,
+              width: 50,
+              border: '2px solid #902bf5',
+              transition: '0.2s',
+              marginTop: '0',
+              display: 'flex',
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+              color: 'black',
+              alignItems: 'center',
+              borderRadius: '10px',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontSize: 18 }}>
+              {card}
+            </Typography>
+          </Box>
+        )
+      }
+    )
   }
 
   return (
@@ -61,16 +193,136 @@ const CreateGamePage = () => {
           error={!!error}
           value={gameName}
           label="Game Name"
-          placeholder='Enter a game name'
+          placeholder="Enter a game name"
           helperText={error}
         />
-        <select defaultValue='1,2,3,5,8,13,21,34,55,89,?,☕' ref={cardsSelectRef}>
-          <option value='1,2,3,5,8,13,21,34,55,89,?,☕'>Fibonacci (1, 2, 3, 5, 8...)</option>
-          <option value='1,2,3,4,5,6,7,8,9,10'>1 - 10 (1, 2, 3, 4, 5...)</option>
-          <option value='🟢,🟡,🔴'>Colors (green, yellow, red)</option>
-        </select>
-        <Button variant='contained' disabled={appIsLoading} fullWidth onClick={handleHostGame}>Create Game</Button>
+
+        <Box sx={{display: 'flex', gap: '10px', overflowX: 'auto'}}>{mappedSelectedDeck}</Box>
+
+        <Button
+          onClick={() => setShowDeckDialog(!showDeckDialog)}
+          color="secondary"
+          variant="contained"
+          sx={{ textTransform: 'none', fontSize: '17px' }}
+          startIcon={<StyleIcon />}
+        >
+          Change Deck
+        </Button>
+
+        <Button
+          variant="contained"
+          disabled={appIsLoading}
+          fullWidth
+          onClick={handleHostGame}
+          startIcon={<TvIcon />}
+        >
+          Create Game Room
+        </Button>
       </form>
+
+      {showDeckDialog && (
+        <Dialog
+          onClose={() => setShowDeckDialog(false)}
+          PaperProps={{
+            style: {
+              borderRadius: 12,
+              padding: '20px 30px',
+              width: 'min(calc(100vw - 20px), 500px)',
+              minHeight: 300,
+              display: 'flex',
+            },
+          }}
+          open={showDeckDialog}
+        >
+          <Typography variant="h5">Choose a deck</Typography>
+          {defaultDecksButtons}
+          {savedDecks?.length && (
+            <>
+              <Typography>Saved custom decks</Typography>
+              {savedDecksButtons}
+            </>
+          )}
+
+          {!showCustomDeckForm && (
+            <Button
+              onClick={() => setShowCustomDeckForm(!showCustomDeckForm)}
+              endIcon={<StyleIcon />}
+              variant="contained"
+              sx={{ textTransform: 'none', fontSize: '17px' }}
+            >
+              Create custom deck
+            </Button>
+          )}
+
+          {showCustomDeckForm && (
+            <form
+              onClick={() => {
+                setShowCustomDeckForm(false)
+                setSelectedDeck(customDeck)
+                setDeckInStorage()
+              }}
+              style={{
+                display: 'flex',
+                padding: '5px',
+                gap: '15px',
+                flexDirection: 'column',
+                backgroundColor: 'rgba(181, 181, 181, 0.1)',
+                borderRadius: '12px',
+              }}
+            >
+              <Typography variant="subtitle1">
+                List values separated by commas
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  spellCheck={false}
+                  onChange={(e) => setCustomDeck(e.target.value)}
+                  fullWidth
+                  autoFocus
+                  label="Custom Deck"
+                  placeholder="Enter a comma-separated list of values"
+                />
+                <IconButton
+                  sx={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                >
+                  <EmojiEmotionsOutlinedIcon />
+                </IconButton>
+              </Box>
+              <Box
+                sx={{
+                  minHeight: '50px',
+                  display: 'flex',
+                  overflowX: 'scroll',
+                  gap: '10px',
+                }}
+              >
+                {mappedCustomDeck}
+              </Box>
+              <Box sx={{ display: 'flex', gap: '15px' }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  color="error"
+                  onClick={() => setShowCustomDeckForm(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button variant="contained" type="submit" fullWidth>
+                  Save
+                </Button>
+              </Box>
+            </form>
+          )}
+        </Dialog>
+      )}
     </Box>
   )
 }

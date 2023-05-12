@@ -47,7 +47,9 @@ const GameHeader = () => {
         }}
       >
         <Button variant="contained">Game Settings</Button>
-        <Typography variant='h5' sx={{color: 'white',}}>{roomName ? roomName : 'No game name bro'}</Typography>
+        <Typography variant="h5" sx={{ color: 'white' }}>
+          {roomName ? roomName : 'No game name bro'}
+        </Typography>
         <Button
           onClick={() => setShowInviteDialog(!showInviteDialog)}
           variant="contained"
@@ -70,11 +72,29 @@ const GameHeader = () => {
           }}
           open={showInviteDialog}
         >
-          <TextField inputRef={inviteLinkInputRef} fullWidth value={window.location.href} />
-          <Button variant="contained" fullWidth onClick={setCopied}>
+          <TextField
+            inputRef={inviteLinkInputRef}
+            fullWidth
+            value={window.location.href}
+          />
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={(e) => {
+              setCopied(e)
+              setTimeout(() => {
+                setShowInviteDialog(!showInviteDialog)
+              }, 700)
+            }}
+          >
             {isCopied ? 'Copied!' : 'Copy invite link'}
           </Button>
-          <Button sx={{marginBottom: '-10px'}} variant="" fullWidth onClick={() => setShowInviteDialog(false)}>
+          <Button
+            sx={{ marginBottom: '-10px' }}
+            variant=""
+            fullWidth
+            onClick={() => setShowInviteDialog(false)}
+          >
             Close
           </Button>
         </Dialog>
