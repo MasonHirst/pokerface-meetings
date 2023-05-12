@@ -44,6 +44,7 @@ const GameRoom = () => {
     axios
       .post('game/check', { gameId: game_id })
       .then(({ data }) => {
+        console.log('game exists?', data)
         setGameExists(data)
         if (!data) {
           setValidGame(false)
@@ -52,7 +53,7 @@ const GameRoom = () => {
       .catch(console.error)
 
     return () => {
-      console.log('leaving game')
+      setGameExists(false)
       axios
         .put('game/leave', { gameId: game_id })
         .then(({ data }) => {

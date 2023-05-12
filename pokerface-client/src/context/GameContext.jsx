@@ -41,7 +41,6 @@ export const GameProvider = ({ children }) => {
 
   useEffect(() => {
     if (!gameExists) return
-    const websocketRef = useRef(null)
     function connectClient() {
       let serverUrl
       let scheme = 'ws'
@@ -89,7 +88,6 @@ export const GameProvider = ({ children }) => {
       })
 
       setSocket(ws)
-      websocketRef.current = ws
     }
     connectClient()
   }, [localUserToken, gameExists])
