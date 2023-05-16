@@ -1,18 +1,16 @@
 import React, { useContext, useState, useEffect } from 'react'
 import muiStyles from '../../style/muiStyles'
-import axios from 'axios'
 import DeckCard from './DeckCard'
 import { useParams } from 'react-router-dom'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
 
 const GameFooter = () => {
-  const { game_id } = useParams()
   const [latestVoting, setLatestVoting] = useState([])
   const [deckCards, setDeckCards] = useState([])
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
-  const { gameData, setGameData } = useContext(GameContext)
+  const { gameData, setGameData, sendMessage } = useContext(GameContext)
   
 
   function isNativeEmoji(str) {
@@ -20,12 +18,7 @@ const GameFooter = () => {
   }
 
   function submitChoice(card) {
-    axios
-      .put('game/submit_choice', { choice: card, gameId: game_id })
-      .then(({ data }) => {
-        setGameData(data)
-      })
-      .catch(console.error)
+    sendMessage('updatedChoice', {card})
   }
 
   function averageNumericValues(arr) {
@@ -71,6 +64,7 @@ const GameFooter = () => {
       } else cardCounts[vote] = obj
     })
   }
+
   const revealCardCount = Object.values(cardCounts).map((obj, index) => {
     return (
       <Box
@@ -111,6 +105,7 @@ const GameFooter = () => {
     )
   })
 
+
   return (
     <Box
       className="game-footer-container"
@@ -148,6 +143,7 @@ const GameFooter = () => {
             {Object.values(latestVoting).length &&
               averageNumericValues(Object.values(latestVoting)) && (
                 <Typography variant="h5">
+                  Average:{' '}
                   {averageNumericValues(Object.values(latestVoting))}
                 </Typography>
               )}
