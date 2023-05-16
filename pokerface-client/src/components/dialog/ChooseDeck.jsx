@@ -1,29 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
-import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
-const {
-  Box,
-  TextField,
-  Button,
-  Dialog,
-  Typography,
-  IconButton,
-  EmojiEmotionsOutlinedIcon,
-  StyleIcon,
-  TvIcon,
-} = muiStyles
+const { Box, Typography, Button, Dialog, TextField, IconButton, EmojiEmotionsOutlinedIcon, StyleIcon } = muiStyles
 
-const CreateGamePage = () => {
-  const [selectedDeck, setSelectedDeck] = useState(
+const ChooseDeck = ({showDeckDialog, setShowDeckDialog, setDeckProp}) => {
+  const [customDeck, setCustomDeck] = useState(
     '1,2,3,5,8,13,21,34,55,89,?,☕'
   )
-  const navigate = useNavigate()
-  const [showDeckDialog, setShowDeckDialog] = useState(false)
-  const [gameName, setGameName] = useState('')
-  const [customDeck, setCustomDeck] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showCustomDeckForm, setShowCustomDeckForm] = useState(false)
   const defaultDecks = [
@@ -32,8 +16,6 @@ const CreateGamePage = () => {
     '🟢,🟡,🔴',
     '👍,👎,😐',
   ]
-  const [error, setError] = useState('')
-  const [appIsLoading, setAppIsLoading] = useState(false)
 
   function setDeckInStorage() {
     if (!customDeck) return
@@ -48,40 +30,13 @@ const CreateGamePage = () => {
     }
   }
 
-  const mappedSelectedDeck = [...new Set(selectedDeck.split(','))].map(
-    (card, index) => {
-      return (
-        <Box
-          key={index}
-          sx={{
-            height: 84,
-            width: 50,
-            border: '2px solid #902bf5',
-            transition: '0.2s',
-            marginTop: '0',
-            display: 'flex',
-            justifyContent: 'center',
-            backgroundColor: 'transparent',
-            color: 'black',
-            alignItems: 'center',
-            borderRadius: '10px',
-          }}
-        >
-          <Typography variant="h6" sx={{ fontSize: 18 }}>
-            {card}
-          </Typography>
-        </Box>
-      )
-    }
-  )
-
   // map through the default decks and return a Button for each one
   const defaultDecksButtons = defaultDecks.map((deck, index) => {
     return (
       <Button
         key={index}
         onClick={() => {
-          setSelectedDeck(deck)
+          setDeckProp(deck)
           setShowDeckDialog(false)
         }}
       >
@@ -101,7 +56,7 @@ const CreateGamePage = () => {
       <Button
         key={index}
         onClick={() => {
-          setSelectedDeck(deck)
+          setDeckProp(deck)
           setShowDeckDialog(false)
         }}
       >
@@ -113,25 +68,6 @@ const CreateGamePage = () => {
       </Button>
     )
   })
-
-  function handleHostGame(e) {
-    setError('')
-    e.preventDefault()
-    if (!gameName) return setError('Please enter a game name')
-    setAppIsLoading(true)
-    axios
-      .post('game/create', { gameName, deck: selectedDeck })
-      .then(({ data }) => {
-        // console.log('create game data', data)
-        if (data.gameRoomId) {
-          navigate(`/game/${data.gameRoomId}`)
-        } else {
-          setError('Error creating game')
-        }
-      })
-      .catch(console.error)
-      .finally(() => setAppIsLoading(false))
-  }
 
   let mappedCustomDeck
   if (customDeck.includes(',')) {
@@ -162,69 +98,12 @@ const CreateGamePage = () => {
       }
     )
   }
-
+  
+  
+  
+  
   return (
-    <Box
-      sx={{
-        width: '100vw',
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '0 15px',
-      }}
-    >
-      <form
-        onSubmit={handleHostGame}
-        style={{
-          width: 'min(100%, 700px)',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '30px',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <TextField
-          onChange={(e) => setGameName(e.target.value)}
-          fullWidth
-          autoFocus
-          disabled={appIsLoading}
-          error={!!error}
-          value={gameName}
-          label="Game Name"
-          placeholder="Enter a game name"
-          helperText={error}
-        />
-
-        <Box sx={{ display: 'flex', gap: '10px', overflowX: 'auto' }}>
-          {mappedSelectedDeck}
-        </Box>
-
-        <Button
-          onClick={() => setShowDeckDialog(!showDeckDialog)}
-          color="secondary"
-          variant="contained"
-          sx={{ textTransform: 'none', fontSize: '17px' }}
-          startIcon={<StyleIcon />}
-        >
-          Change Deck
-        </Button>
-
-        <Button
-          variant="contained"
-          disabled={appIsLoading}
-          fullWidth
-          onClick={handleHostGame}
-          startIcon={<TvIcon />}
-        >
-          Create Game Room
-        </Button>
-      </form>
-
-      {showDeckDialog && (
-        <Dialog
+    <Dialog
           onClose={() => setShowDeckDialog(false)}
           PaperProps={{
             style: {
@@ -239,7 +118,7 @@ const CreateGamePage = () => {
         >
           <Typography variant="h5">Choose a deck</Typography>
           {defaultDecksButtons}
-          {savedDecks?.length && (
+          {savedDecks && savedDecks.length > 0 && (
             <>
               <Typography>Saved custom decks</Typography>
               {savedDecksButtons}
@@ -339,6 +218,7 @@ const CreateGamePage = () => {
                   type="submit"
                   fullWidth
                   onClick={() => {
+                    if (!customDeck.length > 1) alert('Cannot save empty deck')
                     setShowCustomDeckForm(false)
                     setDeckInStorage()
                   }}
@@ -349,9 +229,7 @@ const CreateGamePage = () => {
             </Box>
           )}
         </Dialog>
-      )}
-    </Box>
   )
 }
 
-export default CreateGamePage
+export default ChooseDeck

@@ -40,7 +40,6 @@ const PlayingTable = () => {
   } else if (gameState === 'reveal') {
     tableMessage = 'Start new round'
   }
-  // console.log('numbers: ', playersData.length, choicesCount)
 
 
   function updateGameState() {
@@ -72,7 +71,7 @@ const PlayingTable = () => {
           {tableMessage}
         </Button>
       ) : (
-        <Typography variant="subtitle1" sx={{ fontSize: 18 }} color="white">
+        <Typography variant="subtitle1" sx={{ fontSize: 18, color: "#ffffff", }}>
           {tableMessage}
         </Typography>
       )}

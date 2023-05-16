@@ -5,6 +5,7 @@ let gameRooms = {}
 let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type) {
+  console.log('game rooms status: ', gameRooms)
   // arguments: target game room, event type, message
   const gameRoom = gameRooms[gameRoomId]
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
@@ -58,7 +59,7 @@ async function startSocketServer(app, port) {
     setInterval(() => {
       wss.clients.forEach((client) => {
         client.ping()
-      }, 3000)
+      }, 5000)
     })
   })
 
@@ -95,15 +96,18 @@ async function startSocketServer(app, port) {
       ws.send(body)
     } else {
       ws.send(JSON.stringify({ event_type: 'gameNotFound' }))
+      console.log('game id trying to join: ', gameId)
+      console.log('game rooms at join attempt: ', gameRooms)
       console.log('game room not found at socket join, aborting join')
     }
 
     try {
       ws.on('error', console.error)
 
-      //! MESSAGES HANLDERS
+      //! MESSAGES HANDLERS
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
+        console.log('new message recieved: ', dataBody)
         const { type, body, gameId, token } = dataBody
 
         if (type === 'updatedChoice') {
@@ -145,6 +149,20 @@ async function startSocketServer(app, port) {
             return console.log('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
           console.log('Removed player from game')
+          broadcastToRoom(gameId, 'gameUpdated')
+        }
+
+        else if (type === 'updatedDeck') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updatedDeck) function')
+          gameRooms[gameId].deck = body.deck
+          broadcastToRoom(gameId, 'gameUpdated')
+        }
+
+        else if (type === 'updatedGameName') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updatedGameName) function')
+          gameRooms[gameId].gameRoomName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
         }
       })
@@ -214,6 +232,8 @@ module.exports = {
         players: {},
       }
       res.send(gameRooms[gameId])
+      console.log('game created: ', gameRooms[gameId])
+      console.log('gameId at creation: ', gameId)
     } catch (err) {
       console.error(err)
       res.status(500).send(err)

@@ -33,13 +33,14 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
       sx={{
         height: 84,
         width: 50,
+        minWidth: 50,
         border: '2px solid #902bf5',
         transition: '0.2s',
         marginTop: selected ? '-35px' : '0',
         display: 'flex',
         justifyContent: 'center',
         backgroundColor: selected ? '#902bf5' : 'transparent',
-        color: selected && 'white',
+        color: selected && '#ffffff',
         alignItems: 'center',
         borderRadius: '10px',
       }}
