@@ -11,7 +11,7 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
   const { gameData } = useContext(GameContext)
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str)
+    return /\p{Emoji}/u.test(str) && isNaN(Number(card))
   }
 
   useEffect(() => {
@@ -36,7 +36,8 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
         minWidth: 50,
         border: '2px solid #902bf5',
         transition: '0.2s',
-        marginTop: selected ? '-35px' : '0',
+        position: 'relative',
+        bottom: selected ? '20px' : 0,
         display: 'flex',
         justifyContent: 'center',
         backgroundColor: selected ? '#902bf5' : 'transparent',
@@ -45,7 +46,7 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
         borderRadius: '10px',
       }}
     >
-      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) && isNaN(Number(card)) ? 33 : 23,  }}>
+      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) ? 33 : 23,  }}>
         {card}
       </Typography>
     </Box>

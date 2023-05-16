@@ -14,6 +14,7 @@ const {
   EmojiEmotionsOutlinedIcon,
   StyleIcon,
   TvIcon,
+  MenuItem,
 } = muiStyles
 
 const CreateGamePage = () => {
@@ -34,6 +35,10 @@ const CreateGamePage = () => {
   ]
   const [error, setError] = useState('')
   const [appIsLoading, setAppIsLoading] = useState(false)
+
+  function isNativeEmoji(str) {
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+  }
 
   function setDeckInStorage() {
     if (!customDeck) return
@@ -67,7 +72,10 @@ const CreateGamePage = () => {
             borderRadius: '10px',
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: 18 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontSize: isNativeEmoji(card) ? 22 : 18 }}
+          >
             {card}
           </Typography>
         </Box>
@@ -78,7 +86,7 @@ const CreateGamePage = () => {
   // map through the default decks and return a Button for each one
   const defaultDecksButtons = defaultDecks.map((deck, index) => {
     return (
-      <Button
+      <MenuItem
         key={index}
         onClick={() => {
           setSelectedDeck(deck)
@@ -90,7 +98,7 @@ const CreateGamePage = () => {
         >
           {deck}
         </Typography>
-      </Button>
+      </MenuItem>
     )
   })
 
@@ -98,7 +106,7 @@ const CreateGamePage = () => {
   const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
   const savedDecksButtons = savedDecks?.map((deck, index) => {
     return (
-      <Button
+      <MenuItem
         key={index}
         onClick={() => {
           setSelectedDeck(deck)
@@ -110,7 +118,7 @@ const CreateGamePage = () => {
         >
           {deck}
         </Typography>
-      </Button>
+      </MenuItem>
     )
   })
 
@@ -237,12 +245,22 @@ const CreateGamePage = () => {
           }}
           open={showDeckDialog}
         >
-          <Typography variant="h5">Choose a deck</Typography>
+          <Typography variant="h5" align="center">
+            Default decks
+          </Typography>
           {defaultDecksButtons}
           {savedDecks?.length && (
             <>
-              <Typography>Saved custom decks</Typography>
-              {savedDecksButtons}
+              <Typography variant="h5" align="center">
+                Saved custom decks
+              </Typography>
+              <Box
+                sx={{
+                  padding: '20px 0',
+                }}
+              >
+                {savedDecksButtons}
+              </Box>
             </>
           )}
 
@@ -294,23 +312,23 @@ const CreateGamePage = () => {
                   <EmojiEmotionsOutlinedIcon />
                 </IconButton>
               </Box>
-                {showEmojiPicker && (
-                  <Picker
-                    data={data}
-                    autoFocus
-                    maxFrequentRows={1}
-                    onEmojiSelect={(event) => {
-                      if (customDeck[customDeck.length - 1] === ',') {
-                        setCustomDeck(customDeck + event.native)
-                      } else if (customDeck.length) {
-                        setCustomDeck(customDeck + ',' + event.native)
-                      } else {
-                        setCustomDeck(customDeck + event.native)
-                      }
-                    }}
-                    theme='light'
-                  />
-                )}
+              {showEmojiPicker && (
+                <Picker
+                  data={data}
+                  autoFocus
+                  maxFrequentRows={1}
+                  onEmojiSelect={(event) => {
+                    if (customDeck[customDeck.length - 1] === ',') {
+                      setCustomDeck(customDeck + event.native)
+                    } else if (customDeck.length) {
+                      setCustomDeck(customDeck + ',' + event.native)
+                    } else {
+                      setCustomDeck(customDeck + event.native)
+                    }
+                  }}
+                  theme="light"
+                />
+              )}
               <Box
                 sx={{
                   minHeight: '50px',

@@ -23,7 +23,7 @@ export const GameProvider = ({ children }) => {
   function sendMessage(type, body) {
     const bodyStr = JSON.stringify({ type, body, gameId: game_id, token: localStorage.getItem('localUserToken') })
     // eslint-disable-next-line
-    socket.send(bodyStr)
+    socket?.send(bodyStr)
   }
 
   let connectCounter = 0

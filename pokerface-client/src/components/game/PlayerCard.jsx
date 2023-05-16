@@ -9,7 +9,7 @@ const PlayerCard = ({ player, gameState }) => {
   // const { isSpectator } = player
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str)
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
   }
 
   return (
@@ -39,7 +39,7 @@ const PlayerCard = ({ player, gameState }) => {
           backgroundColor: '#E8E9EA',
         }}
       >
-        <Typography sx={{ fontSize: isNativeEmoji(choice) && isNaN(Number(choice)) ? 30 : 23 }}>
+        <Typography sx={{ fontSize: isNativeEmoji(choice) ? 30 : 23 }}>
           {gameState === 'reveal' && choice}
         </Typography>
       </Card>

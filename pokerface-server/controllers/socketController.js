@@ -67,21 +67,40 @@ async function startSocketServer(app, port) {
     console.log('new client connected')
     // Extract token from query parameters
     let token = null
+    let playerName = null
+    let gameId = null
 
     // Check if the URL contains a query parameter named 'token'
     if (req.url.includes('?')) {
       const queryParameters = req.url.split('?')[1]
       const urlParams = new URLSearchParams(queryParameters)
       token = urlParams.get('token')
-      playerName = urlParams.get('player_name')
+      playerName = urlParams.get('player_name').trim()
       gameId = urlParams.get('game_id')
     }
+
+    // check if any players in the game room have the same name, and if they do, append a number to the end of the name
+    if (gameRooms[gameId]) {
+      const playerNames = Object.values(gameRooms[gameId].players).map(
+        (player) => player.playerName
+      )
+      if (playerNames.includes(playerName)) {
+        console.log('player already in game: ', playerNames)
+        let i = 1
+        while (playerNames.includes(`${playerName}(${i})`)) {
+          i++
+        }
+        playerName = `${playerName}(${i})`
+      }
+    }
+    
     // Attach the token to the WebSocket object
     ws.token = token
     ws.playerName = playerName
     ws.currentGameId = gameId
     clientsList[token] = ws
 
+    console.log('gameRooms at player join.......: ', gameRooms)
     if (gameRooms[gameId]) {
       gameRooms[gameId].players[token] = {
         currentGameId: gameId,
@@ -93,11 +112,10 @@ async function startSocketServer(app, port) {
         event_type: 'playerJoinedGame',
         game: gameRooms[gameId],
       })
+      broadcastToRoom(gameId, 'gameUpdated')
       ws.send(body)
     } else {
       ws.send(JSON.stringify({ event_type: 'gameNotFound' }))
-      console.log('game id trying to join: ', gameId)
-      console.log('game rooms at join attempt: ', gameRooms)
       console.log('game room not found at socket join, aborting join')
     }
 
@@ -170,15 +188,16 @@ async function startSocketServer(app, port) {
 
       ws.on('close', function () {
         // remove user from gameroom
-        console.log(`CLIENT ${ws.userToken} DISCONNECTING`)
-        const { userToken, currentGameId } = ws
-        if (gameRooms[currentGameId]?.players[userToken]) {
-          delete gameRooms[currentGameId].players[userToken]
+        const { token, playerName, currentGameId } = ws
+        console.log(`${playerName} DISCONNECTING`)
+        if (gameRooms[currentGameId]?.players[token]) {
+          console.log(`removing ${playerName} from game room`)
+          delete gameRooms[currentGameId].players[token]
         } else {
-          console.log(`client ${userToken} not found in game room`)
+          console.log(`client ${playerName} not found in game room`)
         }
-        broadcastToRoom(currentGameId, userToken, 'gameUpdated')
-        delete clientsList[userToken]
+        delete clientsList[token]
+        broadcastToRoom(currentGameId, 'gameUpdated')
       })
     } catch (err) {
       console.error(err)
@@ -190,18 +209,6 @@ module.exports = {
   broadcastToRoom,
   gameRooms,
   startSocketServer,
-  // getUpdatedGame: async (req, res) => {
-  //   const { game_id } = req.params
-  //   try {
-  //     if (!gameRooms[game_id]) {
-  //       return res.status(500).send('game room not found')
-  //     }
-  //     res.send(gameRooms[game_id])
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(500).send(err)
-  //   }
-  // },
 
   extractToken: async (req, res, next) => {
     try {
@@ -240,17 +247,6 @@ module.exports = {
     }
   },
 
-  // checkGameExists: async (req, res) => {
-  //   const { gameId } = req.body
-  //   try {
-  //     if (!gameRooms[gameId]) return res.send(false)
-  //     res.send(true)
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(500).send(err)
-  //   }
-  // },
-
   updateGameState: async (req, res) => {
     const { gameState, gameId, localUserToken } = req.body
     try {
@@ -274,47 +270,4 @@ module.exports = {
       res.status(500).send(err)
     }
   },
-
-  // setPlayerName: async (req, res) => {
-  //   const { localUserToken, name, gameId } = req.body
-  //   try {
-  //     gameRooms[gameId].players[localUserToken].playerName = name
-  //     broadcastToRoom(gameId, localUserToken, 'gameUpdated')
-  //     res.send(gameRooms[gameId])
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(500).send(err)
-  //   }
-  // },
-
-  // leaveGame: async (req, res) => {
-  //   const { localUserToken, gameId } = req.body
-  //   try {
-  //     if (gameRooms[gameId] && gameRooms[gameId]?.players[localUserToken]) {
-  //       delete gameRooms[gameId].players[localUserToken]
-  //     }
-  //     delete clientsList[localUserToken]
-  //     broadcastToRoom(gameId, localUserToken, 'gameUpdated')
-  //     res.send(`player removed from game ${gameId}`)
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(500).send(err)
-  //   }
-  // },
-
-  // updateCardChoice: async (req, res) => {
-  //   try {
-  //     const { localUserToken, choice, gameId } = req.body
-  //     if (gameRooms[gameId].players[localUserToken].currentChoice === choice) {
-  //       gameRooms[gameId].players[localUserToken].currentChoice = null
-  //     } else {
-  //       gameRooms[gameId].players[localUserToken].currentChoice = choice
-  //     }
-  //     broadcastToRoom(gameId, localUserToken, 'gameUpdated')
-  //     res.send(gameRooms[gameId])
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(500).send(err)
-  //   }
-  // },
 }

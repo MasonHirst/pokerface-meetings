@@ -73,8 +73,10 @@ import DialogTitle from '@mui/material/DialogTitle'
 import CheckIcon from '@mui/icons-material/Check'
 import LogoutIcon from '@mui/icons-material/Logout'
 import LinkIcon from '@mui/icons-material/Link'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 let muiStyles = {
+  InfoOutlinedIcon,
   LinkIcon,
   LogoutIcon,
   CheckIcon,

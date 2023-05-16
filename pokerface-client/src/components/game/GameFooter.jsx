@@ -13,7 +13,7 @@ const GameFooter = () => {
   const { gameData, setGameData, sendMessage } = useContext(GameContext)
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str)
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
   }
 
   function submitChoice(card) {
@@ -89,7 +89,7 @@ const GameFooter = () => {
           <Typography
             sx={{
               fontSize:
-                isNativeEmoji(obj.choice) && isNaN(Number(obj.choice))
+                isNativeEmoji(obj.choice)
                   ? 25
                   : 19,
             }}
@@ -109,7 +109,7 @@ const GameFooter = () => {
       className="game-footer-container"
       sx={{
         width: '100vw',
-        height: '170px',
+        height: '160px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -118,7 +118,6 @@ const GameFooter = () => {
       <Box
         className="game-footer"
         sx={{
-          border: '1px solid red',
           width: 'min(100%, 900px)',
           height: '100%',
           display: 'flex',
@@ -132,7 +131,18 @@ const GameFooter = () => {
       >
         {gameState === 'voting' ? (
           playersData.length ? (
-            <Box sx={{display: 'flex', gap: {xs: '10px', sm: '25px'}, overflowX: 'scroll', }}>{mappedDeckCards}</Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: { xs: '10px', sm: '25px' },
+                overflowX: 'scroll',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'flex-end',
+              }}
+            >
+              {mappedDeckCards}
+            </Box>
           ) : (
             <Typography variant="h6">No cards</Typography>
           )

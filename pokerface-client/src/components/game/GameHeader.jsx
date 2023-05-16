@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import useClipboard from 'react-use-clipboard'
 import { GameContext } from '../../context/GameContext'
 import ChooseDeck from '../dialog/ChooseDeck'
+import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 const {
   Typography,
@@ -27,6 +28,7 @@ const {
 
 const GameHeader = () => {
   const navigate = useNavigate()
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const { gameData, sendMessage } = useContext(GameContext)
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
@@ -164,7 +166,11 @@ const GameHeader = () => {
           size="large"
           onClick={() => setShowInviteDialog(!showInviteDialog)}
           variant="outlined"
-          sx={{ textTransform: 'none', fontSize: '18px', display: {xs: 'none', sm: 'block'} }}
+          sx={{
+            textTransform: 'none',
+            fontSize: '18px',
+            display: { xs: 'none', sm: 'block' },
+          }}
         >
           Invite players
         </Button>
@@ -178,8 +184,8 @@ const GameHeader = () => {
               justifyContent: 'center',
               gap: 20,
               width: 350,
-              padding: 35,
-              height: 250,
+              padding: isSmallScreen ? 15 : 35,
+              height: isSmallScreen ? 220 : 250,
             },
           }}
           open={showInviteDialog}
@@ -247,8 +253,10 @@ const GameHeader = () => {
         >
           {editingGameName ? (
             <TextField
+              autoFocus
               value={newName}
-              placeholder="New game name"
+              placeholder="Enter a game name"
+              label="New game name"
               onChange={(e) => setNewName(e.target.value)}
             />
           ) : (
@@ -266,7 +274,10 @@ const GameHeader = () => {
         </form>
 
         <Button
-          onClick={() => setShowDeckDialog(!showDeckDialog)}
+          onClick={() => {
+            setShowDeckDialog(!showDeckDialog)
+            setShowGameSettingsDialog(!showGameSettingsDialog)
+          }}
           color="secondary"
           variant="contained"
           sx={{ textTransform: 'none', fontSize: '17px' }}
@@ -274,6 +285,7 @@ const GameHeader = () => {
         >
           Change Deck
         </Button>
+      </Dialog>
         {showDeckDialog && (
           <ChooseDeck
             showDeckDialog={showDeckDialog}
@@ -281,7 +293,6 @@ const GameHeader = () => {
             setDeckProp={setUpdatedDeck}
           />
         )}
-      </Dialog>
 
       <Dialog
         onClose={() => setShowHistoryDialog(!showHistoryDialog)}
