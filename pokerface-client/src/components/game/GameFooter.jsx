@@ -11,14 +11,13 @@ const GameFooter = () => {
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
   const { gameData, setGameData, sendMessage } = useContext(GameContext)
-  
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str)
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
   }
 
   function submitChoice(card) {
-    sendMessage('updatedChoice', {card})
+    sendMessage('updatedChoice', { card })
   }
 
   function averageNumericValues(arr) {
@@ -90,7 +89,7 @@ const GameFooter = () => {
           <Typography
             sx={{
               fontSize:
-                isNativeEmoji(obj.choice) && isNaN(Number(obj.choice))
+                isNativeEmoji(obj.choice)
                   ? 25
                   : 19,
             }}
@@ -105,13 +104,12 @@ const GameFooter = () => {
     )
   })
 
-
   return (
     <Box
       className="game-footer-container"
       sx={{
         width: '100vw',
-        height: '170px',
+        height: '160px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -123,17 +121,28 @@ const GameFooter = () => {
           width: 'min(100%, 900px)',
           height: '100%',
           display: 'flex',
-          padding: '0, 10px',
+          padding: '0 5px',
           justifyContent: 'center',
           alignItems: 'center',
           gap: '25px',
           flexWrap: 'nowrap',
-          overflowX: 'auto',
+          overflowX: 'scroll',
         }}
       >
         {gameState === 'voting' ? (
           playersData.length ? (
-            mappedDeckCards
+            <Box
+              sx={{
+                display: 'flex',
+                gap: { xs: '10px', sm: '25px' },
+                overflowX: 'scroll',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'flex-end',
+              }}
+            >
+              {mappedDeckCards}
+            </Box>
           ) : (
             <Typography variant="h6">No cards</Typography>
           )
@@ -143,8 +152,7 @@ const GameFooter = () => {
             {Object.values(latestVoting).length &&
               averageNumericValues(Object.values(latestVoting)) && (
                 <Typography variant="h5">
-                  Average:{' '}
-                  {averageNumericValues(Object.values(latestVoting))}
+                  Average: {averageNumericValues(Object.values(latestVoting))}
                 </Typography>
               )}
           </>

@@ -43,6 +43,6 @@ table {
 	border-spacing: 0;
 }
 
-.kk    {
-  color: rgba(181, 181, 181, 0.2)
+::-webkit-scrollbar {
+  background-color: transparent;
 }

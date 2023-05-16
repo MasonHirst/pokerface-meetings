@@ -5,13 +5,29 @@ import App from './App'
 import { BrowserRouter } from 'react-router-dom'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+
+const theme = createTheme({
+  palette: {
+    white: {
+      main: '#ffffff',
+    },
+  },
+})
 
 const localUserToken = localStorage.getItem('localUserToken')
 if (!localUserToken) {
   localStorage.setItem('localUserToken', uuidv4())
 }
 
-const serverUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : document.location.origin
+if (!localStorage.getItem('savedDecks')) {
+  localStorage.setItem('savedDecks', JSON.stringify([]))
+}
+
+const serverUrl =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:8080/'
+    : document.location.origin
 axios.defaults.baseURL = serverUrl
 
 axios.interceptors.request.use(function (config) {
@@ -23,6 +39,8 @@ axios.interceptors.request.use(function (config) {
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <BrowserRouter>
-    <App />
+    <ThemeProvider theme={theme}>
+      <App />
+    </ThemeProvider>
   </BrowserRouter>
 )

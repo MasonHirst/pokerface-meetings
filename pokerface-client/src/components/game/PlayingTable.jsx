@@ -38,9 +38,8 @@ const PlayingTable = () => {
   ) {
     tableMessage = 'Reveal Cards'
   } else if (gameState === 'reveal') {
-    tableMessage = 'Start new round'
+    tableMessage = 'New round'
   }
-  // console.log('numbers: ', playersData.length, choicesCount)
 
 
   function updateGameState() {
@@ -52,8 +51,8 @@ const PlayingTable = () => {
       className={tableClass}
       sx={{
         backgroundColor: '#009FBD',
-        width: '300px',
-        height: '150px',
+        width: {xs: '200px', sm: '300px'},
+        height: {xs: '110px', sm: '150px'},
         borderRadius: '25px',
         boxShadow: 'none',
         display: 'flex',
@@ -72,7 +71,7 @@ const PlayingTable = () => {
           {tableMessage}
         </Button>
       ) : (
-        <Typography variant="subtitle1" sx={{ fontSize: 18 }} color="white">
+        <Typography variant="subtitle1" sx={{ fontSize: 18, color: "#ffffff", }}>
           {tableMessage}
         </Typography>
       )}

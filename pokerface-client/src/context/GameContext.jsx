@@ -19,12 +19,15 @@ export const GameProvider = ({ children }) => {
     console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;')
   }
 
+  // eslint-disable-next-line
   function sendMessage(type, body) {
     const bodyStr = JSON.stringify({ type, body, gameId: game_id, token: localStorage.getItem('localUserToken') })
-    socket.send(bodyStr)
+    // eslint-disable-next-line
+    socket?.send(bodyStr)
   }
 
   let connectCounter = 0
+  let notFoundConnectCounter = 0
 
   // function getLatestGameInfo() {
   //   axios
@@ -79,6 +82,15 @@ export const GameProvider = ({ children }) => {
         
         else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt')
+          notFoundConnectCounter++
+          if (notFoundConnectCounter < 8) {
+            setTimeout(() => {
+              console.warning('Trying to rejoin game room...')
+              ws.close() // close the socket connection, which will trigger a reconnect
+            }, 500)
+          } else {
+            alert("Can't join game room, please refresh or create a new game")
+          }
         }
       })
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
 const {
@@ -12,6 +14,7 @@ const {
   EmojiEmotionsOutlinedIcon,
   StyleIcon,
   TvIcon,
+  MenuItem,
 } = muiStyles
 
 const CreateGamePage = () => {
@@ -33,7 +36,12 @@ const CreateGamePage = () => {
   const [error, setError] = useState('')
   const [appIsLoading, setAppIsLoading] = useState(false)
 
+  function isNativeEmoji(str) {
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+  }
+
   function setDeckInStorage() {
+    if (!customDeck) return
     const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
     if (savedDecks?.length) {
       localStorage.setItem(
@@ -64,7 +72,10 @@ const CreateGamePage = () => {
             borderRadius: '10px',
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: 18 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontSize: isNativeEmoji(card) ? 22 : 18 }}
+          >
             {card}
           </Typography>
         </Box>
@@ -72,11 +83,10 @@ const CreateGamePage = () => {
     }
   )
 
-
   // map through the default decks and return a Button for each one
   const defaultDecksButtons = defaultDecks.map((deck, index) => {
     return (
-      <Button
+      <MenuItem
         key={index}
         onClick={() => {
           setSelectedDeck(deck)
@@ -88,7 +98,7 @@ const CreateGamePage = () => {
         >
           {deck}
         </Typography>
-      </Button>
+      </MenuItem>
     )
   })
 
@@ -96,7 +106,7 @@ const CreateGamePage = () => {
   const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
   const savedDecksButtons = savedDecks?.map((deck, index) => {
     return (
-      <Button
+      <MenuItem
         key={index}
         onClick={() => {
           setSelectedDeck(deck)
@@ -108,7 +118,7 @@ const CreateGamePage = () => {
         >
           {deck}
         </Typography>
-      </Button>
+      </MenuItem>
     )
   })
 
@@ -120,7 +130,7 @@ const CreateGamePage = () => {
     axios
       .post('game/create', { gameName, deck: selectedDeck })
       .then(({ data }) => {
-        console.log('create game data', data)
+        // console.log('create game data', data)
         if (data.gameRoomId) {
           navigate(`/game/${data.gameRoomId}`)
         } else {
@@ -196,7 +206,9 @@ const CreateGamePage = () => {
           helperText={error}
         />
 
-        <Box sx={{display: 'flex', gap: '10px', overflowX: 'auto'}}>{mappedSelectedDeck}</Box>
+        <Box sx={{ display: 'flex', gap: '10px', overflowX: 'auto' }}>
+          {mappedSelectedDeck}
+        </Box>
 
         <Button
           onClick={() => setShowDeckDialog(!showDeckDialog)}
@@ -233,12 +245,22 @@ const CreateGamePage = () => {
           }}
           open={showDeckDialog}
         >
-          <Typography variant="h5">Choose a deck</Typography>
+          <Typography variant="h5" align="center">
+            Default decks
+          </Typography>
           {defaultDecksButtons}
           {savedDecks?.length && (
             <>
-              <Typography>Saved custom decks</Typography>
-              {savedDecksButtons}
+              <Typography variant="h5" align="center">
+                Saved custom decks
+              </Typography>
+              <Box
+                sx={{
+                  padding: '20px 0',
+                }}
+              >
+                {savedDecksButtons}
+              </Box>
             </>
           )}
 
@@ -254,12 +276,7 @@ const CreateGamePage = () => {
           )}
 
           {showCustomDeckForm && (
-            <form
-              onClick={() => {
-                setShowCustomDeckForm(false)
-                setSelectedDeck(customDeck)
-                setDeckInStorage()
-              }}
+            <Box
               style={{
                 display: 'flex',
                 padding: '5px',
@@ -269,11 +286,12 @@ const CreateGamePage = () => {
                 borderRadius: '12px',
               }}
             >
-              <Typography variant="subtitle1">
+              <Typography variant="h6">
                 List values separated by commas
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <TextField
+                  value={customDeck}
                   spellCheck={false}
                   onChange={(e) => setCustomDeck(e.target.value)}
                   fullWidth
@@ -294,6 +312,23 @@ const CreateGamePage = () => {
                   <EmojiEmotionsOutlinedIcon />
                 </IconButton>
               </Box>
+              {showEmojiPicker && (
+                <Picker
+                  data={data}
+                  autoFocus
+                  maxFrequentRows={1}
+                  onEmojiSelect={(event) => {
+                    if (customDeck[customDeck.length - 1] === ',') {
+                      setCustomDeck(customDeck + event.native)
+                    } else if (customDeck.length) {
+                      setCustomDeck(customDeck + ',' + event.native)
+                    } else {
+                      setCustomDeck(customDeck + event.native)
+                    }
+                  }}
+                  theme="light"
+                />
+              )}
               <Box
                 sx={{
                   minHeight: '50px',
@@ -309,16 +344,27 @@ const CreateGamePage = () => {
                   variant="contained"
                   fullWidth
                   color="error"
-                  onClick={() => setShowCustomDeckForm(false)}
+                  onClick={() => {
+                    setShowCustomDeckForm(false)
+                    setCustomDeck('')
+                  }}
                 >
                   Cancel
                 </Button>
 
-                <Button variant="contained" type="submit" fullWidth>
-                  Save
+                <Button
+                  variant="contained"
+                  type="submit"
+                  fullWidth
+                  onClick={() => {
+                    setShowCustomDeckForm(false)
+                    setDeckInStorage()
+                  }}
+                >
+                  Save Deck
                 </Button>
               </Box>
-            </form>
+            </Box>
           )}
         </Dialog>
       )}
