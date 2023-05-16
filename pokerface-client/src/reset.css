@@ -46,3 +46,7 @@ table {
 ::-webkit-scrollbar {
   background-color: transparent;
 }
+::-webkit-scrollbar-thumb {
+  background-color: lightgrey;
+  border-radius: 10px;
+}

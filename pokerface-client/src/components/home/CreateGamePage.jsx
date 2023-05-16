@@ -61,6 +61,7 @@ const CreateGamePage = () => {
           sx={{
             height: 84,
             width: 50,
+            minWidth: 50,
             border: '2px solid #902bf5',
             transition: '0.2s',
             marginTop: '0',
@@ -179,13 +180,13 @@ const CreateGamePage = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '0 15px',
+        padding: '0 8px',
       }}
     >
       <form
         onSubmit={handleHostGame}
         style={{
-          width: 'min(100%, 700px)',
+          width: '100%',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -196,7 +197,7 @@ const CreateGamePage = () => {
       >
         <TextField
           onChange={(e) => setGameName(e.target.value)}
-          fullWidth
+          sx={{ width: 'min(650px, 100%)' }}
           autoFocus
           disabled={appIsLoading}
           error={!!error}
@@ -206,8 +207,25 @@ const CreateGamePage = () => {
           helperText={error}
         />
 
-        <Box sx={{ display: 'flex', gap: '10px', overflowX: 'auto' }}>
-          {mappedSelectedDeck}
+        <Box sx={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+
+        }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: { xs: '10px', sm: '12px' },
+              overflowX: 'scroll',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'flex-end',
+              paddingBottom: '8px',
+            }}
+          >
+            {mappedSelectedDeck}
+          </Box>
         </Box>
 
         <Button
@@ -223,7 +241,7 @@ const CreateGamePage = () => {
         <Button
           variant="contained"
           disabled={appIsLoading}
-          fullWidth
+          sx={{ width: 'min(650px, 100%)' }}
           onClick={handleHostGame}
           startIcon={<TvIcon />}
         >

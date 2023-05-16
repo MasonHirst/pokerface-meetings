@@ -1,5 +1,6 @@
 import React, { useEffect, useContext, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import pokerLogo from '../../assets/poker-logo.png'
 import useClipboard from 'react-use-clipboard'
 import { GameContext } from '../../context/GameContext'
 import ChooseDeck from '../dialog/ChooseDeck'
@@ -102,6 +103,7 @@ const GameHeader = () => {
           alignItems: 'center',
         }}
       >
+        <img src={pokerLogo} alt="logo" style={{ height: '50px',  }} />
         <Button
           variant="text"
           color="white"
@@ -174,6 +176,7 @@ const GameHeader = () => {
         >
           Invite players
         </Button>
+        <img src={pokerLogo} alt="logo" style={{ height: '50px',  }} />
         <Dialog
           onClose={() => setShowInviteDialog(!showInviteDialog)}
           PaperProps={{

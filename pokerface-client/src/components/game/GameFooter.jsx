@@ -139,6 +139,7 @@ const GameFooter = () => {
                 height: '100%',
                 display: 'flex',
                 alignItems: 'flex-end',
+                paddingBottom: '8px',
               }}
             >
               {mappedDeckCards}
