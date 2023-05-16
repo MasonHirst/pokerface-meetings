@@ -1,31 +1,23 @@
 import React, { useContext, useState, useEffect } from 'react'
 import muiStyles from '../../style/muiStyles'
-import axios from 'axios'
 import DeckCard from './DeckCard'
 import { useParams } from 'react-router-dom'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
 
 const GameFooter = () => {
-  const { game_id } = useParams()
   const [latestVoting, setLatestVoting] = useState([])
   const [deckCards, setDeckCards] = useState([])
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
-  const { gameData, setGameData } = useContext(GameContext)
-  
+  const { gameData, setGameData, sendMessage } = useContext(GameContext)
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str)
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
   }
 
   function submitChoice(card) {
-    axios
-      .put('game/submit_choice', { choice: card, gameId: game_id })
-      .then(({ data }) => {
-        setGameData(data)
-      })
-      .catch(console.error)
+    sendMessage('updatedChoice', { card })
   }
 
   function averageNumericValues(arr) {
@@ -71,6 +63,7 @@ const GameFooter = () => {
       } else cardCounts[vote] = obj
     })
   }
+
   const revealCardCount = Object.values(cardCounts).map((obj, index) => {
     return (
       <Box
@@ -96,7 +89,7 @@ const GameFooter = () => {
           <Typography
             sx={{
               fontSize:
-                isNativeEmoji(obj.choice) && isNaN(Number(obj.choice))
+                isNativeEmoji(obj.choice)
                   ? 25
                   : 19,
             }}
@@ -116,7 +109,7 @@ const GameFooter = () => {
       className="game-footer-container"
       sx={{
         width: '100vw',
-        height: '170px',
+        height: '160px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -128,17 +121,28 @@ const GameFooter = () => {
           width: 'min(100%, 900px)',
           height: '100%',
           display: 'flex',
-          padding: '0, 10px',
+          padding: '0 5px',
           justifyContent: 'center',
           alignItems: 'center',
           gap: '25px',
           flexWrap: 'nowrap',
-          overflowX: 'auto',
+          overflowX: 'scroll',
         }}
       >
         {gameState === 'voting' ? (
           playersData.length ? (
-            mappedDeckCards
+            <Box
+              sx={{
+                display: 'flex',
+                gap: { xs: '10px', sm: '25px' },
+                overflowX: 'scroll',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'flex-end',
+              }}
+            >
+              {mappedDeckCards}
+            </Box>
           ) : (
             <Typography variant="h6">No cards</Typography>
           )
@@ -148,7 +152,7 @@ const GameFooter = () => {
             {Object.values(latestVoting).length &&
               averageNumericValues(Object.values(latestVoting)) && (
                 <Typography variant="h5">
-                  {averageNumericValues(Object.values(latestVoting))}
+                  Average: {averageNumericValues(Object.values(latestVoting))}
                 </Typography>
               )}
           </>

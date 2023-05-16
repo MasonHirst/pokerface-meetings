@@ -6,9 +6,8 @@ import muiStyles from '../../style/muiStyles'
 const { Grid, Box, Card, Typography, Button } = muiStyles
 
 const PlayingTable = () => {
-  const { gameData, setGameData } = useContext(GameContext)
+  const { gameData, setGameData, sendMessage } = useContext(GameContext)
   const { game_id } = useParams()
-
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
 
@@ -22,7 +21,7 @@ const PlayingTable = () => {
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
   }, [gameData])
-
+  
   playersData.forEach((player) => {
     if (player.currentChoice) {
       choicesCount++
@@ -39,28 +38,21 @@ const PlayingTable = () => {
   ) {
     tableMessage = 'Reveal Cards'
   } else if (gameState === 'reveal') {
-    tableMessage = 'Start new round'
+    tableMessage = 'New round'
   }
 
+
   function updateGameState() {
-    axios.put('game/update_state', {
-      gameId: game_id,
-      gameState: gameState === 'voting' ? 'reveal' : 'voting',
-    })
-    .then(({data}) => {
-      setGameData(data)
-    })
-    .catch(console.error)
+    sendMessage('updateGameState', {gameState: gameState === 'voting' ? 'reveal' : 'voting'})
   }
 
   return (
-    // <Box>
     <Card
       className={tableClass}
       sx={{
         backgroundColor: '#009FBD',
-        width: '300px',
-        height: '150px',
+        width: {xs: '200px', sm: '300px'},
+        height: {xs: '110px', sm: '150px'},
         borderRadius: '25px',
         boxShadow: 'none',
         display: 'flex',
@@ -79,12 +71,11 @@ const PlayingTable = () => {
           {tableMessage}
         </Button>
       ) : (
-        <Typography variant="subtitle1" sx={{ fontSize: 18 }} color="white">
+        <Typography variant="subtitle1" sx={{ fontSize: 18, color: "#ffffff", }}>
           {tableMessage}
         </Typography>
       )}
     </Card>
-    // {/* </Box> */}
   )
 }
 
