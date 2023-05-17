@@ -183,14 +183,21 @@ const GameHeader = () => {
         </Button>
 
         <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-          <MenuIcon color='white' />
+          <MenuIcon color="white" />
         </IconButton>
         <Drawer
           anchor="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(!drawerOpen)}
+          sx={{ padding: { xs: '15px 15px', sm: '15px 40px' } }}
         >
-
+          <MenuItem>
+            <Typography variant="h6">
+              {gameData.players &&
+                gameData.players[localStorage.getItem('localUserToken')]
+                  .playerName}
+            </Typography>
+          </MenuItem>
         </Drawer>
 
         <Dialog
