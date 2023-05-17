@@ -103,17 +103,19 @@ const GameHeader = () => {
           alignItems: 'center',
         }}
       >
-        <img src={pokerLogo} alt="logo" style={{ height: '50px',  }} />
-        <Button
-          variant="text"
-          color="white"
-          endIcon={<ExpandMoreIcon />}
-          onClick={handleOpenGameSettings}
-          sx={{ textTransform: 'none', fontSize: '22px' }}
-          disableElevation
-        >
-          {roomName}
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <img src={pokerLogo} alt="logo" style={{ height: '36px' }} />
+          <Button
+            variant="text"
+            color="white"
+            endIcon={<ExpandMoreIcon />}
+            onClick={handleOpenGameSettings}
+            sx={{ textTransform: 'none', fontSize: '22px' }}
+            disableElevation
+          >
+            {roomName}
+          </Button>
+        </Box>
         <Menu open={open} anchorEl={anchorEl} onClose={handleCloseGameSettings}>
           <MenuItem
             onClick={() => {
@@ -176,7 +178,6 @@ const GameHeader = () => {
         >
           Invite players
         </Button>
-        <img src={pokerLogo} alt="logo" style={{ height: '50px',  }} />
         <Dialog
           onClose={() => setShowInviteDialog(!showInviteDialog)}
           PaperProps={{
@@ -186,8 +187,8 @@ const GameHeader = () => {
               flexDirection: 'column',
               justifyContent: 'center',
               gap: 20,
-              width: 350,
-              padding: isSmallScreen ? 15 : 35,
+              width: '350px',
+              padding: isSmallScreen ? 10 : 28,
               height: isSmallScreen ? 220 : 250,
             },
           }}
@@ -226,6 +227,7 @@ const GameHeader = () => {
           setShowGameSettingsDialog(!showGameSettingsDialog)
           setEditingGameName(false)
         }}
+        fullScreen={isSmallScreen}
         PaperProps={{
           style: {
             borderRadius: 15,
@@ -233,8 +235,8 @@ const GameHeader = () => {
             flexDirection: 'column',
             justifyContent: 'center',
             gap: 20,
-            width: 350,
-            padding: '0 25px',
+            width: !isSmallScreen && 550,
+            padding: isSmallScreen ? '0 10px' : '0 20px',
             height: 250,
           },
         }}
@@ -251,12 +253,18 @@ const GameHeader = () => {
           <CloseIcon />
         </IconButton>
         <form
-          style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: isSmallScreen ? '5px' : '15px',
+          }}
           onSubmit={updateGameName}
         >
           {editingGameName ? (
             <TextField
               autoFocus
+              fullWidth
               value={newName}
               placeholder="Enter a game name"
               label="New game name"
@@ -289,13 +297,13 @@ const GameHeader = () => {
           Change Deck
         </Button>
       </Dialog>
-        {showDeckDialog && (
-          <ChooseDeck
-            showDeckDialog={showDeckDialog}
-            setShowDeckDialog={setShowDeckDialog}
-            setDeckProp={setUpdatedDeck}
-          />
-        )}
+      {showDeckDialog && (
+        <ChooseDeck
+          showDeckDialog={showDeckDialog}
+          setShowDeckDialog={setShowDeckDialog}
+          setDeckProp={setUpdatedDeck}
+        />
+      )}
 
       <Dialog
         onClose={() => setShowHistoryDialog(!showHistoryDialog)}

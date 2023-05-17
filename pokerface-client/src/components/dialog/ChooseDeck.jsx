@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
+import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 const {
   Box,
@@ -19,6 +20,7 @@ const {
 } = muiStyles
 
 const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [customDeck, setCustomDeck] = useState('1,2,3,5,8,13,21,34,55,89,?,☕')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showCustomDeckForm, setShowCustomDeckForm] = useState(false)
@@ -51,10 +53,11 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           setDeckProp(deck.values)
           setShowDeckDialog(false)
         }}
+        sx={{marginLeft: '-8px', padding: '8px'}}
       >
         <Typography
           variant="body2"
-          sx={{ textTransform: 'none', color: 'black', fontSize: '20px' }}
+          sx={{ textTransform: 'none', color: 'black', fontSize: {xs: '16px', sm: '20px'} }}
         >
           {deck.name} ({deck.values})
         </Typography>
@@ -64,25 +67,6 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
 
   // check if there is an array of saved decks in local storage, then map through them and return a Button for each one
   const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
-  // const savedDecksButtons = savedDecks?.map((deck, index) => {
-  //   return (
-  //     <Button
-  //       key={index}
-  //       onClick={() => {
-  //         setDeckProp(deck)
-  //         setShowDeckDialog(false)
-  //       }}
-  //     >
-  //       <Typography
-  //         sx={{ textTransform: 'none', fontSize: '20px', color: 'black' }}
-  //       >
-  //         {deck}
-  //       </Typography>
-  //     </Button>
-  //   )
-  // })
-
-  // make a copy of the previous savedDecksButton variable, but add a button which will remove it from local storage
   const savedDecksButtons = savedDecks?.map((deck, index) => {
     return (
       <Box
@@ -151,12 +135,13 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
   return (
     <Dialog
       onClose={() => setShowDeckDialog(false)}
+      fullScreen={isSmallScreen}
       PaperProps={{
         style: {
           borderRadius: 12,
-          padding: '35px 30px',
-          maxWidth: 'calc(100vw - 20px)',
-          width: '800px',
+          padding: isSmallScreen ? '35px 8px' : '35px 20px',
+          minWidth: !isSmallScreen && 'min(calc(100vw - 18px), 750px)',
+          height: 600,
           minHeight: 300,
           display: 'flex',
         },
@@ -168,13 +153,16 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           <Typography variant="h5" align="center" color="primary">
             Default decks
           </Typography>
-          <Box sx={{ padding: '20px 0' }}>{defaultDecksButtons}</Box>
+          <Box sx={{ paddingTop: '20px', marginBottom: '20px', overflowX: 'scroll' }}>{defaultDecksButtons}</Box>
+          <Typography variant="h5" align="center" color="primary">
+            Saved decks
+          </Typography>
           {savedDecks && savedDecks.length > 0 && (
             <>
               <Typography variant="h5" align="center">
                 Custom decks
               </Typography>
-              <Box sx={{ padding: '20px 0' }}>{savedDecksButtons}</Box>
+              <Box sx={{ paddingTop: '20px', marginBottom: '20px', overflowX: 'scroll' }}>{savedDecksButtons}</Box>
             </>
           )}
 
@@ -277,6 +265,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
               display: 'flex',
               overflowX: 'scroll',
               gap: '10px',
+              paddingBottom: '8px',
             }}
           >
             {mappedCustomDeck}
