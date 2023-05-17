@@ -20,6 +20,8 @@ const {
   SettingsIcon,
   PollOutlinedIcon,
   StyleIcon,
+  MenuIcon,
+  Drawer,
   CloseIcon,
   IconButton,
   CheckIcon,
@@ -36,6 +38,7 @@ const GameHeader = () => {
   const [newName, setNewName] = useState(gameData.gameRoomName)
   const roomName = gameData.gameRoomName
   const [showInviteDialog, setShowInviteDialog] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingGameName, setEditingGameName] = useState(false)
   const inviteLinkInputRef = useRef()
   const [isCopied, setCopied] = useClipboard(window.location.href, {
@@ -178,6 +181,18 @@ const GameHeader = () => {
         >
           Invite players
         </Button>
+
+        <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+          <MenuIcon color='white' />
+        </IconButton>
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(!drawerOpen)}
+        >
+
+        </Drawer>
+
         <Dialog
           onClose={() => setShowInviteDialog(!showInviteDialog)}
           PaperProps={{

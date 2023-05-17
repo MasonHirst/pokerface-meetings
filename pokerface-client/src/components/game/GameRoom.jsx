@@ -4,10 +4,11 @@ import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
 import muiStyles from '../../style/muiStyles'
-const { Box, Dialog, TextField, Button, Typography } = muiStyles
+const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
 
 const GameRoom = () => {
-  const { playerName, setPlayerName, sendMessage, joinGameLoading } = useContext(GameContext)
+  const { playerName, setPlayerName, sendMessage, joinGameLoading } =
+    useContext(GameContext)
   const [nameError, setNameError] = useState('')
   const nameInputRef = useRef()
 
@@ -27,16 +28,21 @@ const GameRoom = () => {
 
   return (
     <>
-    {!joinGameLoading && playerName ? (<Box sx={{ minHeight: '100vh' }}>
-        <GameHeader />
-        <GameBody />
-        <GameFooter />
-      </Box>) : (
-        <Box>
-          <Typography variant="h4" align="center">
-            Joining Game...
-          </Typography>
+      {!joinGameLoading && playerName ? (
+        <Box sx={{ minHeight: '100vh' }}>
+          <GameHeader />
+          <GameBody />
+          <GameFooter />
         </Box>
+      ) : (
+        joinGameLoading && (
+          <Box>
+            <LinearProgress sx={{ position: 'fixed', top: 0, width: '100vw' }} />
+            <Typography variant="h4" align="center" sx={{marginTop: '20px'}}>
+              Joining Game...
+            </Typography>
+          </Box>
+        )
       )}
 
       <Dialog
