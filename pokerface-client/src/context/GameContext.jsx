@@ -10,6 +10,7 @@ export const GameProvider = ({ children }) => {
   const [socket, setSocket] = useState(null)
   const [gameData, setGameData] = useState({})
   const [gameExists, setGameExists] = useState(false)
+  const [joinGameLoading, setJoinGameLoading] = useState(false)
   const { game_id } = useParams()
 
   console.success = function (message) {
@@ -29,20 +30,10 @@ export const GameProvider = ({ children }) => {
   let connectCounter = 0
   let notFoundConnectCounter = 0
 
-  // function getLatestGameInfo() {
-  //   axios
-  //     .get(`game/latest/${game_id}`)
-  //     .then(({ data }) => {
-  //       if (data.gameRoomName) {
-  //         setGameData(data)
-  //       }
-  //     })
-  //     .catch(console.error)
-  // }
-
   useEffect(() => {
     if (!playerName) return
     function connectClient() {
+      setJoinGameLoading(true)
       let serverUrl
       let scheme = 'ws'
       let location = document.location
@@ -73,6 +64,7 @@ export const GameProvider = ({ children }) => {
         let messageData = JSON.parse(event.data)
 
         if (messageData.event_type === 'playerJoinedGame') {
+          setJoinGameLoading(false)
           setGameData(messageData.game)
         } 
         
@@ -120,6 +112,7 @@ export const GameProvider = ({ children }) => {
         setGameData,
         sendMessage,
         playerName,
+        joinGameLoading,
         setPlayerName,
       }}
     >

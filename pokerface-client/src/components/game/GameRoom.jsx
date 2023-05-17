@@ -7,11 +7,7 @@ import muiStyles from '../../style/muiStyles'
 const { Box, Dialog, TextField, Button, Typography } = muiStyles
 
 const GameRoom = () => {
-  const {
-    playerName,
-    setPlayerName,
-    sendMessage,
-  } = useContext(GameContext)
+  const { playerName, setPlayerName, sendMessage, joinGameLoading } = useContext(GameContext)
   const [nameError, setNameError] = useState('')
   const nameInputRef = useRef()
 
@@ -24,17 +20,25 @@ const GameRoom = () => {
   }
 
   useEffect(() => {
-
     return () => {
       sendMessage('playerLeaveGame', {})
     }
   }, [playerName])
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <GameHeader />
-      <GameBody />
-      <GameFooter />
+    <>
+    {!joinGameLoading && playerName ? (<Box sx={{ minHeight: '100vh' }}>
+        <GameHeader />
+        <GameBody />
+        <GameFooter />
+      </Box>) : (
+        <Box>
+          <Typography variant="h4" align="center">
+            Joining Game...
+          </Typography>
+        </Box>
+      )}
+
       <Dialog
         disableEscapeKeyDown
         onClose={() => {}}
@@ -74,7 +78,7 @@ const GameRoom = () => {
           </Button>
         </form>
       </Dialog>
-    </Box>
+    </>
   )
 }
 
