@@ -31,8 +31,9 @@ export const GameProvider = ({ children }) => {
   let notFoundConnectCounter = 0
 
   useEffect(() => {
-    if (!playerName) return
+    if (!playerName || !game_id) return
     function connectClient() {
+      if (!game_id) return console.log('not in game room, aborting connection')
       setJoinGameLoading(true)
       let serverUrl
       let scheme = 'ws'
@@ -75,7 +76,7 @@ export const GameProvider = ({ children }) => {
         else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt')
           notFoundConnectCounter++
-          if (notFoundConnectCounter < 8) {
+          if (notFoundConnectCounter < 10) {
             setTimeout(() => {
               console.warning('Trying to rejoin game room...')
               ws.close() // close the socket connection, which will trigger a reconnect
@@ -98,7 +99,7 @@ export const GameProvider = ({ children }) => {
       setSocket(ws)
     }
     connectClient()
-  }, [playerName])
+  }, [playerName, game_id])
 
   return (
     <GameContext.Provider
@@ -112,6 +113,7 @@ export const GameProvider = ({ children }) => {
         setGameData,
         sendMessage,
         playerName,
+        setPlayerName,
         joinGameLoading,
         setPlayerName,
       }}

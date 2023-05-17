@@ -32,7 +32,7 @@ const {
 const GameHeader = () => {
   const navigate = useNavigate()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const { gameData, sendMessage } = useContext(GameContext)
+  const { gameData, sendMessage, setPlayerName } = useContext(GameContext)
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
   const [newName, setNewName] = useState(gameData.gameRoomName)
@@ -168,36 +168,49 @@ const GameHeader = () => {
           </MenuItem>
         </Menu>
 
-        <Button
-          color="white"
-          size="large"
-          onClick={() => setShowInviteDialog(!showInviteDialog)}
-          variant="outlined"
-          sx={{
-            textTransform: 'none',
-            fontSize: '18px',
-            display: { xs: 'none', sm: 'block' },
-          }}
-        >
-          Invite players
-        </Button>
+        <Box sx={{ display: 'flex', gap: '22px', alignItems: 'center' }}>
+          <Button
+            color="white"
+            size="large"
+            onClick={() => setShowInviteDialog(!showInviteDialog)}
+            variant="outlined"
+            sx={{
+              textTransform: 'none',
+              fontSize: '18px',
+              display: { xs: 'none', sm: 'block' },
+            }}
+          >
+            Invite players
+          </Button>
 
-        <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-          <MenuIcon color="white" />
-        </IconButton>
+          <IconButton
+            sx={{ padding: '12px' }}
+            onClick={() => setDrawerOpen(!drawerOpen)}
+          >
+            <MenuIcon color="white" />
+          </IconButton>
+        </Box>
         <Drawer
           anchor="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(!drawerOpen)}
-          sx={{ padding: { xs: '15px 15px', sm: '15px 40px' } }}
         >
-          <MenuItem>
-            <Typography variant="h6">
-              {gameData.players &&
-                gameData.players[localStorage.getItem('localUserToken')]
-                  .playerName}
-            </Typography>
-          </MenuItem>
+          <Box sx={{ minWidth: '400px' }}>
+            <MenuItem
+              sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+              onClick={() => {
+                setPlayerName(null)
+                setDrawerOpen(!drawerOpen)
+              }}
+            >
+              <EditIcon />
+              <Typography variant="h6">
+                {gameData.players &&
+                  gameData.players[localStorage.getItem('localUserToken')]
+                    .playerName}
+              </Typography>
+            </MenuItem>
+          </Box>
         </Drawer>
 
         <Dialog

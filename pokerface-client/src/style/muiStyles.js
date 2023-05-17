@@ -75,8 +75,10 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import LinkIcon from '@mui/icons-material/Link'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import LinearProgress from '@mui/material/LinearProgress'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 let muiStyles = {
+  ContentCopyIcon,
   LinearProgress,
   InfoOutlinedIcon,
   LinkIcon,

@@ -79,7 +79,7 @@ const GameRoom = () => {
             placeholder="Enter your name"
             helperText={nameError}
           />
-          <Button fullWidth variant="contained">
+          <Button fullWidth type='submit' variant="contained">
             Join Game
           </Button>
         </form>

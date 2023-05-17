@@ -85,7 +85,6 @@ async function startSocketServer(app, port) {
         (player) => player.playerName
       )
       if (playerNames.includes(playerName)) {
-        console.log('player already in game: ', playerNames)
         let i = 1
         while (playerNames.includes(`${playerName}(${i})`)) {
           i++

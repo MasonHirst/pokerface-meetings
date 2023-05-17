@@ -1,15 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react'
-import axios from 'axios'
 import PlayingTable from './PlayingTable'
 import { GameContext } from '../../context/GameContext'
+import useClipboard from 'react-use-clipboard'
 import muiStyles from '../../style/muiStyles'
 import PlayerCard from './PlayerCard'
-const { Box, Grid, Paper, Typography, Card } = muiStyles
+const { Box, Typography, Button, ContentCopyIcon } = muiStyles
 
 const GameBody = () => {
   const { gameData } = useContext(GameContext)
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const [isCopied, setCopied] = useClipboard(window.location.href, {
+    // `isCopied` will go back to `false` after 1500ms.
+    successDuration: 1500,
+  })
 
   useEffect(() => {
     if (!gameData.gameRoomName) return
@@ -44,6 +48,38 @@ const GameBody = () => {
           alignItems: 'center',
         }}
       >
+        {gameData.players && Object.values(gameData.players).length < 2 && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <Typography variant="body1">It's just you here.</Typography>
+            {isCopied ? (
+              <Typography variant="body1" sx={{color: '#4caf50', marginBottom: '14px', marginTop: '4px', fontSize: '17px'}}>
+                Invite link copied to clipboard!
+              </Typography>
+            ) : (
+            <Button
+              startIcon={<ContentCopyIcon />}
+              variant="text"
+              sx={{
+                textTransform: 'none',
+                fontSize: '18px',
+                position: 'relative',
+                top: '-5px',
+              }}
+              onClick={(e) => {
+                setCopied(e)
+              }}
+            >
+              Copy invite link
+            </Button>
+            )}
+          </Box>
+        )}
         <PlayingTable />
         <Box
           sx={{
@@ -64,3 +100,16 @@ const GameBody = () => {
 }
 
 export default GameBody
+
+
+
+
+
+
+
+
+
+
+
+
+
