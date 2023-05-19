@@ -7,12 +7,11 @@ const { Box, Typography } = muiStyles
 const PurplDeckCard = ({
   card,
   submitChoice,
-  length,
   useCase,
   disabled,
   player,
   gameData,
-  voteCount,
+  bottomMessage,
   borderColor,
 }) => {
   const localUserToken = localStorage.getItem('localUserToken')
@@ -31,16 +30,28 @@ const PurplDeckCard = ({
     if (useCase === 'playerCard') setCardFontSize(28)
     if (isNativeEmoji(card)) {
       setCardFontSize(34)
-    } else (setCardFontSize(23))
+    } else setCardFontSize(23)
   }, [card])
 
   let cardHeight = 98
   let cardWidth = 60
 
   if (isSmallScreen) {
-    cardFontSize = cardFontSize * 0.9
     cardHeight = cardHeight * 0.9
+    cardWidth = cardWidth * 0.9
   }
+  if (isSmallScreen && useCase === 'playerCard') {
+    cardHeight = cardHeight * .85
+    cardWidth = cardWidth * .85
+  }
+
+  useEffect(() => {
+    if (isSmallScreen) {
+      setCardFontSize(cardFontSize * 0.9)
+    } else {
+      setCardFontSize(isNativeEmoji(card) ? 34 : 23)
+    }
+  }, [isSmallScreen])
 
   if (useCase === 'playerCard') {
     cardHeight = cardHeight * 1.2
@@ -66,7 +77,14 @@ const PurplDeckCard = ({
     if (fontWidth > cardWidth - 6) {
       setCardFontSize(cardFontSize - 1)
     }
-  }, [cardTextRef.current, card, cardFontSize, gameState, cardWidth])
+  }, [
+    cardTextRef.current,
+    card,
+    cardFontSize,
+    gameState,
+    cardWidth,
+    cardFontSize,
+  ])
 
   return (
     <Box
@@ -88,6 +106,7 @@ const PurplDeckCard = ({
           minWidth: cardWidth,
           border: `2px solid ${borderColor}`,
           transition: '0.2s',
+          marginTop: useCase === 'votingCard' ? '20px' : 0,
           position: 'relative',
           bottom: selected ? '20px' : 0,
           display: 'flex',
@@ -120,9 +139,12 @@ const PurplDeckCard = ({
         </Typography>
       </Box>
 
-      {useCase === 'voteCount' && (
-        <Typography variant="subtitle1">
-          {voteCount} vote{voteCount > 1 && 's'}
+      {bottomMessage && (
+        <Typography
+          variant="subtitle1"
+          sx={{ fontSize: isSmallScreen ? 15 : 17, marginTop: useCase === 'playerCard' ? '5px' : 0 }}
+        >
+          {bottomMessage}
         </Typography>
       )}
     </Box>

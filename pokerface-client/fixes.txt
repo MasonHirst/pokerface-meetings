@@ -15,12 +15,17 @@ FIXED------ make the saved decks list have a message if there are no decks
 
 FIXED------ When you delete a custom deck, it does not reflect in the ui until a rerender
 
-make cards everywhere use card components instead of defining them each time. 
+FIXED------ make cards everywhere use card components instead of defining them each time. 
 
 add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
 
-add a sweet alert to confirm leaving game
+add a sweet alert to confirm leaving game or delete a deck
 
 fix the sizing on the choose deck dialogs
 
-make the vote results section switch to column on mobile view to support lots of players
+FIXED------ make the vote results section switch to column on mobile view to support lots of players
+
+FIXED------ When the socket reaches max attempts at joining game rooms, make a sweetalert with a button to navigate home
+
+Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
+

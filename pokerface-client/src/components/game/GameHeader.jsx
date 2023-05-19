@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import pokerLogo from '../../assets/poker-logo.png'
 import useClipboard from 'react-use-clipboard'
 import { GameContext } from '../../context/GameContext'
+import dontGo from '../../assets/dont-go.gif'
 import ChooseDeck from '../dialog/ChooseDeck'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
+import Swal from 'sweetalert2'
 const {
   Typography,
   LogoutIcon,
@@ -62,6 +64,27 @@ const GameHeader = () => {
     sendMessage('updatedGameName', { name: newName })
   }
 
+  function handleLeaveGame() {
+    handleCloseGameSettings()
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will be removed from the game',
+      imageUrl: dontGo,
+      imageWidth: 'min(90vw, 400px',
+      confirmButtonText: 'Take me home',
+      showCancelButton: true,
+      cancelButtonText: 'Stay',
+      customClass: {
+        popup: 'swal2-popup', // Add the custom CSS class to the 'popup' element
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate('/home')
+        window.location.reload()
+      }
+    })
+  }
+
   useEffect(() => {
     if (updatedDeck) {
       sendMessage('updatedDeck', { deck: updatedDeck })
@@ -87,8 +110,8 @@ const GameHeader = () => {
     <Box
       className="game-header-container"
       sx={{
-        width: '100vw',
-        height: '80px',
+        width: '100%',
+        height: isSmallScreen ? '60px' : '80px',
         backgroundColor: '#902bf5',
         display: 'flex',
         justifyContent: 'center',
@@ -107,7 +130,13 @@ const GameHeader = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <img className='cursor-pointer' onClick={() => navigate('/')} src={pokerLogo} alt="logo" style={{ height: '36px' }} />
+          <img
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            src={pokerLogo}
+            alt="logo"
+            style={{ height: '36px' }}
+          />
           <Button
             variant="text"
             color="white"
@@ -155,12 +184,7 @@ const GameHeader = () => {
             <Typography variant="h6">Invite players</Typography>
           </MenuItem>
 
-          <MenuItem
-            onClick={() => {
-              navigate('/home')
-              window.location.reload()
-            }}
-          >
+          <MenuItem onClick={handleLeaveGame}>
             <ListItemIcon>
               <LogoutIcon />
             </ListItemIcon>
@@ -190,12 +214,13 @@ const GameHeader = () => {
             <MenuIcon color="white" />
           </IconButton>
         </Box>
+
         <Drawer
           anchor="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(!drawerOpen)}
         >
-          <Box sx={{ minWidth: '400px' }}>
+          <Box sx={{ minWidth: isSmallScreen ? '180px' : '260px' }}>
             <MenuItem
               sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
               onClick={() => {
@@ -203,12 +228,12 @@ const GameHeader = () => {
                 setDrawerOpen(!drawerOpen)
               }}
             >
-              <EditIcon />
               <Typography variant="h6">
                 {gameData.players &&
                   gameData.players[localStorage.getItem('localUserToken')]
                     .playerName}
               </Typography>
+              <EditIcon />
             </MenuItem>
           </Box>
         </Drawer>

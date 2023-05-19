@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import muiStyles from '../../style/muiStyles'
 import PurpleDeckCard from './PurpleDeckCard'
+import { useMediaQuery } from '@mui/material'
 import GraphemeSplitter from 'grapheme-splitter'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
@@ -10,6 +11,7 @@ const GameFooter = () => {
   const [deckCards, setDeckCards] = useState([])
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const { gameData, sendMessage } = useContext(GameContext)
   const splitter = GraphemeSplitter()
 
@@ -53,8 +55,8 @@ const GameFooter = () => {
           card={card}
           length={length}
           gameData={gameData}
-          useCase='votingCard'
-          borderColor='#902bf5'
+          useCase="votingCard"
+          borderColor="#902bf5"
         />
       )
     }
@@ -75,38 +77,41 @@ const GameFooter = () => {
   }
 
   const revealCardCount = Object.values(cardCounts).map((obj, index) => {
-    const length = splitter.splitGraphemes(obj.choice.trim()).length
+    let bottomMessage
+    if (obj.count > 1) {
+      bottomMessage = 'votes'
+    } else bottomMessage = 'vote'
     return (
       <PurpleDeckCard
         key={index}
         card={obj.choice}
-        length={length}
         gameData={gameData}
-        borderColor='black'
-        useCase='voteCount'
-        voteCount={obj.count}
+        borderColor="black"
+        useCase="voteCount"
+        bottomMessage={`${obj.count} ${bottomMessage}`}
       />
     )
   })
 
   return (
-    <Box
-      className="game-footer-container"
-      sx={{
-        width: '100vw',
-        height: '160px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
+    // <Box
+    //   className="game-footer-container"
+    //   sx={{
+    //     width: '100%',
+    //     flexShrink: 0,
+    //     display: 'flex',
+    //     padding: '20px 5px 0px 5px',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //   }}
+    // >
       <Box
         className="game-footer"
         sx={{
           width: '100%',
-          height: '100%',
+          // height: '100%',
           display: 'flex',
-          padding: '0 5px',
+          padding: '20px 5px 0px 5px',
           justifyContent: 'center',
           alignItems: 'center',
           gap: '25px',
@@ -132,18 +137,58 @@ const GameFooter = () => {
             <Typography variant="h6">No cards</Typography>
           )
         ) : (
-          <>
-            <Box sx={{ display: 'flex', gap: '20px' }}>{revealCardCount}</Box>
+          // Reveal state footer
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: isSmallScreen ? 'column-reverse' : 'row',
+              alignItems: 'center',
+              gap: '20px',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                gap: '20px',
+                overflowX: 'scroll',
+                paddingBottom: '4px',
+              }}
+            >
+              {revealCardCount}
+            </Box>
             {Object.values(latestVoting).length &&
               averageNumericValues(Object.values(latestVoting)) && (
-                <Typography variant="h5">
-                  Average: {averageNumericValues(Object.values(latestVoting))}
-                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '7px',
+                    position: 'relative',
+                    bottom: isSmallScreen ? '0px' : '15px',
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
+                  >
+                    Average:
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      marginTop: '-10px',
+                      fontSize: { xs: '25px', sm: '30px' },
+                    }}
+                  >
+                    {averageNumericValues(Object.values(latestVoting))}
+                  </Typography>
+                </Box>
               )}
-          </>
+          </Box>
         )}
       </Box>
-    </Box>
+    // </Box>
   )
 }
 

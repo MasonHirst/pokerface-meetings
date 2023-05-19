@@ -104,7 +104,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             sx={{
               marginLeft: '-8px',
               padding: '8px',
-              minWidth: '100%',
+              minWidth: isCustom ? 'calc(100% - 35px)': '100%',
               borderRadius: '10px',
             }}
           >

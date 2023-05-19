@@ -63,3 +63,7 @@ em-emoji-picker {
   border: 1px solid lightgrey;
   margin-top: -12px;
 }
+
+.swal2-popup {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif !important;
+}

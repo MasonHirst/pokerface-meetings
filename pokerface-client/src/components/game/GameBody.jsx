@@ -49,6 +49,7 @@ const GameBody = () => {
         useCase="playerCard"
         gameData={gameData}
         borderColor='#902bf5'
+        bottomMessage={player.playerName}
       />
     )
   })
@@ -57,8 +58,9 @@ const GameBody = () => {
     <Box
       className="game-body-container"
       sx={{
-        width: '100vw',
-        minHeight: 'calc(100vh - 240px)',
+        width: '100%',
+        padding: '50px 0',
+        flexGrow: 1,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -125,6 +127,7 @@ const GameBody = () => {
             alignItems: 'center',
             gap: '25px',
             margin: '25px 0',
+            overflowX: 'scroll',
           }}
         >
           {mappedPlayerCards}

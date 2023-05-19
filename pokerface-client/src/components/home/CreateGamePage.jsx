@@ -14,6 +14,7 @@ const {
 } = muiStyles
 
 const CreateGamePage = () => {
+  document.title = 'Pokerface - Create Game'
   const splitter = GraphemeSplitter()
   const [selectedDeck, setSelectedDeck] = useState(
     '1,2,3,5,8,13,21,34,55,89,?,☕'

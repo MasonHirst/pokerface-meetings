@@ -7,18 +7,33 @@ import muiStyles from '../../style/muiStyles'
 const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
 
 const GameRoom = () => {
-  const { playerName, setPlayerName, sendMessage, joinGameLoading } =
-    useContext(GameContext)
+  const {
+    playerName,
+    setPlayerName,
+    sendMessage,
+    gameData,
+    joinGameLoading,
+    toggleActiveSocket,
+  } = useContext(GameContext)
   const [nameError, setNameError] = useState('')
-  const nameInputRef = useRef()
+  const [nameInput, setNameInput] = useState('')
 
   function updateName(e) {
     e.preventDefault()
-    const nameInput = nameInputRef.current.value
     if (!nameInput) return setNameError('Please enter a name')
     localStorage.setItem('playerName', nameInput)
     setPlayerName(nameInput)
   }
+
+  useEffect(() => {
+    if (gameData?.gameRoomName) {
+      document.title = `Pokerface - ${gameData.gameRoomName}`
+    }
+  }, [gameData.gameRoomName])
+
+  useEffect(() => {
+    toggleActiveSocket(true)
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -29,7 +44,7 @@ const GameRoom = () => {
   return (
     <>
       {!joinGameLoading && playerName ? (
-        <Box sx={{ minHeight: '100vh' }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', }}>
           <GameHeader />
           <GameBody />
           <GameFooter />
@@ -37,8 +52,11 @@ const GameRoom = () => {
       ) : (
         joinGameLoading && (
           <Box>
-            <LinearProgress sx={{ position: 'fixed', top: 0, width: '100vw' }} />
-            <Typography variant="h4" align="center" sx={{marginTop: '20px'}}>
+            <LinearProgress
+              size="large"
+              sx={{ position: 'fixed', top: 0, width: '100vw' }}
+            />
+            <Typography variant="h4" align="center" sx={{ marginTop: '20px' }}>
               Joining Game...
             </Typography>
           </Box>
@@ -71,7 +89,12 @@ const GameRoom = () => {
           }}
         >
           <TextField
-            inputRef={nameInputRef}
+            value={nameInput}
+            onChange={(e) => {
+              if (nameInput.length < 10) {
+                setNameInput(e.target.value)
+              } else setNameError('Name must be less than 10 characters')
+            }}
             fullWidth
             autoFocus
             error={!!nameError}
@@ -79,7 +102,7 @@ const GameRoom = () => {
             placeholder="Enter your name"
             helperText={nameError}
           />
-          <Button fullWidth type='submit' variant="contained">
+          <Button fullWidth type="submit" variant="contained">
             Join Game
           </Button>
         </form>
