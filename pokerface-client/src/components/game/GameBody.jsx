@@ -2,8 +2,10 @@ import React, { useContext, useState, useEffect } from 'react'
 import PlayingTable from './PlayingTable'
 import { GameContext } from '../../context/GameContext'
 import useClipboard from 'react-use-clipboard'
+import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
 import PlayerCard from './PlayerCard'
+import PurplDeckCard from './PurpleDeckCard'
 const { Box, Typography, Button, ContentCopyIcon } = muiStyles
 
 const GameBody = () => {
@@ -11,6 +13,7 @@ const GameBody = () => {
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
   const [stateButtonDisabled, setStateButtonDisabled] = useState(false)
+  const splitter = GraphemeSplitter()
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
@@ -34,7 +37,20 @@ const GameBody = () => {
 
   const mappedPlayerCards = Object.values(playersData).map((player, index) => {
     if (!player) return
-    return <PlayerCard key={index} gameState={gameState} player={player} />
+    let length = 0
+    if (player.currentChoice) {
+      length = splitter.splitGraphemes(player.currentChoice.trim()).length
+    }
+    return (
+      <PurplDeckCard
+        key={index}
+        gameState={gameState}
+        player={player}
+        length={length}
+        card={player.currentChoice}
+        useCase="playerCard"
+      />
+    )
   })
 
   return (

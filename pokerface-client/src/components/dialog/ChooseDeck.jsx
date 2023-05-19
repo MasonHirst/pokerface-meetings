@@ -55,11 +55,12 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     }
 
     let alreadyExists = false
+    const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
     savedDecks.forEach((deck) => {
       if (deck.values === obj.values && deck.name === obj.name) alreadyExists = true
     })
+    if (alreadyExists) return
     
-    const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
     if (savedDecks?.length) {
       localStorage.setItem('savedDecks', JSON.stringify([...savedDecks, obj]))
     } else {
@@ -132,7 +133,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           if (length > 3) cardFontSize = 11
         } else {
           if (length > 2) cardFontSize = 18
-          if (length > 3) cardFontSize = 16
+          if (length > 3) cardFontSize = 15
         }
 
         return (

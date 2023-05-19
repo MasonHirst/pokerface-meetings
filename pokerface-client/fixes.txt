@@ -15,4 +15,8 @@ FIXED------ make the saved decks list have a message if there are no decks
 
 FIXED------ When you delete a custom deck, it does not reflect in the ui until a rerender
 
-make cards everywhere use card components instead of defining them each time
+make cards everywhere use card components instead of defining them each time. 
+
+add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
+
+add a sweet alert to confirm leaving game

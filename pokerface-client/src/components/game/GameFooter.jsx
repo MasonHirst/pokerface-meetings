@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import muiStyles from '../../style/muiStyles'
-import PurplDeckCard from './DeckCard'
-import { useParams } from 'react-router-dom'
+import PurplDeckCard from './PurpleDeckCard'
+import GraphemeSplitter from 'grapheme-splitter'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
 
@@ -10,7 +10,8 @@ const GameFooter = () => {
   const [deckCards, setDeckCards] = useState([])
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
-  const { gameData, setGameData, sendMessage } = useContext(GameContext)
+  const { gameData, sendMessage } = useContext(GameContext)
+  const splitter = GraphemeSplitter()
 
   function isNativeEmoji(str) {
     return /\p{Emoji}/u.test(str) && isNaN(Number(str))
@@ -47,8 +48,10 @@ const GameFooter = () => {
   }, [gameData])
 
   const mappedDeckCards = deckCards.map((card, index) => {
-    if (card.trim().length > 4) return
-    return <PurplDeckCard key={index} submitChoice={submitChoice} card={card} />
+    let length = splitter.splitGraphemes(card.trim()).length
+    if (length < 5) {
+      return <PurplDeckCard key={index} submitChoice={submitChoice} card={card} length={length} />
+    }
   })
 
   const cardCounts = {}
@@ -119,7 +122,7 @@ const GameFooter = () => {
       <Box
         className="game-footer"
         sx={{
-          width: 'min(100%, 900px)',
+          width: '100%',
           height: '100%',
           display: 'flex',
           padding: '0 5px',
@@ -135,10 +138,9 @@ const GameFooter = () => {
             <Box
               sx={{
                 display: 'flex',
-                gap: { xs: '10px', sm: '25px' },
+                gap: { xs: '10px', sm: '18px' },
                 overflowX: 'scroll',
                 height: '100%',
-                display: 'flex',
                 alignItems: 'flex-end',
                 paddingBottom: '8px',
               }}
