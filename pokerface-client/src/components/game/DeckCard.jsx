@@ -1,14 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { GameContext } from '../../context/GameContext'
+import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
 const { Box, Typography, Button } = muiStyles
 
-const DeckCard = ({ card, submitChoice, thisUserObj }) => {
+const PurplDeckCard = ({ card, submitChoice, thisUserObj }) => {
   const localUserToken = localStorage.getItem('localUserToken')
-  const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
   const [thisUser, setThisUser] = useState({})
   const { gameData } = useContext(GameContext)
+  const splitter = GraphemeSplitter()
 
   function isNativeEmoji(str) {
     return /\p{Emoji}/u.test(str) && isNaN(Number(card))
@@ -16,7 +17,6 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
 
   useEffect(() => {
     if (!gameData.gameRoomName) return
-    setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
     setThisUser(gameData.players[localUserToken])
   }, [gameData])
@@ -29,7 +29,7 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
         if (gameState !== 'voting') return
         submitChoice(card)
       }}
-      className={gameState === 'voting' && "deck-card"}
+      className={gameState === 'voting' && "cursor-pointer"}
       sx={{
         height: 84,
         width: 50,
@@ -46,11 +46,11 @@ const DeckCard = ({ card, submitChoice, thisUserObj }) => {
         borderRadius: '10px',
       }}
     >
-      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) ? 33 : 23,  }}>
+      <Typography variant="h6" sx={{ fontSize: isNativeEmoji(card) ? 33 : 23, whiteSpace: 'nowrap',  }}>
         {card}
       </Typography>
     </Box>
   )
 }
 
-export default DeckCard
+export default PurplDeckCard

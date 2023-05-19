@@ -10,6 +10,7 @@ const GameBody = () => {
   const { gameData } = useContext(GameContext)
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const [stateButtonDisabled, setStateButtonDisabled] = useState(false)
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
@@ -19,6 +20,16 @@ const GameBody = () => {
     if (!gameData.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
+    if (
+      !stateButtonDisabled &&
+      gameState !== gameData.gameState &&
+      gameData.gameState === 'reveal'
+    ) {
+      setStateButtonDisabled(true)
+      setTimeout(() => {
+        setStateButtonDisabled(false)
+      }, 2000)
+    }
   }, [gameData])
 
   const mappedPlayerCards = Object.values(playersData).map((player, index) => {
@@ -56,31 +67,39 @@ const GameBody = () => {
               alignItems: 'center',
             }}
           >
-            <Typography variant="body1">It's just you here.</Typography>
+            <Typography variant="body1">It's just you here 😞</Typography>
             {isCopied ? (
-              <Typography variant="body1" sx={{color: '#4caf50', marginBottom: '14px', marginTop: '4px', fontSize: '17px'}}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#4caf50',
+                  marginBottom: '14px',
+                  marginTop: '4px',
+                  fontSize: '17px',
+                }}
+              >
                 Invite link copied to clipboard!
               </Typography>
             ) : (
-            <Button
-              startIcon={<ContentCopyIcon />}
-              variant="text"
-              sx={{
-                textTransform: 'none',
-                fontSize: '18px',
-                position: 'relative',
-                top: '-5px',
-              }}
-              onClick={(e) => {
-                setCopied(e)
-              }}
-            >
-              Copy invite link
-            </Button>
+              <Button
+                startIcon={<ContentCopyIcon />}
+                variant="text"
+                sx={{
+                  textTransform: 'none',
+                  fontSize: '18px',
+                  position: 'relative',
+                  top: '-5px',
+                }}
+                onClick={(e) => {
+                  setCopied(e)
+                }}
+              >
+                Copy invite link
+              </Button>
             )}
           </Box>
         )}
-        <PlayingTable />
+        <PlayingTable disableButton={stateButtonDisabled} />
         <Box
           sx={{
             width: '100%',
@@ -100,16 +119,3 @@ const GameBody = () => {
 }
 
 export default GameBody
-
-
-
-
-
-
-
-
-
-
-
-
-

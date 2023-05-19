@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react'
 import muiStyles from '../../style/muiStyles'
-import DeckCard from './DeckCard'
+import PurplDeckCard from './DeckCard'
 import { useParams } from 'react-router-dom'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
@@ -47,7 +47,8 @@ const GameFooter = () => {
   }, [gameData])
 
   const mappedDeckCards = deckCards.map((card, index) => {
-    return <DeckCard key={index} submitChoice={submitChoice} card={card} />
+    if (card.trim().length > 4) return
+    return <PurplDeckCard key={index} submitChoice={submitChoice} card={card} />
   })
 
   const cardCounts = {}
@@ -149,7 +150,7 @@ const GameFooter = () => {
           )
         ) : (
           <>
-            <Box sx={{ display: 'flex', gap: '25px' }}>{revealCardCount}</Box>
+            <Box sx={{ display: 'flex', gap: '20px' }}>{revealCardCount}</Box>
             {Object.values(latestVoting).length &&
               averageNumericValues(Object.values(latestVoting)) && (
                 <Typography variant="h5">

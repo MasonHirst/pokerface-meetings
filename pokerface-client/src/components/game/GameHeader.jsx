@@ -106,8 +106,8 @@ const GameHeader = () => {
           alignItems: 'center',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <img src={pokerLogo} alt="logo" style={{ height: '36px' }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <img className='cursor-pointer' onClick={() => navigate('/')} src={pokerLogo} alt="logo" style={{ height: '36px' }} />
           <Button
             variant="text"
             color="white"
@@ -145,18 +145,6 @@ const GameHeader = () => {
 
           <MenuItem
             onClick={() => {
-              navigate('/home')
-              window.location.reload()
-            }}
-          >
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <Typography variant="h6">Leave Game</Typography>
-          </MenuItem>
-
-          <MenuItem
-            onClick={() => {
               handleCloseGameSettings()
               setShowInviteDialog(!showInviteDialog)
             }}
@@ -165,6 +153,18 @@ const GameHeader = () => {
               <LinkIcon />
             </ListItemIcon>
             <Typography variant="h6">Invite players</Typography>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => {
+              navigate('/home')
+              window.location.reload()
+            }}
+          >
+            <ListItemIcon>
+              <LogoutIcon />
+            </ListItemIcon>
+            <Typography variant="h6">Leave Game</Typography>
           </MenuItem>
         </Menu>
 

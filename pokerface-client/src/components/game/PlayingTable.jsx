@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import muiStyles from '../../style/muiStyles'
 const { Grid, Box, Card, Typography, Button } = muiStyles
 
-const PlayingTable = () => {
+const PlayingTable = ({disableButton}) => {
   const { gameData, setGameData, sendMessage } = useContext(GameContext)
   const { game_id } = useParams()
   const [playersData, setPlayersData] = useState([])
@@ -62,6 +62,7 @@ const PlayingTable = () => {
     >
       {tableMessage !== 'Pick your cards!' ? (
         <Button
+          disabled={disableButton}
           variant="contained"
           disableElevation
           size="large"

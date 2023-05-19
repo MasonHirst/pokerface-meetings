@@ -1,10 +1,4 @@
-.deck-card:hover {
-  cursor: pointer;
-}
 
-.playing-table:hover {
-  cursor: pointer;
-}
 
 /* .glowing-table {
   box-shadow: 0 0 0 0 rgba(94, 54, 247, 0.7), 0 0 0 0 rgba(94, 54, 247, 0.7);

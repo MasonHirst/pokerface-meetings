@@ -1,0 +1,18 @@
+
+the name change feature does not work
+
+FIXED------ Make it so if someone clicks 'reveal', the button is disabled for a few seconds
+
+build out the vote history
+
+FIXED------ the font size in cards needs to adjust for the string length so it all fits in the card
+
+FIXED------ add a maximum of 4 characters in a card
+
+FIXED------ make the create game page use the reusable dialog for changing decks
+
+FIXED------ make the saved decks list have a message if there are no decks
+
+FIXED------ When you delete a custom deck, it does not reflect in the ui until a rerender
+
+make cards everywhere use card components instead of defining them each time
