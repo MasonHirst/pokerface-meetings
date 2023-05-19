@@ -4,7 +4,6 @@ import { GameContext } from '../../context/GameContext'
 import useClipboard from 'react-use-clipboard'
 import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
-import PlayerCard from './PlayerCard'
 import PurplDeckCard from './PurpleDeckCard'
 const { Box, Typography, Button, ContentCopyIcon } = muiStyles
 
@@ -31,7 +30,7 @@ const GameBody = () => {
       setStateButtonDisabled(true)
       setTimeout(() => {
         setStateButtonDisabled(false)
-      }, 2000)
+      }, 1500)
     }
   }, [gameData])
 
@@ -46,9 +45,10 @@ const GameBody = () => {
         key={index}
         gameState={gameState}
         player={player}
-        length={length}
         card={player.currentChoice}
         useCase="playerCard"
+        gameData={gameData}
+        borderColor='#902bf5'
       />
     )
   })

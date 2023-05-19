@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react'
 import muiStyles from '../../style/muiStyles'
-import PurplDeckCard from './PurpleDeckCard'
+import PurpleDeckCard from './PurpleDeckCard'
 import GraphemeSplitter from 'grapheme-splitter'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
@@ -12,10 +12,6 @@ const GameFooter = () => {
   const [gameState, setGameState] = useState('')
   const { gameData, sendMessage } = useContext(GameContext)
   const splitter = GraphemeSplitter()
-
-  function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
-  }
 
   function submitChoice(card) {
     sendMessage('updatedChoice', { card })
@@ -48,9 +44,19 @@ const GameFooter = () => {
   }, [gameData])
 
   const mappedDeckCards = deckCards.map((card, index) => {
-    let length = splitter.splitGraphemes(card.trim()).length
+    const length = splitter.splitGraphemes(card.trim()).length
     if (length < 5) {
-      return <PurplDeckCard key={index} submitChoice={submitChoice} card={card} length={length} />
+      return (
+        <PurpleDeckCard
+          key={index}
+          submitChoice={submitChoice}
+          card={card}
+          length={length}
+          gameData={gameData}
+          useCase='votingCard'
+          borderColor='#902bf5'
+        />
+      )
     }
   })
 
@@ -69,42 +75,17 @@ const GameFooter = () => {
   }
 
   const revealCardCount = Object.values(cardCounts).map((obj, index) => {
+    const length = splitter.splitGraphemes(obj.choice.trim()).length
     return (
-      <Box
+      <PurpleDeckCard
         key={index}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '6px',
-        }}
-      >
-        <Box
-          sx={{
-            height: 77,
-            width: 45,
-            border: '2px solid black',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: '10px',
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize:
-                isNativeEmoji(obj.choice)
-                  ? 25
-                  : 19,
-            }}
-          >
-            {obj.choice}
-          </Typography>
-        </Box>
-        <Typography variant="subtitle1">
-          {obj.count} vote{obj.count > 1 && 's'}
-        </Typography>
-      </Box>
+        card={obj.choice}
+        length={length}
+        gameData={gameData}
+        borderColor='black'
+        useCase='voteCount'
+        voteCount={obj.count}
+      />
     )
   })
 

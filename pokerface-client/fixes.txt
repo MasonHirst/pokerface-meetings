@@ -20,3 +20,7 @@ make cards everywhere use card components instead of defining them each time.
 add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
 
 add a sweet alert to confirm leaving game
+
+fix the sizing on the choose deck dialogs
+
+make the vote results section switch to column on mobile view to support lots of players

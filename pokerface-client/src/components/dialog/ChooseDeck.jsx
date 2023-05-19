@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import GraphemeSplitter from 'grapheme-splitter'
 import data from '@emoji-mart/data'
+import PurplDeckCard from '../game/PurpleDeckCard'
 import Picker from '@emoji-mart/react'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
@@ -57,10 +58,11 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     let alreadyExists = false
     const savedDecks = JSON.parse(localStorage.getItem('savedDecks'))
     savedDecks.forEach((deck) => {
-      if (deck.values === obj.values && deck.name === obj.name) alreadyExists = true
+      if (deck.values === obj.values && deck.name === obj.name)
+        alreadyExists = true
     })
     if (alreadyExists) return
-    
+
     if (savedDecks?.length) {
       localStorage.setItem('savedDecks', JSON.stringify([...savedDecks, obj]))
     } else {
@@ -78,27 +80,8 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
           }}
         >
-          <MenuItem
-            onClick={() => {
-              setDeckProp(deck.values)
-              setShowDeckDialog(false)
-            }}
-            sx={{ marginLeft: '-8px', padding: '8px' }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                textTransform: 'none',
-                color: 'black',
-                fontSize: { xs: '16px', sm: '20px' },
-              }}
-            >
-              {deck.name} ({deck.values})
-            </Typography>
-          </MenuItem>
           {isCustom && (
             <IconButton
               onClick={() => {
@@ -113,6 +96,29 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
               <DeleteOutlineIcon color="error" />
             </IconButton>
           )}
+          <MenuItem
+            onClick={() => {
+              setDeckProp(deck.values)
+              setShowDeckDialog(false)
+            }}
+            sx={{
+              marginLeft: '-8px',
+              padding: '8px',
+              minWidth: '100%',
+              borderRadius: '10px',
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                textTransform: 'none',
+                color: 'black',
+                fontSize: { xs: '16px', sm: '20px' },
+              }}
+            >
+              {deck.name} ({deck.values})
+            </Typography>
+          </MenuItem>
         </Box>
       )
     })
@@ -124,43 +130,26 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     mappedCustomDeck = [...new Set(customDeck.split(','))].map(
       (card, index) => {
         let length = splitter.splitGraphemes(card.trim()).length
-        if (length > 4) return
+        if (length > 4 || card.trim().length < 1) return
 
-        let cardFontSize = isNativeEmoji(card) ? 28 : 20
-        if (isNativeEmoji(card)) {
-          if (length > 1) cardFontSize = 17
-          if (length > 2) cardFontSize = 14
-          if (length > 3) cardFontSize = 11
-        } else {
-          if (length > 2) cardFontSize = 18
-          if (length > 3) cardFontSize = 15
-        }
+        // let cardFontSize = isNativeEmoji(card) ? 28 : 20
+        // if (isNativeEmoji(card)) {
+        //   if (length > 1) cardFontSize = 17
+        //   if (length > 2) cardFontSize = 14
+        //   if (length > 3) cardFontSize = 11
+        // } else {
+        //   if (length > 2) cardFontSize = 18
+        //   if (length > 3) cardFontSize = 15
+        // }
 
         return (
-          <Box
+          <PurplDeckCard
             key={index}
-            sx={{
-              height: 84,
-              width: 50,
-              minWidth: 50,
-              border: '2px solid #902bf5',
-              transition: '0.2s',
-              marginTop: '0',
-              display: 'flex',
-              justifyContent: 'center',
-              backgroundColor: 'transparent',
-              color: 'black',
-              alignItems: 'center',
-              borderRadius: '10px',
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap' }}
-            >
-              {card}
-            </Typography>
-          </Box>
+            card={card}
+            length={length}
+            useCase="customDeckPreview"
+            borderColor="#902bf5"
+          />
         )
       }
     )

@@ -1,5 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { GameContext } from '../../context/GameContext'
+import React, { useState, useRef, useEffect } from 'react'
 import { useMediaQuery } from '@mui/material'
 import purpleAbstract from '../../assets/purple-abstract.jpg'
 import muiStyles from '../../style/muiStyles'
@@ -12,86 +11,120 @@ const PurplDeckCard = ({
   useCase,
   disabled,
   player,
+  gameData,
+  voteCount,
+  borderColor,
 }) => {
   const localUserToken = localStorage.getItem('localUserToken')
   const [gameState, setGameState] = useState('')
   const choice = player?.currentChoice
   const [thisUser, setThisUser] = useState({})
-  const { gameData } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const [cardFontSize, setCardFontSize] = useState(23)
+  const cardTextRef = useRef()
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(card))
-  }
-
-  let cardFontSize = isNativeEmoji(card) ? 33 : 23
-  if (isNativeEmoji(card)) {
-    if (length > 1) cardFontSize = 21
-    if (length > 2) cardFontSize = 15
-    if (length > 3) cardFontSize = 10
-  } else {
-    if (length > 1) cardFontSize = 20
-    if (length > 2) cardFontSize = 18
-    if (length > 3) cardFontSize = 15
-  }
-  if (!isSmallScreen) {
-    cardFontSize += 3
-  }
-
-  let cardHeight = isSmallScreen ? 84 : 98
-  if (useCase === 'playerCard') {
-    cardHeight = isSmallScreen ? 92 : 110
-  }
-  let cardWidth = isSmallScreen ? 50 : 60
-  if (useCase === 'playerCard') {
-    cardWidth = isSmallScreen ? 57 : 67
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
   }
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
+    if (useCase === 'playerCard') setCardFontSize(28)
+    if (isNativeEmoji(card)) {
+      setCardFontSize(34)
+    } else (setCardFontSize(23))
+  }, [card])
+
+  let cardHeight = 98
+  let cardWidth = 60
+
+  if (isSmallScreen) {
+    cardFontSize = cardFontSize * 0.9
+    cardHeight = cardHeight * 0.9
+  }
+
+  if (useCase === 'playerCard') {
+    cardHeight = cardHeight * 1.2
+    cardWidth = cardWidth * 1.2
+  }
+
+  if (useCase === 'customDeckPreview') {
+    cardHeight = cardHeight * 0.9
+    cardWidth = cardWidth * 0.9
+  }
+
+  useEffect(() => {
+    if (!gameData || !gameData.gameRoomName) return
     setGameState(gameData.gameState)
     setThisUser(gameData.players[localUserToken])
   }, [gameData])
 
-  const selected = thisUser.currentChoice === card
+  const selected = thisUser?.currentChoice === card && useCase === 'votingCard'
+
+  useEffect(() => {
+    if (!cardTextRef.current) return
+    const fontWidth = cardTextRef.current.clientWidth
+    if (fontWidth > cardWidth - 6) {
+      setCardFontSize(cardFontSize - 1)
+    }
+  }, [cardTextRef.current, card, cardFontSize, gameState, cardWidth])
 
   return (
     <Box
-      onClick={() => {
-        if (gameState !== 'voting' || disabled) return
-        submitChoice(card)
-      }}
-      className={gameState === 'voting' && !disabled && 'cursor-pointer'}
       sx={{
-        height: cardHeight,
-        width: cardWidth,
-        minWidth: cardWidth,
-        border: '2px solid #902bf5',
-        transition: '0.2s',
-        position: 'relative',
-        bottom: selected ? '20px' : 0,
         display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: useCase === 'playerCard' ? '#E8E9EA' : (selected ? '#902bf5' : 'transparent'),
-        color: selected && '#ffffff',
+        flexDirection: 'column',
         alignItems: 'center',
-        borderRadius: '10px',
-        backgroundImage:
-          choice &&
-          gameState === 'voting' &&
-          useCase === 'playerCard' &&
-          `url(${purpleAbstract})`,
-        backgroundPosition: 'center',
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
       }}
     >
-      <Typography
-        variant="h6"
-        sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap' }}
+      <Box
+        onClick={() => {
+          if (gameState !== 'voting' || disabled) return
+          submitChoice(card)
+        }}
+        className={gameState === 'voting' && !disabled && 'cursor-pointer'}
+        sx={{
+          height: cardHeight,
+          width: cardWidth,
+          minWidth: cardWidth,
+          border: `2px solid ${borderColor}`,
+          transition: '0.2s',
+          position: 'relative',
+          bottom: selected ? '20px' : 0,
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor:
+            useCase === 'playerCard'
+              ? '#E8E9EA'
+              : selected
+              ? '#902bf5'
+              : 'transparent',
+          color: selected && useCase !== 'playerCard' && '#ffffff',
+          alignItems: 'center',
+          borderRadius: '10px',
+          backgroundImage:
+            choice &&
+            gameState === 'voting' &&
+            useCase === 'playerCard' &&
+            `url(${purpleAbstract})`,
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+        }}
       >
-        {useCase === 'playerCard' ? (gameState === 'reveal' && choice) : card}
-      </Typography>
+        <Typography
+          variant="h6"
+          sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap' }}
+          ref={cardTextRef}
+        >
+          {useCase === 'playerCard' ? gameState === 'reveal' && choice : card}
+        </Typography>
+      </Box>
+
+      {useCase === 'voteCount' && (
+        <Typography variant="subtitle1">
+          {voteCount} vote{voteCount > 1 && 's'}
+        </Typography>
+      )}
     </Box>
   )
 }

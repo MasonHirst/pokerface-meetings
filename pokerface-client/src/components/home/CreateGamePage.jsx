@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PurplDeckCard from '../game/PurpleDeckCard'
+import GraphemeSplitter from 'grapheme-splitter'
 import ChooseDeck from '../dialog/ChooseDeck'
 import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
@@ -7,16 +9,12 @@ const {
   Box,
   TextField,
   Button,
-  Dialog,
-  Typography,
-  IconButton,
-  EmojiEmotionsOutlinedIcon,
   StyleIcon,
   TvIcon,
-  MenuItem,
 } = muiStyles
 
 const CreateGamePage = () => {
+  const splitter = GraphemeSplitter()
   const [selectedDeck, setSelectedDeck] = useState(
     '1,2,3,5,8,13,21,34,55,89,?,☕'
   )
@@ -32,31 +30,15 @@ const CreateGamePage = () => {
 
   const mappedSelectedDeck = [...new Set(selectedDeck.split(','))].map(
     (card, index) => {
+      const length = splitter.splitGraphemes(card.trim()).length
       return (
-        <Box
+        <PurplDeckCard 
           key={index}
-          sx={{
-            height: 84,
-            width: 50,
-            minWidth: 50,
-            border: '2px solid #902bf5',
-            transition: '0.2s',
-            marginTop: '0',
-            display: 'flex',
-            justifyContent: 'center',
-            backgroundColor: 'transparent',
-            color: 'black',
-            alignItems: 'center',
-            borderRadius: '10px',
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ fontSize: isNativeEmoji(card) ? 22 : 18 }}
-          >
-            {card}
-          </Typography>
-        </Box>
+          card={card}
+          useCase="customDeckPreview"
+          length={length}
+          borderColor={'#902bf5'}
+        />
       )
     }
   )
