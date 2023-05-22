@@ -6,8 +6,10 @@ import { GameContext } from '../../context/GameContext'
 import dontGo from '../../assets/dont-go.gif'
 import ChooseDeck from '../dialog/ChooseDeck'
 import { useMediaQuery } from '@mui/material'
+import ProfileDialog from '../dialog/ProfileDialog'
 import muiStyles from '../../style/muiStyles'
 import Swal from 'sweetalert2'
+import PurpleDeckCard from './PurpleDeckCard'
 const {
   Typography,
   LogoutIcon,
@@ -28,14 +30,16 @@ const {
   IconButton,
   CheckIcon,
   EditIcon,
+  Avatar,
   LinkIcon,
 } = muiStyles
 
 const GameHeader = () => {
   const navigate = useNavigate()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const { gameData, sendMessage, setPlayerName } = useContext(GameContext)
+  const { gameData, sendMessage } = useContext(GameContext)
   const [anchorEl, setAnchorEl] = useState(null)
+  const [showProfileDialog, setShowProfileDialog] = useState(false)
   const open = Boolean(anchorEl)
   const [newName, setNewName] = useState(gameData.gameRoomName)
   const roomName = gameData.gameRoomName
@@ -116,7 +120,7 @@ const GameHeader = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: { xs: '0 10px', sm: '0 40px' },
+        padding: { xs: '0 5px', sm: '0 40px' },
       }}
     >
       <Box
@@ -129,7 +133,13 @@ const GameHeader = () => {
           alignItems: 'center',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: '5px', sm: '15px' },
+          }}
+        >
           <img
             className="cursor-pointer"
             onClick={() => navigate('/')}
@@ -142,7 +152,7 @@ const GameHeader = () => {
             color="white"
             endIcon={<ExpandMoreIcon />}
             onClick={handleOpenGameSettings}
-            sx={{ textTransform: 'none', fontSize: '22px' }}
+            sx={{ textTransform: 'none', fontSize: { xs: '18px', sm: '22px' } }}
             disableElevation
           >
             {roomName}
@@ -201,18 +211,32 @@ const GameHeader = () => {
             sx={{
               textTransform: 'none',
               fontSize: '18px',
-              display: { xs: 'none', sm: 'block' },
+              display: { xs: 'none', md: 'block' },
             }}
           >
             Invite players
           </Button>
 
-          <IconButton
-            sx={{ padding: '12px' }}
-            onClick={() => setDrawerOpen(!drawerOpen)}
-          >
-            <MenuIcon color="white" />
-          </IconButton>
+          {!isSmallScreen ? (
+            <Button
+              onClick={() => setDrawerOpen(!drawerOpen)}
+              endIcon={<ExpandMoreIcon />}
+              color="white"
+              sx={{
+                textTransform: 'none',
+                fontSize: { xs: '18px', sm: '22px' },
+              }}
+            >
+              {localStorage.getItem('playerName')}
+            </Button>
+          ) : (
+            <IconButton
+              sx={{ padding: { xs: '7px', sm: '12px' } }}
+              onClick={() => setDrawerOpen(!drawerOpen)}
+            >
+              <MenuIcon color="white" />
+            </IconButton>
+          )}
         </Box>
 
         <Drawer
@@ -220,18 +244,28 @@ const GameHeader = () => {
           open={drawerOpen}
           onClose={() => setDrawerOpen(!drawerOpen)}
         >
-          <Box sx={{ minWidth: isSmallScreen ? '180px' : '260px' }}>
+          <Box
+            sx={{
+              minWidth: isSmallScreen ? '180px' : '260px',
+              padding: '10px 0',
+            }}
+          >
             <MenuItem
               sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
               onClick={() => {
-                setPlayerName(null)
+                setShowProfileDialog(!showProfileDialog)
                 setDrawerOpen(!drawerOpen)
               }}
             >
+              <PurpleDeckCard
+                gameState="voting"
+                card="1"
+                useCase="playerCard"
+                borderColor={'#902bf5'}
+                sizeMultiplier={.8}
+              />
               <Typography variant="h6">
-                {gameData.players &&
-                  gameData.players[localStorage.getItem('localUserToken')]
-                    .playerName}
+                {localStorage.getItem('playerName')}
               </Typography>
               <EditIcon />
             </MenuItem>
@@ -325,6 +359,7 @@ const GameHeader = () => {
             <TextField
               autoFocus
               fullWidth
+              inputProps={{ maxLength: 20 }}
               value={newName}
               placeholder="Enter a game name"
               label="New game name"
@@ -390,6 +425,14 @@ const GameHeader = () => {
         </IconButton>
         <Typography variant="h5">Vote History</Typography>
       </Dialog>
+
+      {showProfileDialog && (
+        <ProfileDialog
+          gameData={gameData}
+          showDialog={showProfileDialog}
+          setShowDialog={setShowProfileDialog}
+        />
+      )}
     </Box>
   )
 }

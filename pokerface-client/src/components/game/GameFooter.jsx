@@ -54,7 +54,8 @@ const GameFooter = () => {
           submitChoice={submitChoice}
           card={card}
           length={length}
-          gameData={gameData}
+          gameState={gameState}
+          thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
           useCase="votingCard"
           borderColor="#902bf5"
         />
@@ -85,7 +86,8 @@ const GameFooter = () => {
       <PurpleDeckCard
         key={index}
         card={obj.choice}
-        gameData={gameData}
+        gameState={gameState}
+        thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
         borderColor="black"
         useCase="voteCount"
         bottomMessage={`${obj.count} ${bottomMessage}`}
@@ -94,101 +96,88 @@ const GameFooter = () => {
   })
 
   return (
-    // <Box
-    //   className="game-footer-container"
-    //   sx={{
-    //     width: '100%',
-    //     flexShrink: 0,
-    //     display: 'flex',
-    //     padding: '20px 5px 0px 5px',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //   }}
-    // >
-      <Box
-        className="game-footer"
-        sx={{
-          width: '100%',
-          // height: '100%',
-          display: 'flex',
-          padding: '20px 5px 0px 5px',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '25px',
-          flexWrap: 'nowrap',
-          overflowX: 'scroll',
-        }}
-      >
-        {gameState === 'voting' ? (
-          playersData.length ? (
-            <Box
-              sx={{
-                display: 'flex',
-                gap: { xs: '10px', sm: '18px' },
-                overflowX: 'scroll',
-                height: '100%',
-                alignItems: 'flex-end',
-                paddingBottom: '8px',
-              }}
-            >
-              {mappedDeckCards}
-            </Box>
-          ) : (
-            <Typography variant="h6">No cards</Typography>
-          )
-        ) : (
-          // Reveal state footer
+    <Box
+      className="game-footer"
+      sx={{
+        width: '100%',
+        display: 'flex',
+        padding: '20px 5px 0px 5px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '25px',
+        flexWrap: 'nowrap',
+        overflowX: 'scroll',
+      }}
+    >
+      {gameState === 'voting' ? (
+        playersData.length ? (
           <Box
             sx={{
               display: 'flex',
-              flexDirection: isSmallScreen ? 'column-reverse' : 'row',
-              alignItems: 'center',
-              gap: '20px',
+              gap: { xs: '10px', sm: '18px' },
+              overflowX: 'scroll',
+              height: '100%',
+              alignItems: 'flex-end',
+              paddingBottom: '8px',
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                gap: '20px',
-                overflowX: 'scroll',
-                paddingBottom: '4px',
-              }}
-            >
-              {revealCardCount}
-            </Box>
-            {Object.values(latestVoting).length &&
-              averageNumericValues(Object.values(latestVoting)) && (
-                <Box
+            {mappedDeckCards}
+          </Box>
+        ) : (
+          <Typography variant="h6">No cards</Typography>
+        )
+      ) : (
+        // Reveal state footer
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: isSmallScreen ? 'column-reverse' : 'row',
+            alignItems: 'center',
+            gap: '20px',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '20px',
+              overflowX: 'scroll',
+              paddingBottom: '4px',
+            }}
+          >
+            {revealCardCount}
+          </Box>
+          {Object.values(latestVoting).length &&
+            averageNumericValues(Object.values(latestVoting)) && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '7px',
+                  position: 'relative',
+                  bottom: isSmallScreen ? '0px' : '15px',
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
+                >
+                  Average:
+                </Typography>
+                <Typography
+                  variant="h5"
                   sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '7px',
-                    position: 'relative',
-                    bottom: isSmallScreen ? '0px' : '15px',
+                    marginTop: '-10px',
+                    fontSize: { xs: '25px', sm: '30px' },
                   }}
                 >
-                  <Typography
-                    variant="body1"
-                    sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
-                  >
-                    Average:
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      marginTop: '-10px',
-                      fontSize: { xs: '25px', sm: '30px' },
-                    }}
-                  >
-                    {averageNumericValues(Object.values(latestVoting))}
-                  </Typography>
-                </Box>
-              )}
-          </Box>
-        )}
-      </Box>
-    // </Box>
+                  {averageNumericValues(Object.values(latestVoting))}
+                </Typography>
+              </Box>
+            )}
+        </Box>
+      )}
+    </Box>
   )
 }
 

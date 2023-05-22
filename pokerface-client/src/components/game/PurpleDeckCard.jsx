@@ -4,20 +4,18 @@ import purpleAbstract from '../../assets/purple-abstract.jpg'
 import muiStyles from '../../style/muiStyles'
 const { Box, Typography } = muiStyles
 
-const PurplDeckCard = ({
+const PurpleDeckCard = ({
   card,
   submitChoice,
   useCase,
   disabled,
-  player,
-  gameData,
   bottomMessage,
   borderColor,
+  thisUser,
+  cardImage,
+  gameState,
+  sizeMultiplier,
 }) => {
-  const localUserToken = localStorage.getItem('localUserToken')
-  const [gameState, setGameState] = useState('')
-  const choice = player?.currentChoice
-  const [thisUser, setThisUser] = useState({})
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [cardFontSize, setCardFontSize] = useState(23)
   const cardTextRef = useRef()
@@ -33,16 +31,16 @@ const PurplDeckCard = ({
     } else setCardFontSize(23)
   }, [card])
 
-  let cardHeight = 98
-  let cardWidth = 60
+  let cardHeight = sizeMultiplier ? 98 * sizeMultiplier : 98
+  let cardWidth = sizeMultiplier ?  60 * sizeMultiplier : 60
 
   if (isSmallScreen) {
-    cardHeight = cardHeight * 0.9
-    cardWidth = cardWidth * 0.9
+    cardHeight = cardHeight * 0.7
+    cardWidth = cardWidth * 0.7
   }
   if (isSmallScreen && useCase === 'playerCard') {
-    cardHeight = cardHeight * .85
-    cardWidth = cardWidth * .85
+    cardHeight = cardHeight * .9
+    cardWidth = cardWidth * .9
   }
 
   useEffect(() => {
@@ -53,23 +51,17 @@ const PurplDeckCard = ({
     }
   }, [isSmallScreen])
 
-  if (useCase === 'playerCard') {
-    cardHeight = cardHeight * 1.2
-    cardWidth = cardWidth * 1.2
-  }
+  // if (useCase === 'playerCard') {
+  //   cardHeight = cardHeight * 1.2
+  //   cardWidth = cardWidth * 1.2
+  // }
 
-  if (useCase === 'customDeckPreview') {
-    cardHeight = cardHeight * 0.9
-    cardWidth = cardWidth * 0.9
-  }
+  // if (useCase === 'customDeckPreview') {
+  //   cardHeight = cardHeight * 0.9
+  //   cardWidth = cardWidth * 0.9
+  // }
 
-  useEffect(() => {
-    if (!gameData || !gameData.gameRoomName) return
-    setGameState(gameData.gameState)
-    setThisUser(gameData.players[localUserToken])
-  }, [gameData])
-
-  const selected = thisUser?.currentChoice === card && useCase === 'votingCard'
+  const selected = useCase === 'votingCard' && thisUser?.currentChoice === card
 
   useEffect(() => {
     if (!cardTextRef.current) return
@@ -119,12 +111,12 @@ const PurplDeckCard = ({
               : 'transparent',
           color: selected && useCase !== 'playerCard' && '#ffffff',
           alignItems: 'center',
-          borderRadius: '10px',
+          borderRadius: `${cardHeight / 12}px`,
           backgroundImage:
-            choice &&
+            card &&
             gameState === 'voting' &&
             useCase === 'playerCard' &&
-            `url(${purpleAbstract})`,
+            `url(${cardImage ? cardImage : purpleAbstract})`,
           backgroundPosition: 'center',
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
@@ -132,17 +124,17 @@ const PurplDeckCard = ({
       >
         <Typography
           variant="h6"
-          sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap' }}
+          sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap', userSelect: 'none' }}
           ref={cardTextRef}
         >
-          {useCase === 'playerCard' ? gameState === 'reveal' && choice : card}
+          {useCase === 'playerCard' ? gameState === 'reveal' && card : card}
         </Typography>
       </Box>
 
       {bottomMessage && (
         <Typography
           variant="subtitle1"
-          sx={{ fontSize: isSmallScreen ? 15 : 17, marginTop: useCase === 'playerCard' ? '5px' : 0 }}
+          sx={{ userSelect: 'none', fontSize: isSmallScreen ? 15 : 17, marginTop: useCase === 'playerCard' ? '5px' : 0 }}
         >
           {bottomMessage}
         </Typography>
@@ -151,4 +143,4 @@ const PurplDeckCard = ({
   )
 }
 
-export default PurplDeckCard
+export default PurpleDeckCard

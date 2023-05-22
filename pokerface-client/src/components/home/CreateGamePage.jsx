@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PurplDeckCard from '../game/PurpleDeckCard'
+import PurpleDeckCard from '../game/PurpleDeckCard'
 import GraphemeSplitter from 'grapheme-splitter'
 import ChooseDeck from '../dialog/ChooseDeck'
 import axios from 'axios'
@@ -32,13 +32,15 @@ const CreateGamePage = () => {
   const mappedSelectedDeck = [...new Set(selectedDeck.split(','))].map(
     (card, index) => {
       const length = splitter.splitGraphemes(card.trim()).length
+      if (length > 4 || card.trim().length < 1) return
       return (
-        <PurplDeckCard 
+        <PurpleDeckCard 
           key={index}
           card={card}
           useCase="customDeckPreview"
           length={length}
           borderColor={'#902bf5'}
+          sizeMultiplier={.9}
         />
       )
     }
@@ -88,6 +90,7 @@ const CreateGamePage = () => {
         }}
       >
         <TextField
+          inputProps={{ maxLength: 20 }}
           onChange={(e) => setGameName(e.target.value)}
           sx={{ width: 'min(650px, 100%)' }}
           autoFocus

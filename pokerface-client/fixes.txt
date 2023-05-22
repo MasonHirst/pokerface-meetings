@@ -1,5 +1,5 @@
 
-the name change feature does not work
+FIXED------ the name change feature does not work
 
 FIXED------ Make it so if someone clicks 'reveal', the button is disabled for a few seconds
 
@@ -17,7 +17,9 @@ FIXED------ When you delete a custom deck, it does not reflect in the ui until a
 
 FIXED------ make cards everywhere use card components instead of defining them each time. 
 
-add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
+FIXED------ add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
+
+make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
 
 add a sweet alert to confirm leaving game or delete a deck
 
@@ -29,3 +31,8 @@ FIXED------ When the socket reaches max attempts at joining game rooms, make a s
 
 Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
 
+make it so you leave a game if you navigate away from a game page, and the socket should only be connected if in a game page
+
+FIXED------ Stop cards from highlighting when you click them
+
+add skeletons when cards or content is loading where appropriate

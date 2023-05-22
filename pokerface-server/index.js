@@ -16,8 +16,12 @@ const {
   startSocketServer,
   extractToken,
   createNewGame,
+  uploadCloudinaryImage,
+  deleteCloudinaryImage
 } = require('./controllers/socketController')
 
+app.put('/game/upload_image', extractToken, uploadCloudinaryImage)
+app.delete('/game/delete_image', extractToken, deleteCloudinaryImage)
 app.post('/game/create', extractToken, createNewGame)
 app.get('/server/ping/8080', async (req, res) => {
   res.send('pong')

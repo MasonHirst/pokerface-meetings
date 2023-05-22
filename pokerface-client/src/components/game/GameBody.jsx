@@ -4,7 +4,7 @@ import { GameContext } from '../../context/GameContext'
 import useClipboard from 'react-use-clipboard'
 import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
-import PurplDeckCard from './PurpleDeckCard'
+import PurpleDeckCard from './PurpleDeckCard'
 const { Box, Typography, Button, ContentCopyIcon } = muiStyles
 
 const GameBody = () => {
@@ -41,15 +41,16 @@ const GameBody = () => {
       length = splitter.splitGraphemes(player.currentChoice.trim()).length
     }
     return (
-      <PurplDeckCard
+      <PurpleDeckCard
         key={index}
-        gameState={gameState}
-        player={player}
         card={player.currentChoice}
         useCase="playerCard"
-        gameData={gameData}
+        gameState={gameState}
+        thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
         borderColor='#902bf5'
+        cardImage={player.playerCardImage}
         bottomMessage={player.playerName}
+        sizeMultiplier={1.2}
       />
     )
   })

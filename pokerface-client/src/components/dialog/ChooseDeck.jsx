@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import GraphemeSplitter from 'grapheme-splitter'
 import data from '@emoji-mart/data'
-import PurplDeckCard from '../game/PurpleDeckCard'
+import PurpleDeckCard from '../game/PurpleDeckCard'
 import Picker from '@emoji-mart/react'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
@@ -131,24 +131,14 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
       (card, index) => {
         let length = splitter.splitGraphemes(card.trim()).length
         if (length > 4 || card.trim().length < 1) return
-
-        // let cardFontSize = isNativeEmoji(card) ? 28 : 20
-        // if (isNativeEmoji(card)) {
-        //   if (length > 1) cardFontSize = 17
-        //   if (length > 2) cardFontSize = 14
-        //   if (length > 3) cardFontSize = 11
-        // } else {
-        //   if (length > 2) cardFontSize = 18
-        //   if (length > 3) cardFontSize = 15
-        // }
-
         return (
-          <PurplDeckCard
+          <PurpleDeckCard
             key={index}
             card={card}
             length={length}
             useCase="customDeckPreview"
             borderColor="#902bf5"
+            sizeMultiplier={.9}
           />
         )
       }
@@ -234,6 +224,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           <TextField
             autoFocus
             fullWidth
+            inputProps={{ maxLength: 15 }}
             label="Deck Name"
             placeholder="Enter a name for your deck"
             onChange={(e) => setCustomDeckName(e.target.value)}
@@ -242,6 +233,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             <TextField
               inputRef={deckInputRef}
               value={customDeck}
+              inputProps={{ maxLength: 100 }}
               spellCheck={false}
               onChange={(e) => setCustomDeck(e.target.value)}
               fullWidth

@@ -76,8 +76,14 @@ import LinkIcon from '@mui/icons-material/Link'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import LinearProgress from '@mui/material/LinearProgress'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import Slider from '@mui/material/Slider'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 
 let muiStyles = {
+  ZoomInIcon,
+  RotateLeftIcon,
+  Slider,
   ContentCopyIcon,
   LinearProgress,
   InfoOutlinedIcon,

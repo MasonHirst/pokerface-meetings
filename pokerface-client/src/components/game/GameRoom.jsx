@@ -90,11 +90,8 @@ const GameRoom = () => {
         >
           <TextField
             value={nameInput}
-            onChange={(e) => {
-              if (nameInput.length < 10) {
-                setNameInput(e.target.value)
-              } else setNameError('Name must be less than 10 characters')
-            }}
+            onChange={(e) => setNameInput(e.target.value)}
+            inputProps={{ maxLength: 12 }}
             fullWidth
             autoFocus
             error={!!nameError}

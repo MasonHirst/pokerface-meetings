@@ -82,7 +82,7 @@ export const GameProvider = ({ children }) => {
       const ws = new WebSocket(
         `${serverUrl}?token=${localStorage.getItem(
           'localUserToken'
-        )}&player_name=${playerName}&game_id=${game_id}`
+        )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem('pokerCardImage')}`
       )
 
       ws.addEventListener('open', function () {
@@ -106,7 +106,7 @@ export const GameProvider = ({ children }) => {
         } else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt')
           notFoundConnectCounter++
-          if (notFoundConnectCounter < 5) {
+          if (notFoundConnectCounter < 10) {
             setTimeout(() => {
               console.warning('Trying to rejoin game room...')
               ws.close() // close the socket connection, which will trigger a reconnect
