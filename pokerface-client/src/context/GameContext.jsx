@@ -1,15 +1,27 @@
 import React, { createContext, useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import spidermanCrying from '../assets/spiderman-crying.gif'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.css'
 
 export const GameContext = createContext()
 
 export const GameProvider = ({ children }) => {
-  const [playerName, setPlayerName] = useState(localStorage.getItem('playerName'))
+  if (localStorage.getItem('playerName') && localStorage.getItem('playerName').length > 9) localStorage.removeItem('playerName')
+  const [playerName, setPlayerName] = useState(
+    localStorage.getItem('playerName')
+  )
   const [appIsLoading, setAppIsLoading] = useState(false)
   const [socket, setSocket] = useState(null)
+  const navigate = useNavigate()
+  let activeSocket = true
+  function toggleActiveSocket(state) {
+    activeSocket = state
+  }
   const [gameData, setGameData] = useState({})
   const [gameExists, setGameExists] = useState(false)
+  const [joinGameLoading, setJoinGameLoading] = useState(false)
   const { game_id } = useParams()
 
   console.success = function (message) {
@@ -21,28 +33,42 @@ export const GameProvider = ({ children }) => {
 
   // eslint-disable-next-line
   function sendMessage(type, body) {
-    const bodyStr = JSON.stringify({ type, body, gameId: game_id, token: localStorage.getItem('localUserToken') })
-    // eslint-disable-next-line
+    const bodyStr = JSON.stringify({
+      type,
+      body,
+      gameId: game_id,
+      token: localStorage.getItem('localUserToken'),
+    })
     socket?.send(bodyStr)
+  }
+
+  function confirmFailJoin(socket) {
+    Swal.fire({
+      title: 'Could not join game room',
+      text: 'This game room does not exist or is full.',
+      imageUrl: spidermanCrying,
+      imageWidth: 'min(90vw, 400px',
+      confirmButtonText: 'Take me home',
+      customClass: {
+        popup: 'swal2-popup', // Add the custom CSS class to the 'popup' element
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        toggleActiveSocket(false)
+        socket.close()
+        navigate('/')
+      }
+    })
   }
 
   let connectCounter = 0
   let notFoundConnectCounter = 0
 
-  // function getLatestGameInfo() {
-  //   axios
-  //     .get(`game/latest/${game_id}`)
-  //     .then(({ data }) => {
-  //       if (data.gameRoomName) {
-  //         setGameData(data)
-  //       }
-  //     })
-  //     .catch(console.error)
-  // }
-
   useEffect(() => {
-    if (!playerName) return
+    if (!playerName || !game_id || !activeSocket) return
     function connectClient() {
+      if (!game_id) return console.log('not in game room, aborting connection')
+      setJoinGameLoading(true)
       let serverUrl
       let scheme = 'ws'
       let location = document.location
@@ -56,7 +82,7 @@ export const GameProvider = ({ children }) => {
       const ws = new WebSocket(
         `${serverUrl}?token=${localStorage.getItem(
           'localUserToken'
-        )}&player_name=${playerName}&game_id=${game_id}`
+        )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem('pokerCardImage')}`
       )
 
       ws.addEventListener('open', function () {
@@ -73,23 +99,20 @@ export const GameProvider = ({ children }) => {
         let messageData = JSON.parse(event.data)
 
         if (messageData.event_type === 'playerJoinedGame') {
+          setJoinGameLoading(false)
           setGameData(messageData.game)
-        } 
-        
-        else if (messageData.event_type === 'gameUpdated') {
+        } else if (messageData.event_type === 'gameUpdated') {
           setGameData(messageData.game)
-        } 
-        
-        else if (messageData.event_type === 'gameNotFound') {
+        } else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt')
           notFoundConnectCounter++
-          if (notFoundConnectCounter < 8) {
+          if (notFoundConnectCounter < 10) {
             setTimeout(() => {
               console.warning('Trying to rejoin game room...')
               ws.close() // close the socket connection, which will trigger a reconnect
             }, 500)
           } else {
-            alert("Can't join game room, please refresh or create a new game")
+            confirmFailJoin(ws)
           }
         }
       })
@@ -99,14 +122,20 @@ export const GameProvider = ({ children }) => {
         connectCounter++
         setTimeout(() => {
           console.warning('Reconnecting...')
-          connectClient() // try to reconnect after a delay
+          if (!activeSocket || !game_id) {
+            return
+          } else {
+            console.log('active socket:', activeSocket)
+            console.log('connecting again! yay!')
+            connectClient() // try to reconnect after a delay
+          }
         }, 1000) // wait for 1 second before reconnecting
       })
 
       setSocket(ws)
     }
     connectClient()
-  }, [playerName])
+  }, [playerName, game_id])
 
   return (
     <GameContext.Provider
@@ -121,6 +150,9 @@ export const GameProvider = ({ children }) => {
         sendMessage,
         playerName,
         setPlayerName,
+        joinGameLoading,
+        setPlayerName,
+        toggleActiveSocket,
       }}
     >
       {children}

@@ -1,11 +1,21 @@
 const { WebSocketServer, WebSocket } = require('ws')
 const { v4: uuidv4, validate: validateUUID } = require('uuid')
+require('dotenv').config()
+const cloudinary = require('cloudinary')
+
+const { CLOUDINARY_SECRET, CLOUDINARY_KEY, CLOUDINARY_NAME } = process.env
+cloudinary.config({
+  cloud_name: CLOUDINARY_NAME,
+  api_key: CLOUDINARY_KEY,
+  api_secret: CLOUDINARY_SECRET,
+})
 
 let gameRooms = {}
 let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type) {
   console.log('game rooms status: ', gameRooms)
+  console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length)
   // arguments: target game room, event type, message
   const gameRoom = gameRooms[gameRoomId]
   if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
@@ -69,6 +79,7 @@ async function startSocketServer(app, port) {
     let token = null
     let playerName = null
     let gameId = null
+    let playerCardImage = null
 
     // Check if the URL contains a query parameter named 'token'
     if (req.url.includes('?')) {
@@ -77,6 +88,7 @@ async function startSocketServer(app, port) {
       token = urlParams.get('token')
       playerName = urlParams.get('player_name').trim()
       gameId = urlParams.get('game_id')
+      playerCardImage = urlParams.get('player_card_image')
     }
 
     // check if any players in the game room have the same name, and if they do, append a number to the end of the name
@@ -85,7 +97,6 @@ async function startSocketServer(app, port) {
         (player) => player.playerName
       )
       if (playerNames.includes(playerName)) {
-        console.log('player already in game: ', playerNames)
         let i = 1
         while (playerNames.includes(`${playerName}(${i})`)) {
           i++
@@ -93,7 +104,7 @@ async function startSocketServer(app, port) {
         playerName = `${playerName}(${i})`
       }
     }
-    
+
     // Attach the token to the WebSocket object
     ws.token = token
     ws.playerName = playerName
@@ -107,6 +118,7 @@ async function startSocketServer(app, port) {
         token,
         currentChoice: null,
         playerName,
+        playerCardImage: null,
       }
       const body = JSON.stringify({
         event_type: 'playerJoinedGame',
@@ -125,7 +137,7 @@ async function startSocketServer(app, port) {
       //! MESSAGES HANDLERS
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
-        console.log('new message recieved: ', dataBody)
+        // console.log('new message recieved: ', dataBody)
         const { type, body, gameId, token } = dataBody
 
         if (type === 'updatedChoice') {
@@ -168,19 +180,23 @@ async function startSocketServer(app, port) {
           delete gameRooms[gameId].players[token]
           console.log('Removed player from game')
           broadcastToRoom(gameId, 'gameUpdated')
-        }
-
-        else if (type === 'updatedDeck') {
+        } else if (type === 'updatedDeck') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updatedDeck) function')
           gameRooms[gameId].deck = body.deck
           broadcastToRoom(gameId, 'gameUpdated')
-        }
-
-        else if (type === 'updatedGameName') {
+        } else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updatedGameName) function')
           gameRooms[gameId].gameRoomName = body.name
+          broadcastToRoom(gameId, 'gameUpdated')
+        } else if (type === 'updateProfile') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updateProfile) function')
+          const { playerCardImage, name } = body
+          if (playerCardImage || playerCardImage === '')
+            gameRooms[gameId].players[token].playerCardImage = playerCardImage
+          if (name) gameRooms[gameId].players[token].playerName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
         }
       })
@@ -265,6 +281,50 @@ module.exports = {
       gameRooms[gameId].gameState = gameState
       broadcastToRoom(gameId, localUserToken, 'gameUpdated')
       res.send(gameRooms[gameId])
+    } catch (err) {
+      console.error(err)
+      res.status(500).send(err)
+    }
+  },
+
+  uploadCloudinaryImage: async (req, res) => {
+    const { image, localUserToken } = req.body
+
+    try {
+      cloudinary.v2.uploader.upload(
+        image,
+        { public_id: localUserToken, overwrite: true },
+        function (error, result) {
+          if (error) {
+            console.error(error)
+            res.status(500).send(error)
+          } else {
+            console.log(result)
+            res.send(result.url)
+          }
+        }
+      )
+    } catch (err) {
+      console.error(err)
+      res.status(500).send(err)
+    }
+  },
+
+  deleteCloudinaryImage: async (req, res) => {
+    const { localUserToken } = req.body
+    try {
+      cloudinary.v2.uploader.destroy(
+        localUserToken,
+        function (deleteError, deleteResult) {
+          if (deleteError) {
+            console.error(deleteError)
+            res.status(500).send(deleteError)
+          } else {
+            console.log(deleteResult)
+            res.send(deleteResult)
+          }
+        }
+      )
     } catch (err) {
       console.error(err)
       res.status(500).send(err)

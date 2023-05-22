@@ -1,33 +1,67 @@
 import React, { useContext, useState, useEffect } from 'react'
-import axios from 'axios'
 import PlayingTable from './PlayingTable'
 import { GameContext } from '../../context/GameContext'
+import useClipboard from 'react-use-clipboard'
+import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
-import PlayerCard from './PlayerCard'
-const { Box, Grid, Paper, Typography, Card } = muiStyles
+import PurpleDeckCard from './PurpleDeckCard'
+const { Box, Typography, Button, ContentCopyIcon } = muiStyles
 
 const GameBody = () => {
   const { gameData } = useContext(GameContext)
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const [stateButtonDisabled, setStateButtonDisabled] = useState(false)
+  const splitter = GraphemeSplitter()
+  const [isCopied, setCopied] = useClipboard(window.location.href, {
+    // `isCopied` will go back to `false` after 1500ms.
+    successDuration: 1500,
+  })
 
   useEffect(() => {
     if (!gameData.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
+    if (
+      !stateButtonDisabled &&
+      gameState !== gameData.gameState &&
+      gameData.gameState === 'reveal'
+    ) {
+      setStateButtonDisabled(true)
+      setTimeout(() => {
+        setStateButtonDisabled(false)
+      }, 1500)
+    }
   }, [gameData])
 
   const mappedPlayerCards = Object.values(playersData).map((player, index) => {
     if (!player) return
-    return <PlayerCard key={index} gameState={gameState} player={player} />
+    let length = 0
+    if (player.currentChoice) {
+      length = splitter.splitGraphemes(player.currentChoice.trim()).length
+    }
+    return (
+      <PurpleDeckCard
+        key={index}
+        card={player.currentChoice}
+        useCase="playerCard"
+        gameState={gameState}
+        thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
+        borderColor='#902bf5'
+        cardImage={player.playerCardImage}
+        bottomMessage={player.playerName}
+        sizeMultiplier={1.2}
+      />
+    )
   })
 
   return (
     <Box
       className="game-body-container"
       sx={{
-        width: '100vw',
-        minHeight: 'calc(100vh - 240px)',
+        width: '100%',
+        padding: '50px 0',
+        flexGrow: 1,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -44,7 +78,47 @@ const GameBody = () => {
           alignItems: 'center',
         }}
       >
-        <PlayingTable />
+        {gameData.players && Object.values(gameData.players).length < 2 && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <Typography variant="body1">It's just you here 😞</Typography>
+            {isCopied ? (
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#4caf50',
+                  marginBottom: '14px',
+                  marginTop: '4px',
+                  fontSize: '17px',
+                }}
+              >
+                Invite link copied to clipboard!
+              </Typography>
+            ) : (
+              <Button
+                startIcon={<ContentCopyIcon />}
+                variant="text"
+                sx={{
+                  textTransform: 'none',
+                  fontSize: '18px',
+                  position: 'relative',
+                  top: '-5px',
+                }}
+                onClick={(e) => {
+                  setCopied(e)
+                }}
+              >
+                Copy invite link
+              </Button>
+            )}
+          </Box>
+        )}
+        <PlayingTable disableButton={stateButtonDisabled} />
         <Box
           sx={{
             width: '100%',
@@ -54,6 +128,7 @@ const GameBody = () => {
             alignItems: 'center',
             gap: '25px',
             margin: '25px 0',
+            overflowX: 'scroll',
           }}
         >
           {mappedPlayerCards}

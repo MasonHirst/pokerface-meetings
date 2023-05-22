@@ -1,13 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { GameContext } from '../../context/GameContext'
-import axios from 'axios'
-import { useParams } from 'react-router-dom'
+import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
-const { Grid, Box, Card, Typography, Button } = muiStyles
+const { Card, Typography, Button } = muiStyles
 
-const PlayingTable = () => {
-  const { gameData, setGameData, sendMessage } = useContext(GameContext)
-  const { game_id } = useParams()
+const PlayingTable = ({disableButton}) => {
+  const { gameData, sendMessage } = useContext(GameContext)
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
 
@@ -62,16 +61,17 @@ const PlayingTable = () => {
     >
       {tableMessage !== 'Pick your cards!' ? (
         <Button
+          disabled={disableButton}
           variant="contained"
           disableElevation
-          size="large"
+          size={isSmallScreen ? 'medium' : 'large'}
           sx={{}}
           onClick={updateGameState}
         >
           {tableMessage}
         </Button>
       ) : (
-        <Typography variant="subtitle1" sx={{ fontSize: 18, color: "#ffffff", }}>
+        <Typography variant="subtitle1" sx={{ fontSize: isSmallScreen ? 15 : 18, color: "#ffffff", }}>
           {tableMessage}
         </Typography>
       )}

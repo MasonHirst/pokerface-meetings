@@ -1,0 +1,38 @@
+
+FIXED------ the name change feature does not work
+
+FIXED------ Make it so if someone clicks 'reveal', the button is disabled for a few seconds
+
+build out the vote history
+
+FIXED------ the font size in cards needs to adjust for the string length so it all fits in the card
+
+FIXED------ add a maximum of 4 characters in a card
+
+FIXED------ make the create game page use the reusable dialog for changing decks
+
+FIXED------ make the saved decks list have a message if there are no decks
+
+FIXED------ When you delete a custom deck, it does not reflect in the ui until a rerender
+
+FIXED------ make cards everywhere use card components instead of defining them each time. 
+
+FIXED------ add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
+
+make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
+
+add a sweet alert to confirm leaving game or delete a deck
+
+fix the sizing on the choose deck dialogs
+
+FIXED------ make the vote results section switch to column on mobile view to support lots of players
+
+FIXED------ When the socket reaches max attempts at joining game rooms, make a sweetalert with a button to navigate home
+
+Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
+
+make it so you leave a game if you navigate away from a game page, and the socket should only be connected if in a game page
+
+FIXED------ Stop cards from highlighting when you click them
+
+add skeletons when cards or content is loading where appropriate

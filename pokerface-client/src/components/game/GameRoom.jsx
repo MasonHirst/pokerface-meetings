@@ -4,37 +4,65 @@ import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
 import muiStyles from '../../style/muiStyles'
-const { Box, Dialog, TextField, Button, Typography } = muiStyles
+const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
 
 const GameRoom = () => {
   const {
     playerName,
     setPlayerName,
     sendMessage,
+    gameData,
+    joinGameLoading,
+    toggleActiveSocket,
   } = useContext(GameContext)
   const [nameError, setNameError] = useState('')
-  const nameInputRef = useRef()
+  const [nameInput, setNameInput] = useState('')
 
   function updateName(e) {
     e.preventDefault()
-    const nameInput = nameInputRef.current.value
     if (!nameInput) return setNameError('Please enter a name')
     localStorage.setItem('playerName', nameInput)
     setPlayerName(nameInput)
   }
 
   useEffect(() => {
+    if (gameData?.gameRoomName) {
+      document.title = `Pokerface - ${gameData.gameRoomName}`
+    }
+  }, [gameData.gameRoomName])
 
+  useEffect(() => {
+    toggleActiveSocket(true)
+  }, [])
+
+  useEffect(() => {
     return () => {
       sendMessage('playerLeaveGame', {})
     }
   }, [playerName])
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <GameHeader />
-      <GameBody />
-      <GameFooter />
+    <>
+      {!joinGameLoading && playerName ? (
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', }}>
+          <GameHeader />
+          <GameBody />
+          <GameFooter />
+        </Box>
+      ) : (
+        joinGameLoading && (
+          <Box>
+            <LinearProgress
+              size="large"
+              sx={{ position: 'fixed', top: 0, width: '100vw' }}
+            />
+            <Typography variant="h4" align="center" sx={{ marginTop: '20px' }}>
+              Joining Game...
+            </Typography>
+          </Box>
+        )
+      )}
+
       <Dialog
         disableEscapeKeyDown
         onClose={() => {}}
@@ -61,7 +89,9 @@ const GameRoom = () => {
           }}
         >
           <TextField
-            inputRef={nameInputRef}
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            inputProps={{ maxLength: 12 }}
             fullWidth
             autoFocus
             error={!!nameError}
@@ -69,12 +99,12 @@ const GameRoom = () => {
             placeholder="Enter your name"
             helperText={nameError}
           />
-          <Button fullWidth variant="contained">
+          <Button fullWidth type="submit" variant="contained">
             Join Game
           </Button>
         </form>
       </Dialog>
-    </Box>
+    </>
   )
 }
 
