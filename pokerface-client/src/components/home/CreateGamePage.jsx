@@ -5,13 +5,7 @@ import GraphemeSplitter from 'grapheme-splitter'
 import ChooseDeck from '../dialog/ChooseDeck'
 import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
-const {
-  Box,
-  TextField,
-  Button,
-  StyleIcon,
-  TvIcon,
-} = muiStyles
+const { Box, TextField, Button, StyleIcon, TvIcon } = muiStyles
 
 const CreateGamePage = () => {
   document.title = 'Pokerface - Create Game'
@@ -34,18 +28,17 @@ const CreateGamePage = () => {
       const length = splitter.splitGraphemes(card.trim()).length
       if (length > 4 || card.trim().length < 1) return
       return (
-        <PurpleDeckCard 
+        <PurpleDeckCard
           key={index}
           card={card}
           useCase="customDeckPreview"
           length={length}
           borderColor={'#902bf5'}
-          sizeMultiplier={.9}
+          sizeMultiplier={0.9}
         />
       )
     }
   )
-
 
   function handleHostGame(e) {
     setError('')
@@ -128,7 +121,8 @@ const CreateGamePage = () => {
           onClick={() => setShowDeckDialog(!showDeckDialog)}
           color="secondary"
           variant="contained"
-          sx={{ textTransform: 'none', fontSize: '17px' }}
+          disableElevation
+          sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
           startIcon={<StyleIcon />}
         >
           Change Deck

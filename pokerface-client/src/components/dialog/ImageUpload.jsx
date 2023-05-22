@@ -56,7 +56,7 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
       alert('No editor ref')
     }
   }
-  
+
   return (
     <Box>
       {!unCroppedImage ? (
@@ -184,21 +184,44 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
               {rotation}°
             </Typography>
           </Stack>
-          <Button
-            disableElevation
-            fullWidth
-            variant="contained"
-            color="secondary"
-            onClick={handleCrop}
+          <Box
             sx={{
-              textTransform: 'none',
-              marginTop: '10px',
-              fontWeight: 'bold',
-              fontSize: '17px',
+              display: 'flex',
+              gap: '10px',
+              width: '100%',
             }}
           >
-            Save
-          </Button>
+            <Button
+              disableElevation
+              fullWidth
+              variant="contained"
+              color="error"
+              onClick={() => setShowUploader(false)}
+              sx={{
+                textTransform: 'none',
+                marginTop: '10px',
+                fontWeight: 'bold',
+                fontSize: '17px',
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disableElevation
+              fullWidth
+              variant="contained"
+              color="secondary"
+              onClick={handleCrop}
+              sx={{
+                textTransform: 'none',
+                marginTop: '10px',
+                fontWeight: 'bold',
+                fontSize: '17px',
+              }}
+            >
+              Save
+            </Button>
+          </Box>
         </Box>
       ) : (
         <Typography>Something went wrong</Typography>

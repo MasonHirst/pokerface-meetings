@@ -54,8 +54,9 @@ const GameFooter = () => {
           submitChoice={submitChoice}
           card={card}
           length={length}
+          clickable={gameState === 'voting'}
           gameState={gameState}
-          thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
+          selected={gameData?.players[localStorage.getItem('localUserToken')].currentChoice === card}
           useCase="votingCard"
           borderColor="#902bf5"
         />
@@ -87,9 +88,7 @@ const GameFooter = () => {
         key={index}
         card={obj.choice}
         gameState={gameState}
-        thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
         borderColor="black"
-        useCase="voteCount"
         bottomMessage={`${obj.count} ${bottomMessage}`}
       />
     )

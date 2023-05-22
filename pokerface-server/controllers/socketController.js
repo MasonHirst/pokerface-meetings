@@ -118,7 +118,7 @@ async function startSocketServer(app, port) {
         token,
         currentChoice: null,
         playerName,
-        playerCardImage: null,
+        playerCardImage,
       }
       const body = JSON.stringify({
         event_type: 'playerJoinedGame',

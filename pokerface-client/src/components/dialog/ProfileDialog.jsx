@@ -103,12 +103,8 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
 
           <Box sx={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
             <PurpleDeckCard
-              gameState="voting"
-              card="1"
-              useCase="playerCard"
-              thisUser={
-                gameData?.players[localStorage.getItem('localUserToken')]
-              }
+              showBgImage
+              showCard={false}
               cardImage={
                 uploadedPicture
                   ? uploadedPicture

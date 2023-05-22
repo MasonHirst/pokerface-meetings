@@ -18,6 +18,10 @@ const GameBody = () => {
     successDuration: 1500,
   })
 
+  function isNativeEmoji(str) {
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+  }
+  
   useEffect(() => {
     if (!gameData.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
@@ -40,13 +44,16 @@ const GameBody = () => {
     if (player.currentChoice) {
       length = splitter.splitGraphemes(player.currentChoice.trim()).length
     }
+    console.log('image: ', player.playerCardImage)
     return (
       <PurpleDeckCard
         key={index}
+        fontSizeMultiplier={1.3}
         card={player.currentChoice}
-        useCase="playerCard"
+        showCard={gameState === 'reveal'}
+        bottomMessageMargin='3px 0 0 0'
+        showBgImage={player.currentChoice && gameState === 'voting'}
         gameState={gameState}
-        thisUser={gameData?.players[localStorage.getItem('localUserToken')]}
         borderColor='#902bf5'
         cardImage={player.playerCardImage}
         bottomMessage={player.playerName}

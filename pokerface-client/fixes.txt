@@ -36,3 +36,7 @@ make it so you leave a game if you navigate away from a game page, and the socke
 FIXED------ Stop cards from highlighting when you click them
 
 add skeletons when cards or content is loading where appropriate
+
+make the header display the custom card
+
+improve the reusability of the PurpleDeckCard by making more general purpose props and less logic in the component

@@ -225,8 +225,17 @@ const GameHeader = () => {
               sx={{
                 textTransform: 'none',
                 fontSize: { xs: '18px', sm: '22px' },
+                gap: '12px',
               }}
             >
+              <PurpleDeckCard
+                showBgImage
+                showCard={false}
+                borderColor="white"
+                borderThickness={1}
+                sizeMultiplier={0.6}
+                cardImage={localStorage.getItem('pokerCardImage')}
+              />
               {localStorage.getItem('playerName')}
             </Button>
           ) : (
@@ -258,11 +267,12 @@ const GameHeader = () => {
               }}
             >
               <PurpleDeckCard
-                gameState="voting"
-                card="1"
-                useCase="playerCard"
+                showBgImage
+                showCard={false}
                 borderColor={'#902bf5'}
-                sizeMultiplier={.8}
+                borderThickness={1.5}
+                sizeMultiplier={0.8}
+                cardImage={localStorage.getItem('pokerCardImage')}
               />
               <Typography variant="h6">
                 {localStorage.getItem('playerName')}
@@ -330,7 +340,7 @@ const GameHeader = () => {
             justifyContent: 'center',
             gap: 20,
             width: !isSmallScreen && 550,
-            padding: isSmallScreen ? '0 10px' : '0 20px',
+            padding: isSmallScreen ? '0 10px' : '70px 70px',
             height: 250,
           },
         }}
@@ -385,8 +395,9 @@ const GameHeader = () => {
             setShowGameSettingsDialog(!showGameSettingsDialog)
           }}
           color="secondary"
+          disableElevation
           variant="contained"
-          sx={{ textTransform: 'none', fontSize: '17px' }}
+          sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
           startIcon={<StyleIcon />}
         >
           Change Deck
