@@ -44,7 +44,6 @@ const GameBody = () => {
     if (player.currentChoice) {
       length = splitter.splitGraphemes(player.currentChoice.trim()).length
     }
-    console.log('image: ', player.playerCardImage)
     return (
       <PurpleDeckCard
         key={index}

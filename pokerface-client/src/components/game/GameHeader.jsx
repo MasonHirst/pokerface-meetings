@@ -224,7 +224,6 @@ const GameHeader = () => {
               color="white"
               sx={{
                 textTransform: 'none',
-                fontSize: { xs: '18px', sm: '22px' },
                 gap: '12px',
               }}
             >
@@ -236,7 +235,7 @@ const GameHeader = () => {
                 sizeMultiplier={0.6}
                 cardImage={localStorage.getItem('pokerCardImage')}
               />
-              {localStorage.getItem('playerName')}
+              <Typography sx={{marginLeft: '12px', fontSize: { xs: '18px', sm: '21px' }}}>{localStorage.getItem('playerName')}</Typography>
             </Button>
           ) : (
             <IconButton
@@ -291,9 +290,9 @@ const GameHeader = () => {
               flexDirection: 'column',
               justifyContent: 'center',
               gap: 20,
-              width: '350px',
-              padding: isSmallScreen ? 10 : 28,
-              height: isSmallScreen ? 220 : 250,
+              width: isSmallScreen ? 'calc(100% - 10px)' : '450px',
+              margin: 0,
+              padding: isSmallScreen ? '50px 20px' : '48px',
             },
           }}
           open={showInviteDialog}

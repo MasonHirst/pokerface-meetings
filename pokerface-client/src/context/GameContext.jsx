@@ -125,8 +125,8 @@ export const GameProvider = ({ children }) => {
           if (!activeSocket || !game_id) {
             return
           } else {
-            console.log('active socket:', activeSocket)
-            console.log('connecting again! yay!')
+            // console.log('active socket:', activeSocket)
+            // console.log('connecting again! yay!')
             connectClient() // try to reconnect after a delay
           }
         }, 1000) // wait for 1 second before reconnecting

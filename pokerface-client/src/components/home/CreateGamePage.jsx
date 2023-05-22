@@ -48,7 +48,6 @@ const CreateGamePage = () => {
     axios
       .post('game/create', { gameName, deck: selectedDeck })
       .then(({ data }) => {
-        // console.log('create game data', data)
         if (data.gameRoomId) {
           navigate(`/game/${data.gameRoomId}`)
         } else {

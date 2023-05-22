@@ -86,7 +86,7 @@ const PurpleDeckCard = ({
           height: cardHeight,
           width: cardWidth,
           minWidth: cardWidth,
-          border: `${borderThickness || 2}px solid ${borderColor || '#902bf5'}`,
+          border: `${borderThickness}px solid ${borderColor || '#902bf5'}`,
           transition: '0.2s',
           marginTop: useCase === 'votingCard' ? '20px' : 0,
           position: 'relative',

@@ -88,7 +88,7 @@ async function startSocketServer(app, port) {
       token = urlParams.get('token')
       playerName = urlParams.get('player_name').trim()
       gameId = urlParams.get('game_id')
-      playerCardImage = urlParams.get('player_card_image')
+      playerCardImage = urlParams.get('player_card_image') === 'null' ? null : urlParams.get('player_card_image')
     }
 
     // check if any players in the game room have the same name, and if they do, append a number to the end of the name
