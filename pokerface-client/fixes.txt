@@ -46,3 +46,5 @@ make it so your card has another indicator you have chosen a value (if you have 
 Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
 
 add a sweet alert to confirm leaving game or delete a deck
+
+add a custom background color picker for custom card images
