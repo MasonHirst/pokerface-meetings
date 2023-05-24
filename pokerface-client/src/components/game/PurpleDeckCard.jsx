@@ -2,17 +2,19 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useMediaQuery } from '@mui/material'
 import purpleAbstract from '../../assets/purple-abstract.jpg'
 import muiStyles from '../../style/muiStyles'
+
 const { Box, Typography } = muiStyles
 
 const PurpleDeckCard = ({
   card = '',
   submitChoice,
-  useCase,
+  cardMargin,
   clickable = false,
   bottomMessage,
+  bottomMessageMultiplier = 1,
   bottomMessageMargin = '0',
   borderColor = '#902bf5',
-  bgColor = 'transparent',
+  bgColor = 'white',
   selectedBgColor = '#902bf5',
   showBgImage = false,
   selected,
@@ -41,8 +43,8 @@ const PurpleDeckCard = ({
   let cardWidth = 62 * sizeMultiplier
 
   if (isSmallScreen) {
-    cardHeight = cardHeight * 0.65
-    cardWidth = cardWidth * 0.65
+    cardHeight = cardHeight * 0.8
+    cardWidth = cardWidth * 0.8
   }
 
   useEffect(() => {
@@ -74,6 +76,7 @@ const PurpleDeckCard = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        minWidth: `${cardWidth + 10}px`,
       }}
     >
       <Box
@@ -88,7 +91,7 @@ const PurpleDeckCard = ({
           minWidth: cardWidth,
           border: `${borderThickness}px solid ${borderColor || '#902bf5'}`,
           transition: '0.2s',
-          marginTop: useCase === 'votingCard' ? '20px' : 0,
+          margin: cardMargin,
           position: 'relative',
           bottom: selected ? '20px' : 0,
           display: 'flex',
@@ -118,7 +121,7 @@ const PurpleDeckCard = ({
       {bottomMessage && (
         <Typography
           variant="subtitle1"
-          sx={{ userSelect: 'none', fontSize: isSmallScreen ? 15 : 17, margin: bottomMessageMargin }}
+          sx={{ userSelect: 'none', whiteSpace: 'nowrap', fontSize: isSmallScreen ? 15 * bottomMessageMultiplier : 17 * bottomMessageMultiplier, margin: bottomMessageMargin }}
         >
           {bottomMessage}
         </Typography>

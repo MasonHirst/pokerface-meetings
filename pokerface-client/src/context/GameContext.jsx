@@ -45,7 +45,7 @@ export const GameProvider = ({ children }) => {
   function confirmFailJoin(socket) {
     Swal.fire({
       title: 'Could not join game room',
-      text: 'This game room does not exist or is full.',
+      text: 'This game room does not exist',
       imageUrl: spidermanCrying,
       imageWidth: 'min(90vw, 400px',
       confirmButtonText: 'Take me home',

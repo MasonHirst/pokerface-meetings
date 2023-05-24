@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import muiStyles from '../../style/muiStyles'
 import PurpleDeckCard from './PurpleDeckCard'
 import { useMediaQuery } from '@mui/material'
@@ -6,40 +6,29 @@ import GraphemeSplitter from 'grapheme-splitter'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
 
-const GameFooter = () => {
+const GameFooter = ({ setComponentHeight }) => {
   const [latestVoting, setLatestVoting] = useState([])
   const [deckCards, setDeckCards] = useState([])
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const footerRef = useRef()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const { gameData, sendMessage } = useContext(GameContext)
   const splitter = GraphemeSplitter()
+
+  useEffect(() => {
+    if (!footerRef.current) return
+    setComponentHeight(footerRef.current.offsetHeight)
+  }, [footerRef.current?.offsetHeight, gameState])
 
   function submitChoice(card) {
     sendMessage('updatedChoice', { card })
   }
 
-  function averageNumericValues(arr) {
-    let sum = 0
-    let count = 0
-    for (let val of arr) {
-      if (!isNaN(Number(val)) && val) {
-        sum += +val
-        count++
-      }
-    }
-    if (count === 0) {
-      return null // or whatever value you want to return if there are no numeric values
-    }
-    const average = sum / count
-    return parseFloat(average.toFixed(1))
-  }
-
-  // The big useEffect that runs on gameData change
   useEffect(() => {
     if (!gameData.gameRoomName) return
     setGameState(gameData.gameState)
-    const votes = gameData.voteResults
+    const votes = gameData.voteHistory
     setLatestVoting(votes[votes.length - 1])
     setPlayersData(Object.values(gameData.players))
     setDeckCards([...new Set(gameData.deck.split(','))])
@@ -56,8 +45,11 @@ const GameFooter = () => {
           length={length}
           clickable={gameState === 'voting'}
           gameState={gameState}
-          selected={gameData?.players[localStorage.getItem('localUserToken')].currentChoice === card}
-          useCase="votingCard"
+          selected={
+            gameData?.players[localStorage.getItem('localUserToken')]
+              .currentChoice === card
+          }
+          cardMargin="20px 0 0 0"
           borderColor="#902bf5"
         />
       )
@@ -65,8 +57,8 @@ const GameFooter = () => {
   })
 
   const cardCounts = {}
-  if (latestVoting) {
-    Object.values(latestVoting).forEach((vote) => {
+  if (latestVoting?.playerVotes) {
+    Object.values(latestVoting.playerVotes).forEach((vote) => {
       if (!vote) return
       const obj = {
         choice: vote,
@@ -97,15 +89,16 @@ const GameFooter = () => {
   return (
     <Box
       className="game-footer"
+      ref={footerRef}
       sx={{
         width: '100%',
+        backgroundColor: '#fafafa',
         display: 'flex',
-        padding: '20px 5px 0px 5px',
+        padding: '10px 5px 0 5px',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         gap: '25px',
         flexWrap: 'nowrap',
-        overflowX: 'scroll',
       }}
     >
       {gameState === 'voting' ? (
@@ -117,7 +110,7 @@ const GameFooter = () => {
               overflowX: 'scroll',
               height: '100%',
               alignItems: 'flex-end',
-              paddingBottom: '8px',
+              paddingBottom: '6px',
             }}
           >
             {mappedDeckCards}
@@ -145,8 +138,8 @@ const GameFooter = () => {
           >
             {revealCardCount}
           </Box>
-          {Object.values(latestVoting).length &&
-            averageNumericValues(Object.values(latestVoting)) && (
+          <Box sx={{ display: 'flex', gap: '20px' }}>
+            {Object.values(latestVoting).length && latestVoting.average && (
               <Box
                 sx={{
                   display: 'flex',
@@ -161,7 +154,7 @@ const GameFooter = () => {
                   variant="body1"
                   sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
                 >
-                  Average:
+                  Average
                 </Typography>
                 <Typography
                   variant="h5"
@@ -170,10 +163,37 @@ const GameFooter = () => {
                     fontSize: { xs: '25px', sm: '30px' },
                   }}
                 >
-                  {averageNumericValues(Object.values(latestVoting))}
+                  {latestVoting.average}
                 </Typography>
               </Box>
             )}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '7px',
+                position: 'relative',
+                bottom: isSmallScreen ? '0px' : '15px',
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
+              >
+                Agreement
+              </Typography>
+              <Typography
+                variant="h5"
+                sx={{
+                  marginTop: '-10px',
+                  fontSize: { xs: '25px', sm: '30px' },
+                }}
+              >
+                {parseFloat((latestVoting.agreement * 100).toFixed(1))}%
+              </Typography>
+            </Box>
+          </Box>
         </Box>
       )}
     </Box>

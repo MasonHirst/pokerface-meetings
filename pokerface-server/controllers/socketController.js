@@ -60,6 +60,23 @@ function isMoreThanTwoHoursAgo(date) {
   return diffInMs > TWO_HOURS_IN_MS
 }
 
+function averageNumericValues(arr) {
+  console.log(arr)
+  let sum = 0
+  let count = 0
+  for (let val of arr) {
+    if (!isNaN(Number(val)) && val) {
+      sum += +val
+      count++
+    }
+  }
+  if (count === 0) {
+    return null // or whatever value you want to return if there are no numeric values
+  }
+  const average = sum / count
+  return parseFloat(average.toFixed(1))
+}
+
 async function startSocketServer(app, port) {
   const wss = new WebSocketServer({
     server: app.listen(port),
@@ -88,7 +105,10 @@ async function startSocketServer(app, port) {
       token = urlParams.get('token')
       playerName = urlParams.get('player_name').trim()
       gameId = urlParams.get('game_id')
-      playerCardImage = urlParams.get('player_card_image') === 'null' ? null : urlParams.get('player_card_image')
+      playerCardImage =
+        urlParams.get('player_card_image') === 'null'
+          ? null
+          : urlParams.get('player_card_image')
     }
 
     // check if any players in the game room have the same name, and if they do, append a number to the end of the name
@@ -141,8 +161,8 @@ async function startSocketServer(app, port) {
         const { type, body, gameId, token } = dataBody
 
         if (type === 'updatedChoice') {
-          if (!gameRooms[gameId])
-            return console.log('game room not found (updatedChoice) function')
+          if (!gameRooms[gameId]) return console.log('game room not found (updatedChoice) function')
+          if (!gameRooms[gameId].players[token]) return console.log('player not found (updatedChoice) function')
           if (gameRooms[gameId].players[token].currentChoice === body.card) {
             gameRooms[gameId].players[token].currentChoice = null
             return broadcastToRoom(gameId, 'gameUpdated')
@@ -166,11 +186,41 @@ async function startSocketServer(app, port) {
             })
           }
           if (body.gameState === 'reveal') {
-            const cardCounts = {}
+            console.log('body: ', body)
+            const votingObj = {
+              issueName: gameRooms[gameId].currentIssueName,
+              voteTime: Date.now(),
+              agreement: null,
+              playerVotes: {},
+              average: null,
+            }
+
+            // place each player's vote into the cardCounts object
             Object.values(gameRooms[gameId].players).forEach((player) => {
-              cardCounts[player.playerName] = player.currentChoice
+              votingObj.playerVotes[player.playerName] = player.currentChoice
             })
-            gameRooms[gameId].voteResults.push(cardCounts)
+
+            // calculate the average
+            votingObj.average = averageNumericValues(
+              Object.values(votingObj.playerVotes)
+            )
+
+            // calculate the agreement, which is calculated by taking the highest number of equal votes, and dividing it by the total number of votes that are not falsy
+            const cardCounts = {}
+            Object.values(votingObj.playerVotes).forEach((vote) => {
+              if (cardCounts[vote]) cardCounts[vote]++
+              else cardCounts[vote] = 1
+            })
+            const highestCount = Math.max(...Object.values(cardCounts))
+            const totalVotes = Object.values(votingObj.playerVotes).filter(
+              (vote) => vote
+            ).length
+            console.log('highestCount: ', highestCount, totalVotes)
+            console.log(highestCount < 2 && totalVotes > 1)
+            votingObj.agreement = highestCount < 2 && totalVotes > 1 ? 0 : highestCount / totalVotes
+
+            //push the voting object into the game vote history
+            gameRooms[gameId].voteHistory.push(votingObj)
           }
           gameRooms[gameId].gameState = body.gameState
           broadcastToRoom(gameId, 'gameUpdated')
@@ -250,7 +300,7 @@ module.exports = {
         gameRoomName: gameName,
         gameState: 'voting',
         lastAction: Date.now(),
-        voteResults: [],
+        voteHistory: [],
         deck,
         players: {},
       }
@@ -265,6 +315,7 @@ module.exports = {
 
   updateGameState: async (req, res) => {
     const { gameState, gameId, localUserToken } = req.body
+    console.log('THE UPDATE STATE FUNCTION IS BEING USED YAYAYAYAY')
     try {
       if (gameState === 'voting') {
         Object.values(gameRooms[gameId].players).forEach((player) => {
@@ -276,7 +327,7 @@ module.exports = {
         Object.values(gameRooms[gameId].players).forEach((player) => {
           cardCounts[player.playerName] = player.currentChoice
         })
-        gameRooms[gameId].voteResults.push(cardCounts)
+        gameRooms[gameId].voteHistory.push(cardCounts)
       }
       gameRooms[gameId].gameState = gameState
       broadcastToRoom(gameId, localUserToken, 'gameUpdated')

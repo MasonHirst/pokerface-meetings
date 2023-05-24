@@ -21,7 +21,7 @@ const Header = () => {
         <img src={pokerLogo} alt="poker-logo" style={{ width: '80px' }} />
         <Box>
 
-        <Typography variant='h5' sx={{color: '#902bf5'}}>Pokerface Meet</Typography>
+        <Typography variant='h5' color='primary' sx={{ fontWeight: 'bold', }}>Pokerface Meet</Typography>
         <Typography variant='body2' sx={{fontSize: '15px', opacity: 0.6}}>by Mason Hirst</Typography>
         </Box>
       </Box>
@@ -29,6 +29,7 @@ const Header = () => {
         disableElevation
         variant="contained"
         onClick={() => navigate(`/game/create`)}
+        sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
       >
         Host new game
       </Button>

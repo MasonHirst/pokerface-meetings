@@ -29,9 +29,13 @@ FIXED------ make the header display the custom card
 
 FIXED------ bug is happening - if user does not have a chosen custom picture, it shows nothing when they vote
 
-improve the reusability of the PurpleDeckCard by making more general purpose props and less logic in the component
+FIXED------ improve the reusability of the PurpleDeckCard by making more general purpose props and less logic in the component
 
-make all buttons follow the bold and no all-caps style
+FIXED------ Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
+
+FIXED------ make all buttons follow the bold and no all-caps style
+
+make it so player cards are rendered off vote history, not players when game state is reveal
 
 use Redis in the server to better store game rooms
 
@@ -43,8 +47,16 @@ build out the vote history
 
 make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
 
-Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
-
 add a sweet alert to confirm leaving game or delete a deck
 
 add a custom background color picker for custom card images
+
+add an issue input for voting
+
+add a page (opens in a new tab) with text fields, and they can use that page to send me an email with suggestions or bugs
+
+build a feature where the game creator can choose who can make changes to game room
+
+add a setting for "allow custom card images"
+
+add a game host who can kick players or end the game

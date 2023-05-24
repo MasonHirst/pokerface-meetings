@@ -17,6 +17,10 @@ const GameRoom = () => {
   } = useContext(GameContext)
   const [nameError, setNameError] = useState('')
   const [nameInput, setNameInput] = useState('')
+  const [footerHeight, setFooterHeight] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(0)
+  const [availableBodyHeight, setAvailableBodyHeight] = useState(0)
+  const bodyRef = useRef()
 
   function updateName(e) {
     e.preventDefault()
@@ -41,13 +45,23 @@ const GameRoom = () => {
     }
   }, [playerName])
 
+  useEffect(() => {
+    if (!footerHeight || !headerHeight) return
+    const availableHeight = window.innerHeight - footerHeight - headerHeight
+    setAvailableBodyHeight(availableHeight)
+  }, [footerHeight, headerHeight])
+
   return (
     <>
       {!joinGameLoading && playerName ? (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', }}>
-          <GameHeader />
-          <GameBody />
-          <GameFooter />
+        <Box
+          sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+        >
+          <GameHeader setComponentHeight={setHeaderHeight} />
+          <Box ref={bodyRef} sx={{ width: '100%' }}>
+            <GameBody availableHeight={availableBodyHeight} />
+          </Box>
+          <GameFooter setComponentHeight={setFooterHeight} />
         </Box>
       ) : (
         joinGameLoading && (

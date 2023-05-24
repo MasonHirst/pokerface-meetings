@@ -6,7 +6,9 @@ import { GameContext } from '../../context/GameContext'
 import dontGo from '../../assets/dont-go.gif'
 import ChooseDeck from '../dialog/ChooseDeck'
 import { useMediaQuery } from '@mui/material'
+import GameSettings from '../dialog/GameSettings'
 import ProfileDialog from '../dialog/ProfileDialog'
+import VoteHistory from '../dialog/VoteHistory'
 import muiStyles from '../../style/muiStyles'
 import Swal from 'sweetalert2'
 import PurpleDeckCard from './PurpleDeckCard'
@@ -23,29 +25,25 @@ const {
   ListItemIcon,
   SettingsIcon,
   PollOutlinedIcon,
-  StyleIcon,
   MenuIcon,
   Drawer,
   CloseIcon,
   IconButton,
-  CheckIcon,
   EditIcon,
-  Avatar,
   LinkIcon,
 } = muiStyles
 
-const GameHeader = () => {
+const GameHeader = ({ setComponentHeight }) => {
   const navigate = useNavigate()
+  const footerRef = useRef()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const { gameData, sendMessage } = useContext(GameContext)
+  const { gameData } = useContext(GameContext)
   const [anchorEl, setAnchorEl] = useState(null)
   const [showProfileDialog, setShowProfileDialog] = useState(false)
   const open = Boolean(anchorEl)
-  const [newName, setNewName] = useState(gameData.gameRoomName)
   const roomName = gameData.gameRoomName
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingGameName, setEditingGameName] = useState(false)
   const inviteLinkInputRef = useRef()
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
@@ -53,20 +51,11 @@ const GameHeader = () => {
   })
   const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
-  const [showDeckDialog, setShowDeckDialog] = useState(false)
-  const [updatedDeck, setUpdatedDeck] = useState('')
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
-    setNewName(gameData.gameRoomName)
-  }, [gameData.gameRoomName])
-
-  function updateGameName(e) {
-    e.preventDefault()
-    setEditingGameName(!editingGameName)
-    if (!newName || newName === gameData.gameRoomName) return
-    sendMessage('updatedGameName', { name: newName })
-  }
+    if (!footerRef.current) return
+    setComponentHeight(footerRef.current.offsetHeight)
+  }, [footerRef.current?.offsetHeight])
 
   function handleLeaveGame() {
     handleCloseGameSettings()
@@ -89,12 +78,6 @@ const GameHeader = () => {
     })
   }
 
-  useEffect(() => {
-    if (updatedDeck) {
-      sendMessage('updatedDeck', { deck: updatedDeck })
-    }
-  }, [updatedDeck])
-
   function handleOpenGameSettings(event) {
     setAnchorEl(event.currentTarget)
   }
@@ -112,15 +95,16 @@ const GameHeader = () => {
 
   return (
     <Box
+      ref={footerRef}
       className="game-header-container"
       sx={{
         width: '100%',
-        height: isSmallScreen ? '60px' : '80px',
+        height: { xs: '65px', sm: '90px' },
         backgroundColor: '#902bf5',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: { xs: '0 5px', sm: '0 40px' },
+        padding: { xs: '0 10px', sm: '0 10px' },
       }}
     >
       <Box
@@ -145,7 +129,7 @@ const GameHeader = () => {
             onClick={() => navigate('/')}
             src={pokerLogo}
             alt="logo"
-            style={{ height: '36px' }}
+            style={{ height: isSmallScreen ? '46px' : '70px' }}
           />
           <Button
             variant="text"
@@ -235,7 +219,14 @@ const GameHeader = () => {
                 sizeMultiplier={0.6}
                 cardImage={localStorage.getItem('pokerCardImage')}
               />
-              <Typography sx={{marginLeft: '12px', fontSize: { xs: '18px', sm: '21px' }}}>{localStorage.getItem('playerName')}</Typography>
+              <Typography
+                sx={{
+                  marginLeft: '12px',
+                  fontSize: { xs: '18px', sm: '21px' },
+                }}
+              >
+                {localStorage.getItem('playerName')}
+              </Typography>
             </Button>
           ) : (
             <IconButton
@@ -325,124 +316,22 @@ const GameHeader = () => {
         </Dialog>
       </Box>
 
-      <Dialog
-        onClose={() => {
-          setShowGameSettingsDialog(!showGameSettingsDialog)
-          setEditingGameName(false)
-        }}
-        fullScreen={isSmallScreen}
-        PaperProps={{
-          style: {
-            borderRadius: 15,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            gap: 20,
-            width: !isSmallScreen && 550,
-            padding: isSmallScreen ? '0 10px' : '70px 70px',
-            height: 250,
-          },
-        }}
-        open={showGameSettingsDialog}
-      >
-        <IconButton
-          sx={{ position: 'absolute', top: 7, right: 5 }}
-          aria-label="close"
-          onClick={() => {
-            setShowGameSettingsDialog(!showGameSettingsDialog)
-            setEditingGameName(false)
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-        <form
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: isSmallScreen ? '5px' : '15px',
-          }}
-          onSubmit={updateGameName}
-        >
-          {editingGameName ? (
-            <TextField
-              autoFocus
-              fullWidth
-              inputProps={{ maxLength: 20 }}
-              value={newName}
-              placeholder="Enter a game name"
-              label="New game name"
-              onChange={(e) => setNewName(e.target.value)}
-            />
-          ) : (
-            <Typography variant="h6">{gameData.gameRoomName}</Typography>
-          )}
-          {editingGameName ? (
-            <IconButton onClick={updateGameName}>
-              <CheckIcon />
-            </IconButton>
-          ) : (
-            <IconButton onClick={() => setEditingGameName(!editingGameName)}>
-              <EditIcon />
-            </IconButton>
-          )}
-        </form>
+      <GameSettings
+        showDialog={showGameSettingsDialog}
+        setShowDialog={setShowGameSettingsDialog}
+      />
 
-        <Button
-          onClick={() => {
-            setShowDeckDialog(!showDeckDialog)
-            setShowGameSettingsDialog(!showGameSettingsDialog)
-          }}
-          color="secondary"
-          disableElevation
-          variant="contained"
-          sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
-          startIcon={<StyleIcon />}
-        >
-          Change Deck
-        </Button>
-      </Dialog>
-      {showDeckDialog && (
-        <ChooseDeck
-          showDeckDialog={showDeckDialog}
-          setShowDeckDialog={setShowDeckDialog}
-          setDeckProp={setUpdatedDeck}
-        />
-      )}
+      <ProfileDialog
+        gameData={gameData}
+        showDialog={showProfileDialog}
+        setShowDialog={setShowProfileDialog}
+      />
 
-      <Dialog
-        onClose={() => setShowHistoryDialog(!showHistoryDialog)}
-        PaperProps={{
-          style: {
-            borderRadius: 15,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            gap: 20,
-            width: 350,
-            padding: 35,
-            height: 250,
-          },
-        }}
-        open={showHistoryDialog}
-      >
-        <IconButton
-          sx={{ position: 'absolute', top: 7, right: 5 }}
-          aria-label="close"
-          onClick={() => setShowHistoryDialog(!showHistoryDialog)}
-        >
-          <CloseIcon />
-        </IconButton>
-        <Typography variant="h5">Vote History</Typography>
-      </Dialog>
-
-      {showProfileDialog && (
-        <ProfileDialog
-          gameData={gameData}
-          showDialog={showProfileDialog}
-          setShowDialog={setShowProfileDialog}
-        />
-      )}
+      <VoteHistory
+        showDialog={showHistoryDialog}
+        setShowDialog={setShowHistoryDialog}
+        gameData={gameData}
+      />
     </Box>
   )
 }

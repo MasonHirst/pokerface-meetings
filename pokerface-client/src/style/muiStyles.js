@@ -78,9 +78,13 @@ import LinearProgress from '@mui/material/LinearProgress'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import Slider from '@mui/material/Slider'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft'
+import { purple, blue, pink } from '@mui/material/colors'
 
 let muiStyles = {
+  pink,
+  purple,
+  blue,
   ZoomInIcon,
   RotateLeftIcon,
   Slider,

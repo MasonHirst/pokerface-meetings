@@ -19,10 +19,6 @@ const CreateGamePage = () => {
   const [error, setError] = useState('')
   const [appIsLoading, setAppIsLoading] = useState(false)
 
-  function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
-  }
-
   const mappedSelectedDeck = [...new Set(selectedDeck.split(','))].map(
     (card, index) => {
       const length = splitter.splitGraphemes(card.trim()).length
@@ -31,9 +27,6 @@ const CreateGamePage = () => {
         <PurpleDeckCard
           key={index}
           card={card}
-          useCase="customDeckPreview"
-          length={length}
-          borderColor={'#902bf5'}
           sizeMultiplier={0.9}
         />
       )
@@ -73,7 +66,6 @@ const CreateGamePage = () => {
         onSubmit={handleHostGame}
         style={{
           width: '100%',
-          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           gap: '30px',
@@ -84,12 +76,13 @@ const CreateGamePage = () => {
         <TextField
           inputProps={{ maxLength: 20 }}
           onChange={(e) => setGameName(e.target.value)}
-          sx={{ width: 'min(650px, 100%)' }}
+          sx={{ width: 'min(650px, 100%)', }}
           autoFocus
           disabled={appIsLoading}
           error={!!error}
           value={gameName}
           label="Game Name"
+          size='large'
           placeholder="Enter a game name"
           helperText={error}
         />
@@ -129,8 +122,15 @@ const CreateGamePage = () => {
 
         <Button
           variant="contained"
+          size='large'
+          disableElevation
           disabled={appIsLoading}
-          sx={{ width: 'min(650px, 100%)' }}
+          sx={{
+            width: 'min(650px, 100%)',
+            fontWeight: 'bold',
+            fontSize: '19px',
+            textTransform: 'none',
+          }}
           onClick={handleHostGame}
           startIcon={<TvIcon />}
         >
