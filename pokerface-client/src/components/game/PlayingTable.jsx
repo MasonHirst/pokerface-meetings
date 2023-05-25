@@ -10,6 +10,7 @@ const PlayingTable = ({ disableButton }) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const [tableTopBackground, setTableTopBackground] = useState(false)
 
   let tableMessage = 'Pick your cards!'
   let choicesCount = 0
@@ -60,8 +61,7 @@ const PlayingTable = ({ disableButton }) => {
         margin: '10px 0 20px 0',
         justifyContent: 'center',
         alignItems: 'center',
-        // border: '1px solid grey',
-        // backgroundImage: `url(${tableTop})`,
+        backgroundImage: tableTopBackground && `url(${tableTop})`,
       }}
     >
       {tableMessage !== 'Pick your cards!' ? (

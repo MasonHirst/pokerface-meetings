@@ -106,6 +106,7 @@ const GameFooter = ({ setComponentHeight }) => {
           <Box
             sx={{
               display: 'flex',
+              paddingTop: '15px',
               gap: { xs: '10px', sm: '18px' },
               overflowX: 'scroll',
               height: '100%',
@@ -126,6 +127,7 @@ const GameFooter = ({ setComponentHeight }) => {
             flexDirection: isSmallScreen ? 'column-reverse' : 'row',
             alignItems: 'center',
             gap: '20px',
+            paddingTop: '7px',
           }}
         >
           <Box
@@ -138,7 +140,7 @@ const GameFooter = ({ setComponentHeight }) => {
           >
             {revealCardCount}
           </Box>
-          <Box sx={{ display: 'flex', gap: '20px' }}>
+          <Box sx={{ display: 'flex', gap: '20px', }}>
             {Object.values(latestVoting).length && latestVoting.average && (
               <Box
                 sx={{

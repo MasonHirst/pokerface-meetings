@@ -35,6 +35,8 @@ FIXED------ Make the placement of player cards dynamic (if there are 2 players, 
 
 FIXED------ make all buttons follow the bold and no all-caps style
 
+FIXED------ make the game room size correctly (no scroll bar) at all screen sizes
+
 make it so player cards are rendered off vote history, not players when game state is reveal
 
 use Redis in the server to better store game rooms

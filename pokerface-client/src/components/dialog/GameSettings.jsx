@@ -83,6 +83,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           onSubmit={updateGameName}
         >
           <TextField
+            spellCheck={false}
             fullWidth
             inputProps={{ maxLength: 20 }}
             value={newName}
@@ -92,10 +93,13 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           />
           {newName !== gameData.gameRoomName && (
             <Box sx={{ position: 'absolute', right: '5px' }}>
-              <IconButton size="small" onClick={() => setNewName(gameData.gameRoomName)}>
+              <IconButton
+                size="small"
+                onClick={() => setNewName(gameData.gameRoomName)}
+              >
                 <CloseIcon />
               </IconButton>
-              <IconButton size="small" onClick={updateGameName}>
+              <IconButton type="submit" size="small" onClick={updateGameName}>
                 <CheckIcon />
               </IconButton>
             </Box>

@@ -76,7 +76,7 @@ const PurpleDeckCard = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        minWidth: `${cardWidth + 10}px`,
+        minWidth: bottomMessage && `${cardWidth + 10}px`,
       }}
     >
       <Box

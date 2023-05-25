@@ -4,7 +4,6 @@ import pokerLogo from '../../assets/poker-logo.png'
 import useClipboard from 'react-use-clipboard'
 import { GameContext } from '../../context/GameContext'
 import dontGo from '../../assets/dont-go.gif'
-import ChooseDeck from '../dialog/ChooseDeck'
 import { useMediaQuery } from '@mui/material'
 import GameSettings from '../dialog/GameSettings'
 import ProfileDialog from '../dialog/ProfileDialog'
@@ -33,7 +32,7 @@ const {
   LinkIcon,
 } = muiStyles
 
-const GameHeader = ({ setComponentHeight }) => {
+const GameHeader = ({ setComponentHeight, shadowOn }) => {
   const navigate = useNavigate()
   const footerRef = useRef()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
@@ -93,11 +92,13 @@ const GameHeader = ({ setComponentHeight }) => {
     }, 200)
   }, [showInviteDialog, inviteLinkInputRef])
 
+  // console.log('shadowon: ', shadowOn)
   return (
     <Box
       ref={footerRef}
       className="game-header-container"
       sx={{
+        boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
         height: { xs: '65px', sm: '90px' },
         backgroundColor: '#902bf5',

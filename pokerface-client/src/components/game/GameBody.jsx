@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import PlayingTable from './PlayingTable'
 import { GameContext } from '../../context/GameContext'
 import useClipboard from 'react-use-clipboard'
@@ -7,8 +7,9 @@ import muiStyles from '../../style/muiStyles'
 import PurpleDeckCard from './PurpleDeckCard'
 const { Box, Typography, Button, ContentCopyIcon } = muiStyles
 
-const GameBody = ({ availableHeight }) => {
+const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const { gameData } = useContext(GameContext)
+  const gameBodyRef = useRef()
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
   const [stateButtonDisabled, setStateButtonDisabled] = useState(false)
@@ -17,6 +18,10 @@ const GameBody = ({ availableHeight }) => {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
   })
+
+  useEffect(() => {
+    setBodyIsScrolling(availableHeight < gameBodyRef.current?.scrollHeight)
+  }, [availableHeight])
 
   const sidePlayersBox = {
     display: 'flex',
@@ -62,122 +67,82 @@ const GameBody = ({ availableHeight }) => {
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 1',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 2',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 3',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 4',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 5',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 6',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 7',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 8',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 9',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 10',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 11',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 12',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 13',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 14',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 15',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 16',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 17',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
   //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
   //   },
   //   {
   //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
+  //     playerName: 'Player 19',
   //   },
   //   {
   //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //     playerCardImage: 'https://i.imgur.com/3ZQ5Z0Y.png',
+  //     playerName: 'Player 20',
   //   },
   // ]
 
@@ -253,6 +218,7 @@ const GameBody = ({ availableHeight }) => {
   return (
     <Box
       className="game-body-container"
+      ref={gameBodyRef}
       sx={{
         width: '100%',
         height: `${availableHeight}px`,

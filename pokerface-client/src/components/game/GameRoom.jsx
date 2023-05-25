@@ -20,6 +20,9 @@ const GameRoom = () => {
   const [footerHeight, setFooterHeight] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
   const [availableBodyHeight, setAvailableBodyHeight] = useState(0)
+  const [bodyIsScrolling, setBodyIsScrolling] = useState(false)
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
   const bodyRef = useRef()
 
   function updateName(e) {
@@ -28,6 +31,19 @@ const GameRoom = () => {
     localStorage.setItem('playerName', nameInput)
     setPlayerName(nameInput)
   }
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight)
+      setViewportWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   useEffect(() => {
     if (gameData?.gameRoomName) {
@@ -48,8 +64,8 @@ const GameRoom = () => {
   useEffect(() => {
     if (!footerHeight || !headerHeight) return
     const availableHeight = window.innerHeight - footerHeight - headerHeight
-    setAvailableBodyHeight(availableHeight)
-  }, [footerHeight, headerHeight])
+    setAvailableBodyHeight(availableHeight - 1)
+  }, [footerHeight, headerHeight, viewportHeight, viewportWidth])
 
   return (
     <>
@@ -57,11 +73,14 @@ const GameRoom = () => {
         <Box
           sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
         >
-          <GameHeader setComponentHeight={setHeaderHeight} />
+          <GameHeader shadowOn={bodyIsScrolling} setComponentHeight={setHeaderHeight} />
           <Box ref={bodyRef} sx={{ width: '100%' }}>
-            <GameBody availableHeight={availableBodyHeight} />
+            <GameBody
+              availableHeight={availableBodyHeight}
+              setBodyIsScrolling={setBodyIsScrolling}
+            />
           </Box>
-          <GameFooter setComponentHeight={setFooterHeight} />
+          <GameFooter shadowOn={bodyIsScrolling} setComponentHeight={setFooterHeight} />
         </Box>
       ) : (
         joinGameLoading && (
