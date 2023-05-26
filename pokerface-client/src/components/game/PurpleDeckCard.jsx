@@ -20,8 +20,6 @@ const PurpleDeckCard = ({
   selected,
   cardImage,
   fontSizeMultiplier = 1,
-  gameState,
-  showCard = true,
   sizeMultiplier = 1,
   borderThickness = 2,
 }) => {
@@ -65,7 +63,6 @@ const PurpleDeckCard = ({
     cardTextRef.current,
     card,
     cardFontSize,
-    gameState,
     cardWidth,
     cardFontSize,
   ])
@@ -114,7 +111,7 @@ const PurpleDeckCard = ({
           sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap', userSelect: 'none' }}
           ref={cardTextRef}
         >
-          {showCard && card}
+          {card}
         </Typography>
       </Box>
 

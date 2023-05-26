@@ -282,7 +282,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
               flexDirection: 'column',
               justifyContent: 'center',
               gap: 20,
-              width: isSmallScreen ? 'calc(100% - 10px)' : '450px',
+              width: isSmallScreen ? 'calc(100% - 10px)' : '550px',
               margin: 0,
               padding: isSmallScreen ? '50px 20px' : '48px',
             },
@@ -296,6 +296,15 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
           >
             <CloseIcon />
           </IconButton>
+          <Typography
+            sx={{
+              fontSize: '22px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+            }}
+          >
+            Invite players
+          </Typography>
           <TextField
             inputRef={inviteLinkInputRef}
             fullWidth
@@ -305,6 +314,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             variant="contained"
             disableElevation
             fullWidth
+            sx={{ textTransform: 'none', fontSize: '18px', fontWeight: 'bold' }}
             onClick={(e) => {
               setCopied(e)
               setTimeout(() => {
@@ -328,11 +338,13 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         setShowDialog={setShowProfileDialog}
       />
 
-      <VoteHistory
-        showDialog={showHistoryDialog}
-        setShowDialog={setShowHistoryDialog}
-        gameData={gameData}
-      />
+      {VoteHistory && (
+        <VoteHistory
+          showDialog={showHistoryDialog}
+          setShowDialog={setShowHistoryDialog}
+          gameData={gameData}
+        />
+      )}
     </Box>
   )
 }

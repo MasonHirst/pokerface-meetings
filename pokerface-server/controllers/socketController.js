@@ -193,12 +193,20 @@ async function startSocketServer(app, port) {
               agreement: null,
               playerVotes: {},
               average: null,
+              participation: '',
             }
 
             // place each player's vote into the cardCounts object
             Object.values(gameRooms[gameId].players).forEach((player) => {
               votingObj.playerVotes[player.playerName] = player.currentChoice
             })
+
+            // calculate how many people had votes that are not null out of the total number of people in the voting
+            const validVotes = Object.values(votingObj.playerVotes).filter(
+              (vote) => vote
+            ).length
+            const possibleVotes = Object.values(gameRooms[gameId].players).length
+            votingObj.participation = `${validVotes}/${possibleVotes}`
 
             // calculate the average
             votingObj.average = averageNumericValues(

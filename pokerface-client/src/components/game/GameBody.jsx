@@ -14,6 +14,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const [gameState, setGameState] = useState('')
   const [stateButtonDisabled, setStateButtonDisabled] = useState(false)
   const splitter = GraphemeSplitter()
+  const [latestVoting, setLatestVoting] = useState([])
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
@@ -46,6 +47,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     if (!gameData.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
+    setLatestVoting(gameData.voteHistory[gameData.voteHistory.length - 1])
     if (
       !stateButtonDisabled &&
       gameState !== gameData.gameState &&
@@ -62,6 +64,42 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const leftPlayers = []
   const rightPlayers = []
   const bottomPlayers = []
+
+  function assignPlayerSeat(deckCard, index) {
+    if (index === 0) {
+      bottomPlayers.push(deckCard)
+    } else if (index === 1) {
+      topPlayers.push(deckCard)
+    } else if (index === 2) {
+      if (playersData.length < 4) {
+        bottomPlayers.push(deckCard)
+      } else leftPlayers.push(deckCard)
+    } else if (index === 3) {
+      rightPlayers.push(deckCard)
+    } else if (index === 4) {
+      bottomPlayers.push(deckCard)
+    } else if (index === 5) {
+      topPlayers.push(deckCard)
+    } else if (index === 6) {
+      bottomPlayers.push(deckCard)
+    } else if (index === 7) {
+      topPlayers.push(deckCard)
+    } else if (index === 8) {
+      bottomPlayers.push(deckCard)
+    } else if (index === 9) {
+      topPlayers.push(deckCard)
+    } else if (index === 10) {
+      bottomPlayers.push(deckCard)
+    } else if (index === 11) {
+      leftPlayers.push(deckCard)
+    } else if (index === 12) {
+      rightPlayers.push(deckCard)
+    } else if (index % 2 === 0) {
+      bottomPlayers.push(deckCard)
+    } else {
+      topPlayers.push(deckCard)
+    }
+  }
 
   // const playersData = [
   //   {
@@ -146,73 +184,71 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   //   },
   // ]
 
-  playersData.forEach((player, index) => {
-    if (!player) return
-    let length = 0
-    if (player.currentChoice) {
-      length = splitter.splitGraphemes(player.currentChoice.trim()).length
-    }
-    if (length > 4) return
-    let cardSizeMultiplier = 1.2
-    let fontSizeMultiplier = 1
-    if (playersData.length > 8 && playersData.length < 13) {
-      cardSizeMultiplier = 1.1
-      fontSizeMultiplier = 0.95
-    } else if (playersData.length > 12) {
-      cardSizeMultiplier = 1
-      fontSizeMultiplier = 0.9
-    }
-    const deckCard = (
-      <PurpleDeckCard
-        key={index}
-        bottomMessageMultiplier={fontSizeMultiplier}
-        fontSizeMultiplier={1.3}
-        card={player.currentChoice}
-        showCard={gameState === 'reveal'}
-        bottomMessageMargin="3px 0 0 0"
-        showBgImage={player.currentChoice && gameState === 'voting'}
-        gameState={gameState}
-        borderColor="#902bf5"
-        bgColor="#f2f2f2"
-        cardImage={player.playerCardImage}
-        bottomMessage={player.playerName}
-        sizeMultiplier={cardSizeMultiplier}
-      />
-    )
-    if (index === 0) {
-      bottomPlayers.push(deckCard)
-    } else if (index === 1) {
-      topPlayers.push(deckCard)
-    } else if (index === 2) {
-      if (playersData.length < 4) {
-        bottomPlayers.push(deckCard)
-      } else leftPlayers.push(deckCard)
-    } else if (index === 3) {
-      rightPlayers.push(deckCard)
-    } else if (index === 4) {
-      bottomPlayers.push(deckCard)
-    } else if (index === 5) {
-      topPlayers.push(deckCard)
-    } else if (index === 6) {
-      bottomPlayers.push(deckCard)
-    } else if (index === 7) {
-      topPlayers.push(deckCard)
-    } else if (index === 8) {
-      bottomPlayers.push(deckCard)
-    } else if (index === 9) {
-      topPlayers.push(deckCard)
-    } else if (index === 10) {
-      bottomPlayers.push(deckCard)
-    } else if (index === 11) {
-      leftPlayers.push(deckCard)
-    } else if (index === 12) {
-      rightPlayers.push(deckCard)
-    } else if (index % 2 === 0) {
-      bottomPlayers.push(deckCard)
-    } else {
-      topPlayers.push(deckCard)
-    }
-  })
+  if (gameState === 'voting') {
+    playersData.forEach((player, index) => {
+      if (!player) return
+      let length = 0
+      if (player.currentChoice) {
+        length = splitter.splitGraphemes(player.currentChoice.trim()).length
+      }
+      if (length > 4) return
+      let cardSizeMultiplier = 1.2
+      let fontSizeMultiplier = 1
+      if (playersData.length > 8 && playersData.length < 13) {
+        cardSizeMultiplier = 1.1
+        fontSizeMultiplier = 0.95
+      } else if (playersData.length > 12) {
+        cardSizeMultiplier = 1
+        fontSizeMultiplier = 0.9
+      }
+      const deckCard = (
+        <PurpleDeckCard
+          key={index}
+          bottomMessageMultiplier={fontSizeMultiplier}
+          fontSizeMultiplier={1.3}
+          bottomMessageMargin="3px 0 0 0"
+          showBgImage={player.currentChoice}
+          borderColor="#902bf5"
+          bgColor="#f2f2f2"
+          cardImage={player.playerCardImage}
+          bottomMessage={player.playerName}
+          sizeMultiplier={cardSizeMultiplier}
+        />
+      )
+      assignPlayerSeat(deckCard, index)
+    })
+  } else if (gameState === 'reveal' && gameData?.voteHistory) {
+    Object.entries(
+      latestVoting.playerVotes
+    ).forEach((player, index) => {
+      if (!player) return
+      const length = Object.values(latestVoting.playerVotes).length
+      let cardSizeMultiplier = 1.2
+      let fontSizeMultiplier = 1
+      if (length > 8 && length < 13) {
+        cardSizeMultiplier = 1.1
+        fontSizeMultiplier = 0.95
+      } else if (length > 12) {
+        cardSizeMultiplier = 1
+        fontSizeMultiplier = 0.9
+      }
+      const deckCard = (
+        <PurpleDeckCard
+          key={index}
+          bottomMessageMultiplier={fontSizeMultiplier}
+          fontSizeMultiplier={1.3}
+          card={player[1]}
+          // showCard={true}
+          bottomMessageMargin="3px 0 0 0"
+          borderColor="#902bf5"
+          bgColor="#f2f2f2"
+          bottomMessage={player[0]}
+          sizeMultiplier={cardSizeMultiplier}
+        />
+      )
+      assignPlayerSeat(deckCard, index)
+    })
+  }
 
   // Yes, I do need the three parent boxes for scroll styling
   return (
@@ -250,7 +286,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             alignItems: 'center',
           }}
         >
-          {gameData.players && playersData.length < 2 && (
+          {gameData.players && playersData.length < 2 && gameState === 'voting' && (
             <Box
               sx={{
                 display: 'flex',

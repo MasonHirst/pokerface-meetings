@@ -331,11 +331,13 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             variant="contained"
             type="submit"
             fullWidth
+            disableElevation
             onClick={() => {
               if (!customDeck.length > 1) alert('Cannot save empty deck')
               setShowCustomDeckForm(false)
               setDeckInStorage()
             }}
+            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
           >
             Save Deck
           </Button>

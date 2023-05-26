@@ -6,7 +6,7 @@ import GraphemeSplitter from 'grapheme-splitter'
 import { GameContext } from '../../context/GameContext'
 const { Box, Typography } = muiStyles
 
-const GameFooter = ({ setComponentHeight }) => {
+const GameFooter = ({ setComponentHeight, shadowOn }) => {
   const [latestVoting, setLatestVoting] = useState([])
   const [deckCards, setDeckCards] = useState([])
   const [playersData, setPlayersData] = useState([])
@@ -92,6 +92,7 @@ const GameFooter = ({ setComponentHeight }) => {
       ref={footerRef}
       sx={{
         width: '100%',
+        boxShadow: shadowOn ? '0px 0px 8px 0px rgba(0,0,0,0.25)' : 'none',
         backgroundColor: '#fafafa',
         display: 'flex',
         padding: '10px 5px 0 5px',

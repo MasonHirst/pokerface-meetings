@@ -37,15 +37,17 @@ FIXED------ make all buttons follow the bold and no all-caps style
 
 FIXED------ make the game room size correctly (no scroll bar) at all screen sizes
 
-make it so player cards are rendered off vote history, not players when game state is reveal
+FIXED------ make it so player cards are rendered off vote history, not players when game state is reveal
+
+FIXED------ build out the vote history
+
+build a feature to add an issueName to the voting
 
 use Redis in the server to better store game rooms
 
 make it so you leave a game if you navigate away from a game page, and the socket should only be connected if in a game page
 
 add skeletons when cards or content is loading where appropriate
-
-build out the vote history
 
 make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
 
