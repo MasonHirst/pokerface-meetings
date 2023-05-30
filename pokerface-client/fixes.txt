@@ -43,6 +43,8 @@ FIXED------ build out the vote history
 
 FIXED------ build a feature to add an issueName to the voting
 
+make the vote history display in reverse so the newest vote is at the top
+
 add a game setting to make the issue name persistent until manually changed
 
 use Redis in the server to better store game rooms

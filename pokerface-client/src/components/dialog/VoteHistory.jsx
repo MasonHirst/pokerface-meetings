@@ -39,54 +39,50 @@ const VoteHistory = ({ showDialog, setShowDialog, gameData }) => {
     setVoteHistory(gameData.voteHistory)
   }, [gameData])
 
-  const mappedVoteRows = voteHistory.map((voting, index) => {
-    const {
-      playerVotes,
-      voteTime,
-      participation,
-      issueName,
-      average,
-      agreement,
-    } = voting
+  const mappedVoteRows = voteHistory
+    .slice()
+    .reverse()
+    .map((voting, index) => {
+      const {
+        playerVotes,
+        voteTime,
+        participation,
+        issueName,
+        average,
+        agreement,
+      } = voting
 
-    let voteStr = ``
-    const mappedVotes = Object.entries(playerVotes).forEach((vote, index) => {
-      if (index !== 0) voteStr += ', '
-      voteStr += `${vote[0]} (${vote[1]})`
-      // return (
-        // <Typography key={index} sx={{whiteSpace: 'nowrap'}}>
-        //   {vote[0]} ({vote[1]}){index < Object.values(playerVotes).length - 1 && ',' + ' '}
-        // </Typography>
-      // )
-    })
+      let voteStr = ``
+      Object.entries(playerVotes).forEach((vote, index) => {
+        if (index !== 0) voteStr += ', '
+        voteStr += `${vote[0]} (${vote[1]})`
+      })
 
-    const date = new Date(voteTime)
-    const formattedDate = date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
+      const date = new Date(voteTime)
+      const formattedDate = date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      })
+
+      return (
+        <TableRow
+          key={index}
+          sx={index % 2 !== 0 ? { borderBottom: '1px solid grey' } : {}}
+        >
+          <TableCell sx={rowCellStyle}>{issueName || '-'}</TableCell>
+          <TableCell sx={rowCellStyle}>{average}</TableCell>
+          <TableCell sx={rowCellStyle}>{agreement * 100}%</TableCell>
+          <TableCell sx={rowCellStyle}>{formattedDate}</TableCell>
+          <TableCell sx={rowCellStyle}>{participation}</TableCell>
+          <TableCell sx={rowCellStyle}>
+            <Typography>{voteStr}</Typography>
+          </TableCell>
+        </TableRow>
+      )
     })
-      
-    return (
-      <TableRow
-        key={index}
-        sx={index % 2 !== 0 ? { borderBottom: '1px solid grey' } : {}}
-      >
-        <TableCell sx={rowCellStyle}>{issueName || '-'}</TableCell>
-        <TableCell sx={rowCellStyle}>{average}</TableCell>
-        <TableCell sx={rowCellStyle}>{agreement * 100}%</TableCell>
-        <TableCell sx={rowCellStyle}>{formattedDate}</TableCell>
-        <TableCell sx={rowCellStyle}>{participation}</TableCell>
-        <TableCell sx={rowCellStyle}>
-          <Typography >
-            {voteStr}
-          </Typography>
-        </TableCell>
-      </TableRow>
-    )
-  })
 
   return (
     <Dialog

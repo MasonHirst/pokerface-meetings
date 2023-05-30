@@ -235,8 +235,6 @@ async function startSocketServer(app, port) {
             const totalVotes = Object.values(votingObj.playerVotes).filter(
               (vote) => vote !== null
             ).length
-            console.log('-----------------------------')
-            console.log('highestCount: ', highestCount, totalVotes)
             votingObj.agreement =
               highestCount < 2 && totalVotes > 1 ? 0 : highestCount / totalVotes
 

@@ -355,23 +355,25 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
               )}
             </Box>
           ) : (
-            <Button
-              onClick={() => {
-                setEditingIssueName(true)
-                setTimeout(() => {
-                  newIssueNameRef.current.focus()
-                }, 50)
-              }}
-              sx={{
-                marginBottom: '30px',
-                fontSize: '18px',
-                textTransform: 'none',
-                fontWeight: 'bold',
-                fontSize: '20px',
-              }}
-            >
-              Set voting topic
-            </Button>
+            gameState === 'voting' && (
+              <Button
+                onClick={() => {
+                  setEditingIssueName(true)
+                  setTimeout(() => {
+                    newIssueNameRef.current.focus()
+                  }, 50)
+                }}
+                sx={{
+                  marginBottom: '30px',
+                  fontSize: '18px',
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  fontSize: '20px',
+                }}
+              >
+                Set voting topic
+              </Button>
+            )
           )}
 
           {gameData.players &&
