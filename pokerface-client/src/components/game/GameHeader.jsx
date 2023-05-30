@@ -19,6 +19,7 @@ const {
   Dialog,
   TextField,
   ExpandMoreIcon,
+  EditNoteIcon,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -29,6 +30,7 @@ const {
   CloseIcon,
   IconButton,
   EditIcon,
+  Tooltip,
   LinkIcon,
 } = muiStyles
 
@@ -36,6 +38,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
   const navigate = useNavigate()
   const footerRef = useRef()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const isXsScreen = useMediaQuery('(max-width: 400px)')
   const { gameData } = useContext(GameContext)
   const [anchorEl, setAnchorEl] = useState(null)
   const [showProfileDialog, setShowProfileDialog] = useState(false)
@@ -92,7 +95,6 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
     }, 200)
   }, [showInviteDialog, inviteLinkInputRef])
 
-  // console.log('shadowon: ', shadowOn)
   return (
     <Box
       ref={footerRef}
@@ -100,12 +102,12 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
       sx={{
         boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
-        height: { xs: '65px', sm: '90px' },
+        height: { xs: '70px', sm: '95px' },
         backgroundColor: '#902bf5',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: { xs: '0 10px', sm: '0 10px' },
+        padding: { xs: '4px 10px', sm: '5px 10px' },
       }}
     >
       <Box
@@ -130,18 +132,27 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             onClick={() => navigate('/')}
             src={pokerLogo}
             alt="logo"
-            style={{ height: isSmallScreen ? '46px' : '70px' }}
+            style={{
+              height: isSmallScreen ? '46px' : '70px',
+              display: isXsScreen && 'none',
+            }}
           />
-          <Button
-            variant="text"
-            color="white"
-            endIcon={<ExpandMoreIcon />}
-            onClick={handleOpenGameSettings}
-            sx={{ textTransform: 'none', fontSize: { xs: '18px', sm: '22px' } }}
-            disableElevation
-          >
-            {roomName}
-          </Button>
+          <Box>
+            <Button
+              variant="text"
+              size={isSmallScreen ? 'small' : 'medium'}
+              color="white"
+              endIcon={<ExpandMoreIcon />}
+              onClick={handleOpenGameSettings}
+              sx={{
+                textTransform: 'none',
+                fontSize: { xs: '18px', sm: '22px' },
+              }}
+              disableElevation
+            >
+              {roomName}
+            </Button>
+          </Box>
         </Box>
         <Menu open={open} anchorEl={anchorEl} onClose={handleCloseGameSettings}>
           <MenuItem
@@ -155,6 +166,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             </ListItemIcon>
             <Typography variant="h6">Game Settings</Typography>
           </MenuItem>
+
           <MenuItem
             onClick={() => {
               handleCloseGameSettings()
@@ -248,28 +260,84 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             sx={{
               minWidth: isSmallScreen ? '180px' : '260px',
               padding: '10px 0',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
             }}
           >
-            <MenuItem
-              sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-              onClick={() => {
-                setShowProfileDialog(!showProfileDialog)
-                setDrawerOpen(!drawerOpen)
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+                padding: '5px 10px',
               }}
             >
-              <PurpleDeckCard
-                showBgImage
-                showCard={false}
-                borderColor={'#902bf5'}
-                borderThickness={1.5}
-                sizeMultiplier={0.8}
-                cardImage={localStorage.getItem('pokerCardImage')}
-              />
-              <Typography variant="h6">
-                {localStorage.getItem('playerName')}
-              </Typography>
-              <EditIcon />
-            </MenuItem>
+              <Box sx={{ display: 'flex', gap: '10px' }}>
+                <img src={pokerLogo} width={50} alt="logo" />
+                <Box>
+                  <Typography
+                    color="primary"
+                    sx={{ fontSize: '20px', fontWeight: 'bold' }}
+                  >
+                    Pokerface
+                  </Typography>
+                  <Typography sx={{ fontSize: '15px' }} color="GrayText">
+                    By Mason Hirst
+                  </Typography>
+                </Box>
+              </Box>
+              <Tooltip title="Close drawer" arrow>
+                <IconButton
+                  onClick={() => setDrawerOpen(!drawerOpen)}
+                  sx={{
+                    width: '50px',
+                    height: '50px',
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <Tooltip title="Edit profile" arrow enterDelay={700}>
+              <MenuItem
+                sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                onClick={() => {
+                  setShowProfileDialog(!showProfileDialog)
+                  setDrawerOpen(!drawerOpen)
+                }}
+              >
+                <PurpleDeckCard
+                  showBgImage
+                  showCard={false}
+                  borderColor={'#902bf5'}
+                  borderThickness={1.5}
+                  sizeMultiplier={0.8}
+                  cardImage={localStorage.getItem('pokerCardImage')}
+                />
+                <Typography variant="h6">
+                  {localStorage.getItem('playerName')}
+                </Typography>
+                <EditIcon />
+              </MenuItem>
+            </Tooltip>
+
+            <Button
+              href={`${document.location.origin}/contact`}
+              target="_blank"
+              variant="contained"
+              disableElevation
+              fullWidth
+              sx={{
+                textTransform: 'none',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                margin: '10px 10px',
+                width: 'calc(100% - 20px)',
+              }}
+            >
+              Contact Developer
+            </Button>
           </Box>
         </Drawer>
 

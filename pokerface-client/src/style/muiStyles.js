@@ -80,8 +80,14 @@ import Slider from '@mui/material/Slider'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import { purple, blue, pink } from '@mui/material/colors'
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
+import Tooltip from '@mui/material/Tooltip'
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 let muiStyles = {
+  EditNoteIcon,
+  Tooltip,
+  QuestionMarkIcon,
   pink,
   purple,
   blue,

@@ -1,9 +1,16 @@
 const { WebSocketServer, WebSocket } = require('ws')
 const { v4: uuidv4, validate: validateUUID } = require('uuid')
 require('dotenv').config()
+const SibApiV3Sdk = require('sib-api-v3-sdk')
 const cloudinary = require('cloudinary')
 
-const { CLOUDINARY_SECRET, CLOUDINARY_KEY, CLOUDINARY_NAME } = process.env
+const {
+  CLOUDINARY_SECRET,
+  CLOUDINARY_KEY,
+  CLOUDINARY_NAME,
+  SEND_IN_BLUE_API_KEY,
+  EMAIL_TARGET,
+} = process.env
 cloudinary.config({
   cloud_name: CLOUDINARY_NAME,
   api_key: CLOUDINARY_KEY,
@@ -161,8 +168,10 @@ async function startSocketServer(app, port) {
         const { type, body, gameId, token } = dataBody
 
         if (type === 'updatedChoice') {
-          if (!gameRooms[gameId]) return console.log('game room not found (updatedChoice) function')
-          if (!gameRooms[gameId].players[token]) return console.log('player not found (updatedChoice) function')
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updatedChoice) function')
+          if (!gameRooms[gameId].players[token])
+            return console.log('player not found (updatedChoice) function')
           if (gameRooms[gameId].players[token].currentChoice === body.card) {
             gameRooms[gameId].players[token].currentChoice = null
             return broadcastToRoom(gameId, 'gameUpdated')
@@ -184,6 +193,7 @@ async function startSocketServer(app, port) {
             Object.values(gameRooms[gameId].players).forEach((player) => {
               player.currentChoice = null
             })
+            gameRooms[gameId].currentIssueName = null
           }
           if (body.gameState === 'reveal') {
             console.log('body: ', body)
@@ -205,7 +215,9 @@ async function startSocketServer(app, port) {
             const validVotes = Object.values(votingObj.playerVotes).filter(
               (vote) => vote
             ).length
-            const possibleVotes = Object.values(gameRooms[gameId].players).length
+            const possibleVotes = Object.values(
+              gameRooms[gameId].players
+            ).length
             votingObj.participation = `${validVotes}/${possibleVotes}`
 
             // calculate the average
@@ -217,15 +229,16 @@ async function startSocketServer(app, port) {
             const cardCounts = {}
             Object.values(votingObj.playerVotes).forEach((vote) => {
               if (cardCounts[vote]) cardCounts[vote]++
-              else cardCounts[vote] = 1
+              else if (vote) cardCounts[vote] = 1
             })
             const highestCount = Math.max(...Object.values(cardCounts))
             const totalVotes = Object.values(votingObj.playerVotes).filter(
-              (vote) => vote
+              (vote) => vote !== null
             ).length
+            console.log('-----------------------------')
             console.log('highestCount: ', highestCount, totalVotes)
-            console.log(highestCount < 2 && totalVotes > 1)
-            votingObj.agreement = highestCount < 2 && totalVotes > 1 ? 0 : highestCount / totalVotes
+            votingObj.agreement =
+              highestCount < 2 && totalVotes > 1 ? 0 : highestCount / totalVotes
 
             //push the voting object into the game vote history
             gameRooms[gameId].voteHistory.push(votingObj)
@@ -255,6 +268,14 @@ async function startSocketServer(app, port) {
           if (playerCardImage || playerCardImage === '')
             gameRooms[gameId].players[token].playerCardImage = playerCardImage
           if (name) gameRooms[gameId].players[token].playerName = body.name
+          broadcastToRoom(gameId, 'gameUpdated')
+          
+        }
+        else if (type === 'setIssueName') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (setIssueName) function')
+            console.log('-----------------', body.issueName)
+          gameRooms[gameId].currentIssueName = body.issueName
           broadcastToRoom(gameId, 'gameUpdated')
         }
       })
@@ -307,6 +328,7 @@ module.exports = {
         gameRoomId: gameId,
         gameRoomName: gameName,
         gameState: 'voting',
+        currentIssueName: '',
         lastAction: Date.now(),
         voteHistory: [],
         deck,
@@ -384,6 +406,49 @@ module.exports = {
           }
         }
       )
+    } catch (err) {
+      console.error(err)
+      res.status(500).send(err)
+    }
+  },
+
+  emailDev: async (req, res) => {
+    const { name, contact, message, localUserToken } = req.body
+    try {
+      SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey =
+        SEND_IN_BLUE_API_KEY
+
+      new SibApiV3Sdk.TransactionalEmailsApi()
+        .sendTransacEmail({
+          subject: 'NEW MESSAGE FROM POKERFACE USER!',
+          sender: {
+            email: 'contact@pokerface.app',
+            name: 'Pokerface App',
+          },
+          replyTo: {
+            email: contact || 'mhirstdev@gmail.com',
+          },
+          to: [{ name: 'Cool Developer', email: EMAIL_TARGET }],
+          htmlContent: `<html>
+                          <body>
+                            <h1>New message from Pokerface user - ${localUserToken}</h1>
+                            <h2>Name: <span style="font-size: 17px;">${name ? name : 'not provided'}</span></h2>
+                            <h2>Contact: <span style="font-size: 17px;">${contact ? contact : 'not provided'}</span></h2>
+                            <h2>Message:</h2>
+                            <p style="font-size: 16px;">${message}</p>
+                          </body>
+                        </html>`,
+        })
+        .then(
+          function (data) {
+            return res.status(200).send(data)
+          },
+          function (error) {
+            console.error(error)
+            return res.status(500).send(error)
+          }
+        )
+
     } catch (err) {
       console.error(err)
       res.status(500).send(err)

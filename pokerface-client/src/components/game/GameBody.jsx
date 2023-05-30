@@ -4,11 +4,13 @@ import { GameContext } from '../../context/GameContext'
 import useClipboard from 'react-use-clipboard'
 import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
+import { useMediaQuery } from '@mui/material'
 import PurpleDeckCard from './PurpleDeckCard'
-const { Box, Typography, Button, ContentCopyIcon } = muiStyles
+const { Box, Typography, Button, ContentCopyIcon, TextField } = muiStyles
 
 const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
-  const { gameData } = useContext(GameContext)
+  const isSmallScreen = useMediaQuery('(max-width:600px)')
+  const { gameData, sendMessage } = useContext(GameContext)
   const gameBodyRef = useRef()
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
@@ -19,6 +21,14 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
   })
+  const [editingIssueName, setEditingIssueName] = useState(false)
+  const [newIssueName, setNewIssueName] = useState(gameData.currentIssueName)
+  const newIssueNameRef = useRef()
+
+  function submitNewIssueName() {
+    // if (!newIssueName) return
+    sendMessage('setIssueName', { issueName: newIssueName })
+  }
 
   useEffect(() => {
     setBodyIsScrolling(availableHeight < gameBodyRef.current?.scrollHeight)
@@ -218,9 +228,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
       assignPlayerSeat(deckCard, index)
     })
   } else if (gameState === 'reveal' && gameData?.voteHistory) {
-    Object.entries(
-      latestVoting.playerVotes
-    ).forEach((player, index) => {
+    Object.entries(latestVoting.playerVotes).forEach((player, index) => {
       if (!player) return
       const length = Object.values(latestVoting.playerVotes).length
       let cardSizeMultiplier = 1.2
@@ -286,46 +294,128 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             alignItems: 'center',
           }}
         >
-          {gameData.players && playersData.length < 2 && gameState === 'voting' && (
+          {(gameData.currentIssueName && gameData.currentIssueName) ||
+          editingIssueName ? (
             <Box
               sx={{
+                marginBottom: '20px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
               }}
             >
-              <Typography variant="body1">It's just you here 😞</Typography>
-              {isCopied ? (
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: '#4caf50',
-                    marginBottom: '14px',
-                    marginTop: '4px',
-                    fontSize: '17px',
+              <Typography
+                sx={{
+                  whiteSpace: 'nowrap',
+                  fontSize: { xs: '15px', sm: '20px' },
+                  opacity: 0.6,
+                }}
+              >
+                Matter at hand:
+              </Typography>
+              {editingIssueName ? (
+                <TextField
+                  inputRef={newIssueNameRef}
+                  size="small"
+                  spellCheck="false"
+                  value={newIssueName}
+                  onChange={(e) => setNewIssueName(e.target.value)}
+                  onBlur={() => {
+                    submitNewIssueName()
+                    setEditingIssueName(false)
                   }}
-                >
-                  Invite link copied to clipboard!
-                </Typography>
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      submitNewIssueName()
+                      setEditingIssueName(false)
+                    }
+                  }}
+                  inputProps={{
+                    maxLength: 75,
+                    style: {
+                      fontSize: isSmallScreen ? '16px' : '20px',
+                      width: 'clamp(240px, 50vw, 500px)',
+                      textAlign: 'center',
+                    },
+                  }}
+                />
               ) : (
-                <Button
-                  startIcon={<ContentCopyIcon />}
-                  variant="text"
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '18px',
-                    position: 'relative',
-                    top: '-5px',
-                  }}
-                  onClick={(e) => {
-                    setCopied(e)
+                <Typography
+                  sx={{ fontSize: { xs: '18px', sm: '24px' } }}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setEditingIssueName(true)
+                    setTimeout(() => {
+                      newIssueNameRef.current.focus()
+                    }, 50)
                   }}
                 >
-                  Copy invite link
-                </Button>
+                  {gameData.currentIssueName}
+                </Typography>
               )}
             </Box>
+          ) : (
+            <Button
+              onClick={() => {
+                setEditingIssueName(true)
+                setTimeout(() => {
+                  newIssueNameRef.current.focus()
+                }, 50)
+              }}
+              sx={{
+                marginBottom: '30px',
+                fontSize: '18px',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                fontSize: '20px',
+              }}
+            >
+              Set voting topic
+            </Button>
           )}
+
+          {gameData.players &&
+            playersData.length < 2 &&
+            gameState === 'voting' && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant="body1">It's just you here 😞</Typography>
+                {isCopied ? (
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: '#4caf50',
+                      marginBottom: '14px',
+                      marginTop: '4px',
+                      fontSize: '17px',
+                    }}
+                  >
+                    Invite link copied to clipboard!
+                  </Typography>
+                ) : (
+                  <Button
+                    startIcon={<ContentCopyIcon />}
+                    variant="text"
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '18px',
+                      position: 'relative',
+                      top: '-5px',
+                    }}
+                    onClick={(e) => {
+                      setCopied(e)
+                    }}
+                  >
+                    Copy invite link
+                  </Button>
+                )}
+              </Box>
+            )}
 
           {topPlayers.length > 0 && (
             <Box sx={topPlayersBox(true, '5px 0')}>{topPlayers}</Box>

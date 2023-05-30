@@ -41,7 +41,9 @@ FIXED------ make it so player cards are rendered off vote history, not players w
 
 FIXED------ build out the vote history
 
-build a feature to add an issueName to the voting
+FIXED------ build a feature to add an issueName to the voting
+
+add a game setting to make the issue name persistent until manually changed
 
 use Redis in the server to better store game rooms
 

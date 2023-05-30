@@ -17,12 +17,14 @@ const {
   extractToken,
   createNewGame,
   uploadCloudinaryImage,
-  deleteCloudinaryImage
+  deleteCloudinaryImage,
+  emailDev,
 } = require('./controllers/socketController')
 
 app.put('/game/upload_image', extractToken, uploadCloudinaryImage)
 app.delete('/game/delete_image', extractToken, deleteCloudinaryImage)
 app.post('/game/create', extractToken, createNewGame)
+app.post('/contact', extractToken, emailDev)
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '.', 'build', 'index.html'))

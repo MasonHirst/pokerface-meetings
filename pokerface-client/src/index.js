@@ -18,7 +18,7 @@ const theme = createTheme({
     },
     white: {
       main: '#ffffff',
-    }
+    },
   },
 });
 
