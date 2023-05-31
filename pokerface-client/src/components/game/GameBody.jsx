@@ -6,7 +6,7 @@ import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
 import { useMediaQuery } from '@mui/material'
 import PurpleDeckCard from './PurpleDeckCard'
-const { Box, Typography, Button, ContentCopyIcon, TextField } = muiStyles
+const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon } = muiStyles
 
 const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const isSmallScreen = useMediaQuery('(max-width:600px)')
@@ -341,12 +341,16 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 />
               ) : (
                 <Typography
-                  sx={{ fontSize: { xs: '18px', sm: '24px' } }}
-                  className="cursor-pointer"
+                  sx={{ fontSize: { xs: '18px', sm: '24px', position: 'relative', top: '-3px', } }}
+                  className={gameState === 'voting' ? 'cursor-pointer' : ''}
                   onClick={() => {
+                    if (gameState !== 'voting') return
                     setEditingIssueName(true)
                     setTimeout(() => {
                       newIssueNameRef.current.focus()
+                      if (newIssueNameRef.current) {
+                        newIssueNameRef.current.select()
+                      }
                     }, 50)
                   }}
                 >
@@ -363,6 +367,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     newIssueNameRef.current.focus()
                   }, 50)
                 }}
+                endIcon={<EditIcon />}
                 sx={{
                   marginBottom: '30px',
                   fontSize: '18px',

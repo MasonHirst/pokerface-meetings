@@ -70,7 +70,7 @@ const VoteHistory = ({ showDialog, setShowDialog, gameData }) => {
       return (
         <TableRow
           key={index}
-          sx={index % 2 !== 0 ? { borderBottom: '1px solid grey' } : {}}
+          sx={index % 2 !== 0 ? { borderBottom: '1px solid grey', } : {}}
         >
           <TableCell sx={rowCellStyle}>{issueName || '-'}</TableCell>
           <TableCell sx={rowCellStyle}>{average}</TableCell>

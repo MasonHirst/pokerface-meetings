@@ -65,7 +65,6 @@ const ContactDev = () => {
               sx={{
                 marginBottom: '10px',
                 display: 'flex',
-                // alignItems: 'center',
                 justifyContent: 'space-between',
               }}
             >
@@ -102,7 +101,7 @@ const ContactDev = () => {
               value={messageInput}
               error={!!messageError}
               helperText={messageError}
-              placeholder="Give feedback, report bugs, or give suggestions"
+              placeholder="Give feedback, suggestions, or report bugs"
               multiline
               minRows={4}
               maxRows={10}
