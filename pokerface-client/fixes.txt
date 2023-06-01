@@ -51,9 +51,13 @@ FIXED------ add an issue input for voting
 
 FIXED------ add a page (opens in a new tab) with text fields, and they can use that page to send me an email with suggestions or bugs
 
-make each row in the vote history clickable to show an expanded view similar to the footer during the reveal state
+FIXED------ fix side padding on vote history in mobile view
 
-add a game setting to make the issue name persistent until manually changed
+FIXED------ add .trim() to inputs to remove whitespace
+
+FIXED------ add character limits to inputs
+
+make each row in the vote history clickable to show an expanded view similar to the footer during the reveal state
 
 use Redis in the server to better store game rooms
 
@@ -67,6 +71,10 @@ add a custom background color picker for custom card images
 
 build a feature where the game creator can choose who can make changes to game room
 
-add a setting for "allow custom card images"
+add a setting for "show custom card images"
 
 add a game host who can kick players or end the game
+
+agreement % in vote history is not rounding correctly
+
+vote history - decide what to show if someone didn't vote (null)

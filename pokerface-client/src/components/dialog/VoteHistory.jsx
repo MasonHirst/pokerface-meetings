@@ -97,7 +97,7 @@ const VoteHistory = ({ showDialog, setShowDialog, gameData }) => {
           justifyContent: 'center',
           gap: 20,
           maxWidth: '100vw',
-          padding: 55,
+          padding: isSmallScreen ? 10 : 45,
         },
       }}
       open={showDialog}

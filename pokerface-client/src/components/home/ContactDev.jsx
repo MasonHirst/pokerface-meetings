@@ -75,6 +75,8 @@ const ContactDev = () => {
             </Box>
             <TextField
               fullWidth
+              spellCheck={false}
+              inputProps={{ maxLength: 20 }}
               label="Name (optional)"
               disabled={disableForm}
               variant="outlined"
@@ -84,6 +86,7 @@ const ContactDev = () => {
             <TextField
               disabled={disableForm}
               spellCheck={false}
+              inputProps={{ maxLength: 50 }}
               fullWidth
               error={!!contactError}
               helperText={contactError}
@@ -94,6 +97,7 @@ const ContactDev = () => {
             />
             <TextField
               disabled={disableForm}
+              inputProps={{ maxLength: 1024 }}
               fullWidth
               label="Comments"
               spellCheck={false}

@@ -25,9 +25,10 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
 
   function updateGameName(e) {
     e.preventDefault()
+    const trimmedName = newName.trim()
     setEditingGameName(!editingGameName)
-    if (!newName || newName === gameData.gameRoomName) return
-    sendMessage('updatedGameName', { name: newName })
+    if (!newName || trimmedName === gameData.gameRoomName) return
+    sendMessage('updatedGameName', { name: trimmedName })
   }
 
   useEffect(() => {

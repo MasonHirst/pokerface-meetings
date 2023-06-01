@@ -39,7 +39,7 @@ const CreateGamePage = () => {
     if (!gameName) return setError('Please enter a game name')
     setAppIsLoading(true)
     axios
-      .post('game/create', { gameName, deck: selectedDeck })
+      .post('game/create', { gameName: gameName.trim(), deck: selectedDeck })
       .then(({ data }) => {
         if (data.gameRoomId) {
           navigate(`/game/${data.gameRoomId}`)

@@ -24,8 +24,11 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
   const [showImageUpload, setShowImageUpload] = useState(false)
   const [uploadedPicture, setUploadedPicture] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
+  const [nameError, setNameError] = useState('')
 
   function handleSaveProfile() {
+    if (!nameInput.trim()) return setNameError('Name cannot be empty')
+    setNameError('')
     setSaveLoading(true)
     if (uploadedPicture) {
       axios
@@ -159,6 +162,8 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
             fullWidth
             disabled={saveLoading}
             size="md"
+            error={!!nameError}
+            helperText={nameError}
             placeholder="New display name"
           />
 

@@ -26,8 +26,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const newIssueNameRef = useRef()
 
   function submitNewIssueName() {
-    // if (!newIssueName) return
-    sendMessage('setIssueName', { issueName: newIssueName })
+    sendMessage('setIssueName', { issueName: newIssueName.trim() })
   }
 
   useEffect(() => {
