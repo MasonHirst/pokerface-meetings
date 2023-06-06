@@ -38,7 +38,6 @@ import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import Paper from '@mui/material/Paper'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import TextField from '@mui/material/TextField'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import Link from '@mui/material/Link'
@@ -82,10 +81,15 @@ import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import { purple, blue, pink } from '@mui/material/colors'
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
 import Tooltip from '@mui/material/Tooltip'
-import EditNoteIcon from '@mui/icons-material/EditNote';
+import EditNoteIcon from '@mui/icons-material/EditNote'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
+import Collapse from '@mui/material/Collapse'
 
 let muiStyles = {
+  Collapse,
   EditNoteIcon,
+  KeyboardArrowDownIcon,
   Tooltip,
   QuestionMarkIcon,
   pink,

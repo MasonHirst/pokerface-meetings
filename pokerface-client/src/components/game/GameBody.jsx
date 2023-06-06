@@ -65,7 +65,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
       setStateButtonDisabled(true)
       setTimeout(() => {
         setStateButtonDisabled(false)
-      }, 1500)
+      }, 1200)
     }
   }, [gameData])
 

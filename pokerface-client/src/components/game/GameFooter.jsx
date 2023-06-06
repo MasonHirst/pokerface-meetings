@@ -4,6 +4,7 @@ import PurpleDeckCard from './PurpleDeckCard'
 import { useMediaQuery } from '@mui/material'
 import GraphemeSplitter from 'grapheme-splitter'
 import { GameContext } from '../../context/GameContext'
+import VoteSummary from './VoteSummary'
 const { Box, Typography } = muiStyles
 
 const GameFooter = ({ setComponentHeight, shadowOn }) => {
@@ -56,35 +57,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
     }
   })
 
-  const cardCounts = {}
-  if (latestVoting?.playerVotes) {
-    Object.values(latestVoting.playerVotes).forEach((vote) => {
-      if (!vote) return
-      const obj = {
-        choice: vote,
-        count: 1,
-      }
-      if (cardCounts[vote]) {
-        cardCounts[vote].count++
-      } else cardCounts[vote] = obj
-    })
-  }
-
-  const revealCardCount = Object.values(cardCounts).map((obj, index) => {
-    let bottomMessage
-    if (obj.count > 1) {
-      bottomMessage = 'votes'
-    } else bottomMessage = 'vote'
-    return (
-      <PurpleDeckCard
-        key={index}
-        card={obj.choice}
-        gameState={gameState}
-        borderColor="black"
-        bottomMessage={`${obj.count} ${bottomMessage}`}
-      />
-    )
-  })
+  
 
   return (
     <Box
@@ -121,83 +94,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
           <Typography variant="h6">No cards</Typography>
         )
       ) : (
-        // Reveal state footer
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: isSmallScreen ? 'column-reverse' : 'row',
-            alignItems: 'center',
-            gap: '20px',
-            paddingTop: '7px',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              gap: '20px',
-              overflowX: 'scroll',
-              paddingBottom: '4px',
-            }}
-          >
-            {revealCardCount}
-          </Box>
-          <Box sx={{ display: 'flex', gap: '20px', }}>
-            {Object.values(latestVoting).length && latestVoting.average && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '7px',
-                  position: 'relative',
-                  bottom: isSmallScreen ? '0px' : '15px',
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
-                >
-                  Average
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    marginTop: '-10px',
-                    fontSize: { xs: '25px', sm: '30px' },
-                  }}
-                >
-                  {latestVoting.average}
-                </Typography>
-              </Box>
-            )}
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '7px',
-                position: 'relative',
-                bottom: isSmallScreen ? '0px' : '15px',
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
-              >
-                Agreement
-              </Typography>
-              <Typography
-                variant="h5"
-                sx={{
-                  marginTop: '-10px',
-                  fontSize: { xs: '25px', sm: '30px' },
-                }}
-              >
-                {parseFloat((latestVoting.agreement * 100).toFixed(1))}%
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <VoteSummary voteDetails={latestVoting} gameState={gameState} wrapMode={isSmallScreen} />
       )}
     </Box>
   )

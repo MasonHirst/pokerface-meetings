@@ -57,6 +57,8 @@ FIXED------ add .trim() to inputs to remove whitespace
 
 FIXED------ add character limits to inputs
 
+FIXED------ agreement % in vote history is not rounding correctly
+
 make each row in the vote history clickable to show an expanded view similar to the footer during the reveal state
 
 use Redis in the server to better store game rooms
@@ -75,6 +77,6 @@ add a setting for "show custom card images"
 
 add a game host who can kick players or end the game
 
-agreement % in vote history is not rounding correctly
-
 vote history - decide what to show if someone didn't vote (null)
+
+BUG - sam's buttons to change card image were disabled after he removed his card image once

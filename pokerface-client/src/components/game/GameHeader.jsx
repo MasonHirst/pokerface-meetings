@@ -129,7 +129,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         >
           <img
             className="cursor-pointer"
-            onClick={() => navigate('/')}
+            onClick={handleLeaveGame}
             src={pokerLogo}
             alt="logo"
             style={{
@@ -400,13 +400,15 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         setShowDialog={setShowGameSettingsDialog}
       />
 
-      <ProfileDialog
-        gameData={gameData}
-        showDialog={showProfileDialog}
-        setShowDialog={setShowProfileDialog}
-      />
+      {showProfileDialog && (
+        <ProfileDialog
+          gameData={gameData}
+          showDialog={showProfileDialog}
+          setShowDialog={setShowProfileDialog}
+        />
+      )}
 
-      {VoteHistory && (
+      {showHistoryDialog && (
         <VoteHistory
           showDialog={showHistoryDialog}
           setShowDialog={setShowHistoryDialog}

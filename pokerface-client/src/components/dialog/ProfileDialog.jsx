@@ -175,7 +175,7 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
             fullWidth
             size="large"
             color="secondary"
-            sx={{ textTransform: 'none', fontSize: '18px' }}
+            sx={{ textTransform: 'none', fontSize: '18px', fontWeight: 'bold', }}
           >
             Save
           </Button>
