@@ -1,10 +1,12 @@
 import React from 'react'
 import Header from './Header'
 import HomeBody from './HomeBody'
+import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 const { IconButton, QuestionMarkIcon, Tooltip } = muiStyles
 
 const HomePage = () => {
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
   document.title = 'Pokerface - Home'
 
   return (
@@ -15,19 +17,23 @@ const HomePage = () => {
       <Tooltip title="Contact Developer" arrow placement="left">
         <IconButton
           href={`${document.location.origin}/contact`}
-          target='_blank'
+          target="_blank"
           sx={{
+            width: isSmallScreen ? '40px' : '50px',
+            height: isSmallScreen ? '40px' : '50px',
             backgroundColor: '#aa00ff',
             position: 'fixed',
-            bottom: '25px',
-            right: '25px',
+            bottom: isSmallScreen ? '10px' : '22px',
+            right: isSmallScreen ? '10px' : '22px',
             padding: '15px',
             boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
             color: '#ffffff',
             '&:hover': { backgroundColor: '#aa00ffdd' },
           }}
         >
-          <QuestionMarkIcon />
+          <QuestionMarkIcon
+            sx={{ fontSize: isSmallScreen ? '20px' : '25px' }}
+          />
         </IconButton>
       </Tooltip>
     </div>

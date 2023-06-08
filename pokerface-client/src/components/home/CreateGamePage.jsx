@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import pokerLogo from '../../assets/poker-logo.png'
 import PurpleDeckCard from '../game/PurpleDeckCard'
 import GraphemeSplitter from 'grapheme-splitter'
 import ChooseDeck from '../dialog/ChooseDeck'
 import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
-const { Box, TextField, Button, StyleIcon, TvIcon } = muiStyles
+const { Box, TextField, Button, StyleIcon, TvIcon, Typography } = muiStyles
 
 const CreateGamePage = () => {
   document.title = 'Pokerface - Create Game'
@@ -23,13 +24,7 @@ const CreateGamePage = () => {
     (card, index) => {
       const length = splitter.splitGraphemes(card.trim()).length
       if (length > 4 || card.trim().length < 1) return
-      return (
-        <PurpleDeckCard
-          key={index}
-          card={card}
-          sizeMultiplier={0.9}
-        />
-      )
+      return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />
     }
   )
 
@@ -76,13 +71,13 @@ const CreateGamePage = () => {
         <TextField
           inputProps={{ maxLength: 20 }}
           onChange={(e) => setGameName(e.target.value)}
-          sx={{ width: 'min(650px, 100%)', }}
+          sx={{ width: 'min(650px, 100%)' }}
           autoFocus
           disabled={appIsLoading}
           error={!!error}
           value={gameName}
           label="Game Name"
-          size='large'
+          size="large"
           placeholder="Enter a game name"
           helperText={error}
         />
@@ -122,7 +117,7 @@ const CreateGamePage = () => {
 
         <Button
           variant="contained"
-          size='large'
+          size="large"
           disableElevation
           disabled={appIsLoading}
           sx={{
@@ -145,6 +140,57 @@ const CreateGamePage = () => {
           showDeckDialog={showDeckDialog}
         />
       )}
+
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        <img
+          src={pokerLogo}
+          className="cursor-pointer"
+          onClick={() => navigate('/')}
+          alt="poker-logo"
+          style={{ width: 'clamp(50px, 15vw, 80px)' }}
+        />
+        <Box>
+          <Typography
+            variant="h5"
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            color="primary"
+            sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
+          >
+            Pokerface Meet
+          </Typography>
+          <Typography
+            variant="body2"
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            sx={{ fontSize: 'clamp(12px, 3vw, 15px)', opacity: 0.6 }}
+          >
+            by Mason Hirst
+          </Typography>
+        </Box>
+      </Box>
+
+      <Typography
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          position: 'absolute',
+          right: '20px',
+          top: '23px',
+          fontWeight: 'bold',
+          fontSize: 'clamp(17px, 5vw, 25px)',
+        }}
+      >
+        New game setup
+      </Typography>
     </Box>
   )
 }

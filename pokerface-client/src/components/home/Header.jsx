@@ -15,26 +15,60 @@ const Header = () => {
         display: 'flex',
         alignItems: 'center',
         gap: '20px',
-        padding: {xs: '10px 10px', sm: '10px 20px'},
+        padding: { xs: '10px 10px', sm: '10px 20px' },
         justifyContent: 'space-between',
       }}
     >
-      <Box sx={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-        <img src={pokerLogo} alt="poker-logo" style={{ width: '80px' }} />
+      <Box
+        sx={{
+          display: 'flex',
+          gap: isSmallScreen ? '10px' : '15px',
+          alignItems: 'center',
+        }}
+      >
+        <img
+          src={pokerLogo}
+          className="cursor-pointer"
+          onClick={() => navigate('/')}
+          alt="poker-logo"
+          style={{ width: 'clamp(50px, 15vw, 80px)' }}
+        />
         <Box>
-
-        <Typography variant='h5' color='primary' sx={{ fontWeight: 'bold', }}>Pokerface Meet</Typography>
-        <Typography variant='body2' sx={{fontSize: '15px', opacity: 0.6}}>by Mason Hirst</Typography>
+          <Typography
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            variant="h5"
+            color="primary"
+            sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
+          >
+            Pokerface Meet
+          </Typography>
+          <Typography
+            variant="body2"
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            sx={{ fontSize: '15px', opacity: 0.6 }}
+          >
+            by Mason Hirst
+          </Typography>
         </Box>
       </Box>
-      {!isSmallScreen && <Button
-        disableElevation
-        variant="contained"
-        onClick={() => navigate(`/game/create`)}
-        sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
-      >
-        Host new game
-      </Button>}
+      {!isSmallScreen && (
+        <Button
+          disableElevation
+          size="large"
+          variant="contained"
+          onClick={() => navigate(`/game/create`)}
+          sx={{
+            textTransform: 'none',
+            fontSize: '17px',
+            fontWeight: 'bold',
+            borderRadius: '8px',
+          }}
+        >
+          Host new game
+        </Button>
+      )}
     </Box>
   )
 }
