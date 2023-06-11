@@ -12,14 +12,12 @@ const HomeBody = () => {
   const isMdScreen = useMediaQuery('(max-width: 960px)')
   const isLgScreen = useMediaQuery('(max-width: 1280px)')
 
-
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        overflowY: 'scroll',
-        marginTop: isSmallScreen ? '75px' : '102px',
+        marginTop: isMdScreen ? '130px' : '110px',
         // border: '1px solid red',
       }}
     >
@@ -49,7 +47,7 @@ const HomeBody = () => {
             sx={{
               padding: isMdScreen && isSmallScreen ? '30px 18px' : '50px 25px',
               paddingTop: '0',
-              maxWidth: isMdScreen ? '100%' : '500px',
+              maxWidth: isMdScreen ? '100%' : '600px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: isMdScreen ? 'center' : 'left',
@@ -91,12 +89,42 @@ const HomeBody = () => {
             >
               Host new game
             </Button>
+            <Typography
+              variant="h6"
+              sx={{ marginTop: '10px', marginBottom: '-18px' }}
+            >
+              Trusted by
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: '10px',
+                fontWeight: 'bold',
+                color: 'grey',
+                flexWrap: 'wrap',
+                justifyContent: isSmallScreen ? 'center' : 'left',
+              }}
+            >
+              <Typography sx={{ fontSize: isSmallScreen ? '14px' : '18px' }}>
+                My mom
+              </Typography>
+              <Typography sx={{ fontSize: isSmallScreen ? '14px' : '18px' }}>
+                My wife
+              </Typography>
+              <Typography sx={{ fontSize: isSmallScreen ? '14px' : '18px' }}>
+                Steven
+              </Typography>
+              <Typography sx={{ fontSize: isSmallScreen ? '14px' : '18px' }}>
+                Many more
+              </Typography>
+            </Box>
           </Box>
         </Box>
         <Box
           sx={{
             // border: '1px solid red',
             width: isMdScreen ? '100%' : '50%',
+            maxWidth: '100%',
             display: 'flex',
             justifyContent: 'center',
           }}
@@ -111,16 +139,16 @@ const HomeBody = () => {
             <img
               src={crewSvg}
               style={{
-                width: '450px',
+                width: 'min(100%, 450px)',
                 marginBottom: '-18px',
                 zIndex: 1,
               }}
             />
             <video
               style={{
-                maxWidth: '550px',
-                boxShadow: !isSmallScreen && 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
-                borderRadius: !isSmallScreen && '12px',
+                maxWidth: 'min(550px, 100% - 18px)',
+                boxShadow: 'rgba(0, 0, 0, 0.15) 0px 5px 15px 0px',
+                borderRadius: '12px',
               }}
               muted
               autoPlay
@@ -146,7 +174,7 @@ const HomeBody = () => {
           variant="h4"
           sx={{
             fontWeight: 'bold',
-            fontSize: '45px',
+            fontSize: isSmallScreen ? '38px' : '45px',
             marginBottom: '80px',
             textAlign: 'center',
           }}
@@ -166,15 +194,15 @@ const HomeBody = () => {
         >
           <Box
             sx={{
-              boxShadow: !isSmallScreen && 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
-              borderRadius: !isSmallScreen && '12px',
+              boxShadow: 'rgba(0, 0, 0, 0.15) 0px 5px 15px 0px',
+              borderRadius: '12px',
+              maxWidth: 'min(650px, 100%)',
             }}
           >
             <img
               src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686354937/Screenshot_2023-06-09_at_5.53.47_PM_hvnh9z.png"
               style={{
-                borderRadius: !isSmallScreen && '12px',
-                maxWidth: '650px',
+                borderRadius: '12px',
                 width: '100%',
               }}
             />
@@ -185,9 +213,16 @@ const HomeBody = () => {
               display: 'flex',
               flexDirection: 'column',
               gap: '20px',
+              textAlign: isMdScreen ? 'center' : 'left',
             }}
           >
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 'bold',
+                fontSize: isSmallScreen ? '25px' : '32px',
+              }}
+            >
               Vote and Estimate Issues in Real-Time
             </Typography>
             <Typography variant="body1" sx={{ fontSize: '17px' }}>
@@ -198,7 +233,22 @@ const HomeBody = () => {
           </Box>
         </Box>
 
-        <Box></Box>
+        <Box>
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 'bold',
+                fontSize: isSmallScreen ? '25px' : '32px',
+                marginTop: '80px',
+                marginBottom: '20px',
+                textAlign: 'center',
+              }}
+            >
+              Easy to use
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     </Box>
   )
