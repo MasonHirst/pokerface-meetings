@@ -22,7 +22,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     successDuration: 1500,
   })
   const [editingIssueName, setEditingIssueName] = useState(false)
-  const [newIssueName, setNewIssueName] = useState(gameData.currentIssueName)
+  const [newIssueName, setNewIssueName] = useState(gameData.currentIssueName || '')
   const newIssueNameRef = useRef()
 
   function submitNewIssueName() {
@@ -372,7 +372,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   fontSize: '18px',
                   textTransform: 'none',
                   fontWeight: 'bold',
-                  fontSize: '20px',
+                  fontSize: isSmallScreen ? '16px' : '20px',
                 }}
               >
                 Set voting topic
@@ -390,7 +390,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   alignItems: 'center',
                 }}
               >
-                <Typography variant="body1">It's just you here 😞</Typography>
+                <Typography variant="body1" sx={{fontSize: isSmallScreen ? '13px' : '16px'}}>It's just you here 😞</Typography>
                 {isCopied ? (
                   <Typography
                     variant="body1"
@@ -409,7 +409,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     variant="text"
                     sx={{
                       textTransform: 'none',
-                      fontSize: '18px',
+                      fontSize: isSmallScreen ? '16px' : '18px',
                       position: 'relative',
                       top: '-5px',
                     }}

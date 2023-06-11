@@ -1,18 +1,26 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Header from './Header'
 import HomeBody from './HomeBody'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
-const { IconButton, QuestionMarkIcon, Tooltip } = muiStyles
+const { IconButton, QuestionMarkIcon, Tooltip, Box } = muiStyles
 
 const HomePage = () => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const [homeHasScroll, setHomeHasScroll] = useState(false)
+
   document.title = 'Pokerface - Home'
 
+  useEffect(() => {
+    const handleScroll = () => setHomeHasScroll(window.pageYOffset > 0)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <div>
-      <Header />
-      <HomeBody />
+    <Box sx={{ width: '100%' }}>
+      <Header hasScroll={homeHasScroll} />
+      <HomeBody updateHasScroll={setHomeHasScroll} />
 
       <Tooltip title="Contact Developer" arrow placement="left">
         <IconButton
@@ -36,7 +44,7 @@ const HomePage = () => {
           />
         </IconButton>
       </Tooltip>
-    </div>
+    </Box>
   )
 }
 

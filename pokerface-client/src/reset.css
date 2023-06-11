@@ -43,15 +43,17 @@ table {
 	border-spacing: 0;
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   background-color: transparent;
-  max-width: 10px;
-  max-height: 10px;
+  background-color: blue;
+  max-width: clamp(6px, 2vw, 10px) !important;
+  max-height: clamp(6px, 1vw, 10px);
+  width: max-content;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: lightgrey;
+  background-color: rgb(169, 169, 169);
   border-radius: 10px;
-}
+} */
 
 .cursor-pointer:hover {
   cursor: pointer;

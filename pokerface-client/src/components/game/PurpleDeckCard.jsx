@@ -41,8 +41,8 @@ const PurpleDeckCard = ({
   let cardWidth = 62 * sizeMultiplier
 
   if (isSmallScreen) {
-    cardHeight = cardHeight * 0.8
-    cardWidth = cardWidth * 0.8
+    cardHeight = cardHeight * 0.7
+    cardWidth = cardWidth * 0.7
   }
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const PurpleDeckCard = ({
           transition: '0.2s',
           margin: cardMargin,
           position: 'relative',
-          bottom: selected ? '20px' : 0,
+          bottom: selected ? '15px' : 0,
           display: 'flex',
           justifyContent: 'center',
           backgroundColor:

@@ -50,7 +50,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
             gameData?.players[localStorage.getItem('localUserToken')]
               .currentChoice === card
           }
-          cardMargin="20px 0 0 0"
+          cardMargin='20px 0 0 0'
           borderColor="#902bf5"
         />
       )
@@ -66,9 +66,10 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
       sx={{
         width: '100%',
         boxShadow: shadowOn ? '0px 0px 8px 0px rgba(0,0,0,0.25)' : 'none',
-        backgroundColor: '#fafafa',
+        // backgroundColor: '#fafafa',
         display: 'flex',
-        padding: '10px 5px 0 5px',
+        padding: isSmallScreen ? '0 4px' : '0 10px',
+        paddingTop: gameState !== 'voting' && '10px',
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '25px',
@@ -80,7 +81,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
           <Box
             sx={{
               display: 'flex',
-              paddingTop: '15px',
+              // paddingTop: '15px',
               gap: { xs: '10px', sm: '18px' },
               overflowX: 'scroll',
               height: '100%',
