@@ -126,7 +126,7 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
             color={[255, 255, 255, 0.6]}
             scale={scale}
             position={position}
-            backgroundColor={customBgColor && 'white'}
+            backgroundColor={customBgColor && '#ffffff'}
             style={{ backgroundColor: 'grey', borderRadius: '10px' }}
             disableBoundaryChecks
             onPositionChange={handlePositionChange}

@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import HomePage from './HomePage'
 import ContactDev from './ContactDev'
+import './home.css'
 
 const HomeRouter = () => {
   return (

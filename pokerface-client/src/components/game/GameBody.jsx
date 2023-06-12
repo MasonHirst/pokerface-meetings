@@ -10,6 +10,7 @@ const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon } = muiSty
 
 const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const isSmallScreen = useMediaQuery('(max-width:600px)')
+  const isXsScreen = useMediaQuery('(max-width:400px)')
   const { gameData, sendMessage } = useContext(GameContext)
   const gameBodyRef = useRef()
   const [playersData, setPlayersData] = useState([])
@@ -427,7 +428,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             <Box sx={topPlayersBox(true, '5px 0')}>{topPlayers}</Box>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: isXsScreen ? '5px' : '10px' }}>
             {leftPlayers.length > 0 && (
               <Box sx={sidePlayersBox}>{leftPlayers}</Box>
             )}

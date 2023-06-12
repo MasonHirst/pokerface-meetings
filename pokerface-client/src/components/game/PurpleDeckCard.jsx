@@ -14,7 +14,7 @@ const PurpleDeckCard = ({
   bottomMessageMultiplier = 1,
   bottomMessageMargin = '0',
   borderColor = '#902bf5',
-  bgColor = 'white',
+  bgColor = '#ffffff',
   selectedBgColor = '#902bf5',
   showBgImage = false,
   selected,
@@ -24,6 +24,7 @@ const PurpleDeckCard = ({
   borderThickness = 2,
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const isXsScreen = useMediaQuery('(max-width: 400px)')
   const [cardFontSize, setCardFontSize] = useState(23)
   const cardTextRef = useRef()
 
@@ -40,7 +41,10 @@ const PurpleDeckCard = ({
   let cardHeight = 98 * sizeMultiplier
   let cardWidth = 62 * sizeMultiplier
 
-  if (isSmallScreen) {
+  if (isXsScreen) {
+    cardHeight = cardHeight * 0.6
+    cardWidth = cardWidth * 0.6
+  } else if (isSmallScreen) {
     cardHeight = cardHeight * 0.7
     cardWidth = cardWidth * 0.7
   }

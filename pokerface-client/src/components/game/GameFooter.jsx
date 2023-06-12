@@ -66,14 +66,16 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
       sx={{
         width: '100%',
         boxShadow: shadowOn ? '0px 0px 8px 0px rgba(0,0,0,0.25)' : 'none',
-        // backgroundColor: '#fafafa',
         display: 'flex',
-        padding: isSmallScreen ? '0 4px' : '0 10px',
+        padding: isSmallScreen ? '0 8px' : '0 10px',
         paddingTop: gameState !== 'voting' && '10px',
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '25px',
         flexWrap: 'nowrap',
+        // paddingBottom: '25px',
+        // paddingBottom: '5px',
+        // paddingLeft: '15px',
       }}
     >
       {gameState === 'voting' ? (

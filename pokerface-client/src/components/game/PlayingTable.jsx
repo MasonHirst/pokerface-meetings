@@ -8,6 +8,7 @@ const { Card, Typography, Button, purple, blue } = muiStyles
 const PlayingTable = ({ disableButton }) => {
   const { gameData, sendMessage } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const isXsScreen = useMediaQuery('(max-width: 400px)')
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
   const [tableTopBackground, setTableTopBackground] = useState(false)
@@ -53,7 +54,7 @@ const PlayingTable = ({ disableButton }) => {
       className={tableClass}
       sx={{
         backgroundColor: blue[200],
-        width: { xs: '200px', sm: '380px' },
+        width: isXsScreen ? '140px' : { xs: '200px', sm: '380px' },
         height: { xs: '110px', sm: '200px' },
         borderRadius: '20px',
         boxShadow: 'none',
@@ -67,11 +68,16 @@ const PlayingTable = ({ disableButton }) => {
       {tableMessage !== 'Pick your cards!' ? (
         <Button
           disabled={disableButton}
-          color='primary'
+          color="primary"
           variant="contained"
           disableElevation
-          size={isSmallScreen ? 'medium' : 'large'}
-          sx={{ fontSize: {xs: 15, sm: 18}, fontWeight: 'bold', textTransform: 'none', letterSpacing: '.5px'  }}
+          size={isSmallScreen ? (isXsScreen ? 'small' : 'medium') : 'large'}
+          sx={{
+            fontSize: { xs: 15, sm: 18 },
+            fontWeight: 'bold',
+            textTransform: 'none',
+            letterSpacing: '.5px',
+          }}
           onClick={updateGameState}
         >
           {tableMessage}

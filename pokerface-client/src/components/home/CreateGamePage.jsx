@@ -166,7 +166,7 @@ const CreateGamePage = () => {
             color="primary"
             sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
           >
-            Pokerface Meet
+            Pokerface
           </Typography>
           <Typography
             variant="body2"
