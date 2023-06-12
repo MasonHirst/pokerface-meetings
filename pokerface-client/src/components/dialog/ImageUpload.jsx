@@ -3,8 +3,17 @@ import { useDropzone } from 'react-dropzone'
 import AvatarEditor from 'react-avatar-editor'
 import muiStyles from '../../style/muiStyles'
 
-const { Box, Typography, Button, Stack, Slider, ZoomInIcon, RotateLeftIcon } =
-  muiStyles
+const {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Slider,
+  ZoomInIcon,
+  RotateLeftIcon,
+  Switch,
+  FormControlLabel,
+} = muiStyles
 
 const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
   const [fileError, setFileError] = useState('')
@@ -14,6 +23,7 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
   const [scale, setScale] = useState(1)
   const [position, setPosition] = useState({ x: 0.5, y: 0.5 })
   const [rotation, setRotation] = useState(0)
+  const [customBgColor, setCustomBgColor] = useState(false)
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -56,7 +66,7 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
       alert('No editor ref')
     }
   }
-  
+
   return (
     <Box>
       {!unCroppedImage ? (
@@ -105,22 +115,22 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
           <Typography variant="h5">
             Choose how your card will appear{' '}
           </Typography>
-          <Box sx={{ backgroundColor: 'grey', borderRadius: '10px' }}>
-            <AvatarEditor
-              ref={editorRef}
-              image={unCroppedImage}
-              width={120}
-              height={196}
-              border={50}
-              rotate={rotation}
-              borderRadius={10}
-              color={[255, 255, 255, 0.6]} // Border color with transparency
-              scale={scale}
-              position={position}
-              disableBoundaryChecks
-              onPositionChange={handlePositionChange}
-            />
-          </Box>
+          <AvatarEditor
+            ref={editorRef}
+            image={unCroppedImage}
+            width={120}
+            height={196}
+            border={50}
+            rotate={rotation}
+            borderRadius={10}
+            color={[255, 255, 255, 0.6]}
+            scale={scale}
+            position={position}
+            backgroundColor={customBgColor && '#ffffff'}
+            style={{ backgroundColor: 'grey', borderRadius: '10px' }}
+            disableBoundaryChecks
+            onPositionChange={handlePositionChange}
+          />
           <Button
             disabled={
               position.x === 0.5 &&
@@ -144,6 +154,16 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
           >
             Reset picture
           </Button>
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={(e) => setCustomBgColor(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Add white background"
+            sx={{ marginTop: '-10px' }}
+          />
           <Stack
             spacing={2}
             direction={'row'}
@@ -184,21 +204,44 @@ const ImageUpload = ({ setPicture, picture, setShowUploader }) => {
               {rotation}°
             </Typography>
           </Stack>
-          <Button
-            disableElevation
-            fullWidth
-            variant="contained"
-            color="secondary"
-            onClick={handleCrop}
+          <Box
             sx={{
-              textTransform: 'none',
-              marginTop: '10px',
-              fontWeight: 'bold',
-              fontSize: '17px',
+              display: 'flex',
+              gap: '10px',
+              width: '100%',
             }}
           >
-            Save
-          </Button>
+            <Button
+              disableElevation
+              fullWidth
+              variant="contained"
+              color="error"
+              onClick={() => setShowUploader(false)}
+              sx={{
+                textTransform: 'none',
+                marginTop: '10px',
+                fontWeight: 'bold',
+                fontSize: '17px',
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disableElevation
+              fullWidth
+              variant="contained"
+              color="secondary"
+              onClick={handleCrop}
+              sx={{
+                textTransform: 'none',
+                marginTop: '10px',
+                fontWeight: 'bold',
+                fontSize: '17px',
+              }}
+            >
+              Save
+            </Button>
+          </Box>
         </Box>
       ) : (
         <Typography>Something went wrong</Typography>

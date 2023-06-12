@@ -2,13 +2,16 @@ import React, { useContext, useState, useEffect } from 'react'
 import { GameContext } from '../../context/GameContext'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
-const { Card, Typography, Button } = muiStyles
+import tableTop from '../../assets/table-top.jpeg'
+const { Card, Typography, Button, purple, blue } = muiStyles
 
-const PlayingTable = ({disableButton}) => {
+const PlayingTable = ({ disableButton }) => {
   const { gameData, sendMessage } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const isXsScreen = useMediaQuery('(max-width: 400px)')
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
+  const [tableTopBackground, setTableTopBackground] = useState(false)
 
   let tableMessage = 'Pick your cards!'
   let choicesCount = 0
@@ -20,7 +23,7 @@ const PlayingTable = ({disableButton}) => {
     setPlayersData(Object.values(gameData.players))
     setGameState(gameData.gameState)
   }, [gameData])
-  
+
   playersData.forEach((player) => {
     if (player.currentChoice) {
       choicesCount++
@@ -40,38 +43,50 @@ const PlayingTable = ({disableButton}) => {
     tableMessage = 'New round'
   }
 
-
   function updateGameState() {
-    sendMessage('updateGameState', {gameState: gameState === 'voting' ? 'reveal' : 'voting'})
+    sendMessage('updateGameState', {
+      gameState: gameState === 'voting' ? 'reveal' : 'voting',
+    })
   }
 
   return (
     <Card
       className={tableClass}
       sx={{
-        backgroundColor: '#009FBD',
-        width: {xs: '200px', sm: '300px'},
-        height: {xs: '110px', sm: '150px'},
-        borderRadius: '25px',
+        backgroundColor: blue[200],
+        width: isXsScreen ? '140px' : { xs: '200px', sm: '380px' },
+        height: { xs: '110px', sm: '200px' },
+        borderRadius: '20px',
         boxShadow: 'none',
         display: 'flex',
+        margin: '10px 0 20px 0',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundImage: tableTopBackground && `url(${tableTop})`,
       }}
     >
       {tableMessage !== 'Pick your cards!' ? (
         <Button
           disabled={disableButton}
+          color="primary"
           variant="contained"
           disableElevation
-          size={isSmallScreen ? 'medium' : 'large'}
-          sx={{}}
+          size={isSmallScreen ? (isXsScreen ? 'small' : 'medium') : 'large'}
+          sx={{
+            fontSize: { xs: 15, sm: 18 },
+            fontWeight: 'bold',
+            textTransform: 'none',
+            letterSpacing: '.5px',
+          }}
           onClick={updateGameState}
         >
           {tableMessage}
         </Button>
       ) : (
-        <Typography variant="subtitle1" sx={{ fontSize: isSmallScreen ? 15 : 18, color: "#ffffff", }}>
+        <Typography
+          variant="subtitle1"
+          sx={{ fontSize: isSmallScreen ? 15 : 18, color: '#ffffff' }}
+        >
           {tableMessage}
         </Typography>
       )}

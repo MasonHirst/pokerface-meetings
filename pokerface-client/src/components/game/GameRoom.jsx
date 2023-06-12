@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import GameHeader from './GameHeader'
+import { useMediaQuery } from '@mui/material'
 import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
@@ -15,15 +16,37 @@ const GameRoom = () => {
     joinGameLoading,
     toggleActiveSocket,
   } = useContext(GameContext)
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [nameError, setNameError] = useState('')
   const [nameInput, setNameInput] = useState('')
+  const [footerHeight, setFooterHeight] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(0)
+  const [availableBodyHeight, setAvailableBodyHeight] = useState(0)
+  const [bodyIsScrolling, setBodyIsScrolling] = useState(false)
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
+  const bodyRef = useRef()
 
   function updateName(e) {
     e.preventDefault()
-    if (!nameInput) return setNameError('Please enter a name')
-    localStorage.setItem('playerName', nameInput)
-    setPlayerName(nameInput)
+    const trimmedName = nameInput.trim()
+    if (!trimmedName) return setNameError('Please enter a name')
+    localStorage.setItem('playerName', trimmedName)
+    setPlayerName(trimmedName)
   }
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight)
+      setViewportWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   useEffect(() => {
     if (gameData?.gameRoomName) {
@@ -41,13 +64,32 @@ const GameRoom = () => {
     }
   }, [playerName])
 
+  useEffect(() => {
+    if (!footerHeight || !headerHeight) return
+    const availableHeight = window.innerHeight - footerHeight - headerHeight
+    setAvailableBodyHeight(availableHeight - 1)
+  }, [footerHeight, headerHeight, viewportHeight, viewportWidth])
+
   return (
     <>
       {!joinGameLoading && playerName ? (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', }}>
-          <GameHeader />
-          <GameBody />
-          <GameFooter />
+        <Box
+          sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+        >
+          <GameHeader
+            shadowOn={bodyIsScrolling}
+            setComponentHeight={setHeaderHeight}
+          />
+          <Box ref={bodyRef} sx={{ width: '100%' }}>
+            <GameBody
+              availableHeight={availableBodyHeight}
+              setBodyIsScrolling={setBodyIsScrolling}
+            />
+          </Box>
+          <GameFooter
+            shadowOn={bodyIsScrolling}
+            setComponentHeight={setFooterHeight}
+          />
         </Box>
       ) : (
         joinGameLoading && (
@@ -65,12 +107,12 @@ const GameRoom = () => {
 
       <Dialog
         disableEscapeKeyDown
-        onClose={() => {}}
+        fullScreen={isSmallScreen}
         PaperProps={{
           style: {
-            borderRadius: 15,
-            width: 350,
-            height: 250,
+            borderRadius: !isSmallScreen && 15,
+            padding: isSmallScreen ? '20px' : '50px',
+            minWidth: 'min(100vw - 16px, 500px)',
           },
         }}
         open={!playerName}
@@ -81,13 +123,14 @@ const GameRoom = () => {
             display: 'flex',
             width: '100%',
             height: '100%',
-            minHeight: '250px',
-            padding: '30px',
-            gap: '25px',
+            gap: '30px',
             flexDirection: 'column',
             justifyContent: 'center',
           }}
         >
+          <Typography variant="h6" sx={{ fontSize: '22px' }}>
+            Enter a display name to join game
+          </Typography>
           <TextField
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
@@ -99,7 +142,13 @@ const GameRoom = () => {
             placeholder="Enter your name"
             helperText={nameError}
           />
-          <Button fullWidth type="submit" variant="contained">
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '18px' }}
+            disableElevation
+          >
             Join Game
           </Button>
         </form>

@@ -1,17 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import pokerLogo from '../../assets/poker-logo.png'
 import PurpleDeckCard from '../game/PurpleDeckCard'
 import GraphemeSplitter from 'grapheme-splitter'
 import ChooseDeck from '../dialog/ChooseDeck'
 import axios from 'axios'
 import muiStyles from '../../style/muiStyles'
-const {
-  Box,
-  TextField,
-  Button,
-  StyleIcon,
-  TvIcon,
-} = muiStyles
+const { Box, TextField, Button, StyleIcon, TvIcon, Typography } = muiStyles
 
 const CreateGamePage = () => {
   document.title = 'Pokerface - Create Game'
@@ -25,27 +20,13 @@ const CreateGamePage = () => {
   const [error, setError] = useState('')
   const [appIsLoading, setAppIsLoading] = useState(false)
 
-  function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
-  }
-
   const mappedSelectedDeck = [...new Set(selectedDeck.split(','))].map(
     (card, index) => {
       const length = splitter.splitGraphemes(card.trim()).length
       if (length > 4 || card.trim().length < 1) return
-      return (
-        <PurpleDeckCard 
-          key={index}
-          card={card}
-          useCase="customDeckPreview"
-          length={length}
-          borderColor={'#902bf5'}
-          sizeMultiplier={.9}
-        />
-      )
+      return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />
     }
   )
-
 
   function handleHostGame(e) {
     setError('')
@@ -53,9 +34,8 @@ const CreateGamePage = () => {
     if (!gameName) return setError('Please enter a game name')
     setAppIsLoading(true)
     axios
-      .post('game/create', { gameName, deck: selectedDeck })
+      .post('game/create', { gameName: gameName.trim(), deck: selectedDeck })
       .then(({ data }) => {
-        // console.log('create game data', data)
         if (data.gameRoomId) {
           navigate(`/game/${data.gameRoomId}`)
         } else {
@@ -81,7 +61,6 @@ const CreateGamePage = () => {
         onSubmit={handleHostGame}
         style={{
           width: '100%',
-          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           gap: '30px',
@@ -98,6 +77,7 @@ const CreateGamePage = () => {
           error={!!error}
           value={gameName}
           label="Game Name"
+          size="large"
           placeholder="Enter a game name"
           helperText={error}
         />
@@ -128,7 +108,8 @@ const CreateGamePage = () => {
           onClick={() => setShowDeckDialog(!showDeckDialog)}
           color="secondary"
           variant="contained"
-          sx={{ textTransform: 'none', fontSize: '17px' }}
+          disableElevation
+          sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
           startIcon={<StyleIcon />}
         >
           Change Deck
@@ -136,8 +117,15 @@ const CreateGamePage = () => {
 
         <Button
           variant="contained"
+          size="large"
+          disableElevation
           disabled={appIsLoading}
-          sx={{ width: 'min(650px, 100%)' }}
+          sx={{
+            width: 'min(650px, 100%)',
+            fontWeight: 'bold',
+            fontSize: '19px',
+            textTransform: 'none',
+          }}
           onClick={handleHostGame}
           startIcon={<TvIcon />}
         >
@@ -152,6 +140,57 @@ const CreateGamePage = () => {
           showDeckDialog={showDeckDialog}
         />
       )}
+
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        <img
+          src={pokerLogo}
+          className="cursor-pointer"
+          onClick={() => navigate('/')}
+          alt="poker-logo"
+          style={{ width: 'clamp(50px, 15vw, 80px)' }}
+        />
+        <Box>
+          <Typography
+            variant="h5"
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            color="primary"
+            sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
+          >
+            Pokerface
+          </Typography>
+          <Typography
+            variant="body2"
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+            sx={{ fontSize: 'clamp(12px, 3vw, 15px)', opacity: 0.6 }}
+          >
+            by Mason Hirst
+          </Typography>
+        </Box>
+      </Box>
+
+      <Typography
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          position: 'absolute',
+          right: '20px',
+          top: '23px',
+          fontWeight: 'bold',
+          fontSize: 'clamp(17px, 5vw, 25px)',
+        }}
+      >
+        New game setup
+      </Typography>
     </Box>
   )
 }

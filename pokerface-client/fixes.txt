@@ -3,8 +3,6 @@ FIXED------ the name change feature does not work
 
 FIXED------ Make it so if someone clicks 'reveal', the button is disabled for a few seconds
 
-build out the vote history
-
 FIXED------ the font size in cards needs to adjust for the string length so it all fits in the card
 
 FIXED------ add a maximum of 4 characters in a card
@@ -19,20 +17,66 @@ FIXED------ make cards everywhere use card components instead of defining them e
 
 FIXED------ add feature to upload or choose a profile picture and it will fill your card instead of abstract purple
 
-make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
-
-add a sweet alert to confirm leaving game or delete a deck
-
-fix the sizing on the choose deck dialogs
+FIXED------ fix the sizing on the choose deck dialogs
 
 FIXED------ make the vote results section switch to column on mobile view to support lots of players
 
 FIXED------ When the socket reaches max attempts at joining game rooms, make a sweetalert with a button to navigate home
 
-Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
+FIXED------ Stop cards from highlighting when you click them
+
+FIXED------ make the header display the custom card
+
+FIXED------ bug is happening - if user does not have a chosen custom picture, it shows nothing when they vote
+
+FIXED------ improve the reusability of the PurpleDeckCard by making more general purpose props and less logic in the component
+
+FIXED------ Make the placement of player cards dynamic (if there are 2 players, one should be above and below the table)
+
+FIXED------ make all buttons follow the bold and no all-caps style
+
+FIXED------ make the game room size correctly (no scroll bar) at all screen sizes
+
+FIXED------ make it so player cards are rendered off vote history, not players when game state is reveal
+
+FIXED------ build out the vote history
+
+FIXED------ build a feature to add an issueName to the voting
+
+FIXED------ make the vote history display in reverse so the newest vote is at the top
+
+ON HOLD - make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
+
+FIXED------ add an issue input for voting
+
+FIXED------ add a page (opens in a new tab) with text fields, and they can use that page to send me an email with suggestions or bugs
+
+FIXED------ fix side padding on vote history in mobile view
+
+FIXED------ add .trim() to inputs to remove whitespace
+
+FIXED------ add character limits to inputs
+
+FIXED------ agreement % in vote history is not rounding correctly
+
+make each row in the vote history clickable to show an expanded view similar to the footer during the reveal state
+
+use Redis in the server to better store game rooms
 
 make it so you leave a game if you navigate away from a game page, and the socket should only be connected if in a game page
 
-FIXED------ Stop cards from highlighting when you click them
-
 add skeletons when cards or content is loading where appropriate
+
+add a sweet alert to confirm leaving game or delete a deck
+
+add a custom background color picker for custom card images
+
+build a feature where the game creator can choose who can make changes to game room
+
+add a setting for "show custom card images"
+
+add a game host who can kick players or end the game
+
+vote history - decide what to show if someone didn't vote (null)
+
+BUG - sam's buttons to change card image were disabled after he removed his card image once

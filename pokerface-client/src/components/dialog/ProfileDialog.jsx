@@ -24,8 +24,11 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
   const [showImageUpload, setShowImageUpload] = useState(false)
   const [uploadedPicture, setUploadedPicture] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
+  const [nameError, setNameError] = useState('')
 
   function handleSaveProfile() {
+    if (!nameInput.trim()) return setNameError('Name cannot be empty')
+    setNameError('')
     setSaveLoading(true)
     if (uploadedPicture) {
       axios
@@ -103,12 +106,8 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
 
           <Box sx={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
             <PurpleDeckCard
-              gameState="voting"
-              card="1"
-              useCase="playerCard"
-              thisUser={
-                gameData?.players[localStorage.getItem('localUserToken')]
-              }
+              showBgImage
+              showCard={false}
               cardImage={
                 uploadedPicture
                   ? uploadedPicture
@@ -163,6 +162,8 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
             fullWidth
             disabled={saveLoading}
             size="md"
+            error={!!nameError}
+            helperText={nameError}
             placeholder="New display name"
           />
 
@@ -174,7 +175,7 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
             fullWidth
             size="large"
             color="secondary"
-            sx={{ textTransform: 'none', fontSize: '18px' }}
+            sx={{ textTransform: 'none', fontSize: '18px', fontWeight: 'bold', }}
           >
             Save
           </Button>

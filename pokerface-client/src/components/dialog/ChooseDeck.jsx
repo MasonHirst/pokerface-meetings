@@ -135,8 +135,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           <PurpleDeckCard
             key={index}
             card={card}
-            length={length}
-            useCase="customDeckPreview"
+            // useCase="customDeckPreview"
             borderColor="#902bf5"
             sizeMultiplier={.9}
           />
@@ -151,10 +150,10 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
       fullScreen={isSmallScreen}
       PaperProps={{
         style: {
-          borderRadius: 12,
-          padding: isSmallScreen ? '35px 8px' : '35px 20px',
-          minWidth: !isSmallScreen && 'min(calc(100vw - 18px), 800px)',
-          height: 'clamp(500px, 100vh, 1000px)',
+          borderRadius: !isSmallScreen && 12,
+          padding: isSmallScreen ? '35px 8px' : '55px 50px',
+          minWidth: !isSmallScreen && 'min(calc(100vw - 18px), 1000px)',
+          height: !isSmallScreen && 'fit-content',
           display: 'flex',
         },
       }}
@@ -194,8 +193,9 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           <Button
             onClick={() => setShowCustomDeckForm(!showCustomDeckForm)}
             endIcon={<StyleIcon />}
+            disableElevation
             variant="contained"
-            sx={{ textTransform: 'none', fontSize: '17px' }}
+            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
           >
             Create custom deck
           </Button>
@@ -331,11 +331,13 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             variant="contained"
             type="submit"
             fullWidth
+            disableElevation
             onClick={() => {
               if (!customDeck.length > 1) alert('Cannot save empty deck')
               setShowCustomDeckForm(false)
               setDeckInStorage()
             }}
+            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
           >
             Save Deck
           </Button>
