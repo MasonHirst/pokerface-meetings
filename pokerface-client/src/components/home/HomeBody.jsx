@@ -495,9 +495,10 @@ const HomeBody = () => {
           alignItems: 'center',
           justifyContent: 'space-evenly',
           padding: '80px 10px',
+          paddingBottom: '170px',
           backgroundColor: '#F9F9F9',
           gap: '20px',
-          position: 'relative',
+          marginBottom: '-70px',
         }}
       >
         <Box
@@ -585,8 +586,7 @@ const HomeBody = () => {
         viewBox="0 0 1440 128"
         style={{
           width: '100%',
-          transform: 'translateY(23px)',
-          border: '1px solid red',
+          // border: '1px solid red',
         }}
       >
         {darkWaveSvg}
