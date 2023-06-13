@@ -67,6 +67,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
       imageUrl: dontGo,
       imageWidth: 'min(90vw, 400px',
       confirmButtonText: 'Take me home',
+      confirmButtonColor: '#9c4fd7',
       showCancelButton: true,
       cancelButtonText: 'Stay',
       customClass: {
