@@ -85,7 +85,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
               display: 'flex',
               // paddingTop: '15px',
               gap: { xs: '10px', sm: '18px' },
-              overflowX: 'scroll',
+              overflowX: 'auto',
               height: '100%',
               alignItems: 'flex-end',
               paddingBottom: '6px',

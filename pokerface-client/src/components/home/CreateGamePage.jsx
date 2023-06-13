@@ -93,7 +93,7 @@ const CreateGamePage = () => {
             sx={{
               display: 'flex',
               gap: { xs: '10px', sm: '12px' },
-              overflowX: 'scroll',
+              overflowX: 'auto',
               height: '100%',
               display: 'flex',
               alignItems: 'flex-end',

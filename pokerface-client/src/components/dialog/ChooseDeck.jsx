@@ -168,7 +168,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             sx={{
               paddingTop: '20px',
               marginBottom: '20px',
-              overflowX: 'scroll',
+              overflowX: 'auto',
             }}
           >
             {mapDeckButtons(defaultDecks, false)}
@@ -180,7 +180,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             sx={{
               paddingTop: '20px',
               marginBottom: '20px',
-              overflowX: 'scroll',
+              overflowX: 'auto',
             }}
           >
             {savedDecks.length > 0 ? (
@@ -319,7 +319,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             sx={{
               minHeight: '50px',
               display: 'flex',
-              overflowX: 'scroll',
+              overflowX: 'auto',
               gap: '10px',
               paddingBottom: '8px',
             }}
