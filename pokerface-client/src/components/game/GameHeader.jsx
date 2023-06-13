@@ -103,7 +103,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
         height: { xs: '70px', sm: '95px' },
-        backgroundColor: '#902bf5',
+        backgroundColor: '#9c4fd7',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

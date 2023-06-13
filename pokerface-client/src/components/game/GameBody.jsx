@@ -273,6 +273,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
         alignItems: 'center',
         overflowX: 'auto',
         overflowY: 'auto',
+        // backgroundColor: '#2196f3',
       }}
     >
       <Box

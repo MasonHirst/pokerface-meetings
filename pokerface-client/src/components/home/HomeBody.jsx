@@ -49,7 +49,7 @@ const HomeBody = () => {
           alignItems: 'center',
           padding: !isMdScreen && '0 25px',
           paddingTop: '10px',
-          paddingBottom: isSmallScreen ? '80px' : '120px',
+          // paddingBottom: isSmallScreen ? '80px' : '120px',
           width: '100%',
         }}
       >
@@ -91,7 +91,7 @@ const HomeBody = () => {
                 textAlign: isMdScreen ? 'center' : 'left',
               }}
             >
-              Make planning simple and fun (and free) with Pokerface.
+              Make planning simple, fun and free with Pokerface.
             </Typography>
             <Button
               disableElevation
@@ -108,26 +108,15 @@ const HomeBody = () => {
             >
               Host new game
             </Button>
-            <Typography
+            {/* <Typography
               variant="h6"
               sx={{ marginTop: '10px', marginBottom: '-18px' }}
             >
               Trusted by
             </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: '10px',
-                fontWeight: 'bold',
-                color: '#47545D',
-                flexWrap: 'wrap',
-                justifyContent: isSmallScreen ? 'center' : 'left',
-              }}
-            >
               <Typography sx={{ fontSize: isSmallScreen ? '14px' : '18px' }}>
                 My mom, My wife, Steven, and many more
-              </Typography>
-            </Box>
+              </Typography> */}
           </Box>
         </Box>
         <Box

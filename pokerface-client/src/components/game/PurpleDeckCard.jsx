@@ -13,9 +13,9 @@ const PurpleDeckCard = ({
   bottomMessage,
   bottomMessageMultiplier = 1,
   bottomMessageMargin = '0',
-  borderColor = '#902bf5',
+  borderColor = '#9c4fd7',
   bgColor = '#ffffff',
-  selectedBgColor = '#902bf5',
+  selectedBgColor = '#9c4fd7',
   showBgImage = false,
   selected,
   cardImage,
@@ -63,13 +63,7 @@ const PurpleDeckCard = ({
     if (fontWidth > cardWidth - 6) {
       setCardFontSize(cardFontSize - 1)
     }
-  }, [
-    cardTextRef.current,
-    card,
-    cardFontSize,
-    cardWidth,
-    cardFontSize,
-  ])
+  }, [cardTextRef.current, card, cardFontSize, cardWidth, cardFontSize])
 
   return (
     <Box
@@ -90,21 +84,19 @@ const PurpleDeckCard = ({
           height: cardHeight,
           width: cardWidth,
           minWidth: cardWidth,
-          border: `${borderThickness}px solid ${borderColor || '#902bf5'}`,
+          border: `${borderThickness}px solid ${borderColor}`,
           transition: '0.2s',
           margin: cardMargin,
           position: 'relative',
           bottom: selected ? '15px' : 0,
           display: 'flex',
           justifyContent: 'center',
-          backgroundColor:
-            selected ? selectedBgColor : bgColor ,
+          backgroundColor: selected ? selectedBgColor : bgColor,
           color: selected && '#ffffff',
           alignItems: 'center',
           borderRadius: `${cardHeight / 12}px`,
           backgroundImage:
-          showBgImage &&
-            `url(${cardImage ? cardImage : purpleAbstract})`,
+            showBgImage && `url(${cardImage ? cardImage : purpleAbstract})`,
           backgroundPosition: 'center',
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
@@ -112,7 +104,11 @@ const PurpleDeckCard = ({
       >
         <Typography
           variant="h6"
-          sx={{ fontSize: cardFontSize, whiteSpace: 'nowrap', userSelect: 'none' }}
+          sx={{
+            fontSize: cardFontSize,
+            whiteSpace: 'nowrap',
+            userSelect: 'none',
+          }}
           ref={cardTextRef}
         >
           {card}
@@ -122,7 +118,14 @@ const PurpleDeckCard = ({
       {bottomMessage && (
         <Typography
           variant="subtitle1"
-          sx={{ userSelect: 'none', whiteSpace: 'nowrap', fontSize: isSmallScreen ? 15 * bottomMessageMultiplier : 17 * bottomMessageMultiplier, margin: bottomMessageMargin }}
+          sx={{
+            userSelect: 'none',
+            whiteSpace: 'nowrap',
+            fontSize: isSmallScreen
+              ? 15 * bottomMessageMultiplier
+              : 17 * bottomMessageMultiplier,
+            margin: bottomMessageMargin,
+          }}
         >
           {bottomMessage}
         </Typography>
