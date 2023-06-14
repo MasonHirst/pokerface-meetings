@@ -159,7 +159,7 @@ const HomeBody = () => {
         </Box>
       </Box>
 
-      <svg viewBox="0 0 1440 128" style={{ transform: 'translateY(40%)' }}>{greyWaveSvg}</svg>
+      <svg viewBox="0 0 1440 128" style={{ transform: 'translateY(1px)' }}>{greyWaveSvg}</svg>
 
       <Box
         className="2nd section"

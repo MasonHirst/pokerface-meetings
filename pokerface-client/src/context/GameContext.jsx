@@ -79,6 +79,7 @@ export const GameProvider = ({ children }) => {
       if (process.env.NODE_ENV === 'development') {
         serverUrl = 'ws://localhost:8080'
       }
+
       const ws = new WebSocket(
         `${serverUrl}?token=${localStorage.getItem(
           'localUserToken'

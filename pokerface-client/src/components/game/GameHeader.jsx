@@ -209,7 +209,14 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             sx={{
               textTransform: 'none',
               fontSize: '18px',
+              fontWeight: 'bold',
+              borderWidth: '1.5px',
+              borderColor: '#ffffff',
               display: { xs: 'none', md: 'block' },
+              borderRadius: '8px',
+              '&:hover': {
+                borderWidth: '1.5px',
+              },
             }}
           >
             Invite players
