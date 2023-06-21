@@ -67,19 +67,23 @@ const PurpleDeckCard = ({
 
   return (
     <Box
+      onClick={() => {
+        if (!clickable) return
+        submitChoice(card)
+      }}
+      className={clickable && 'cursor-pointer'}
+      // className="no-tap-highlight"
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         minWidth: bottomMessage && `${cardWidth + 10}px`,
+        position: 'relative',
+        bottom: selected ? '15px' : 0,
+        transition: '0.2s',
       }}
     >
       <Box
-        onClick={() => {
-          if (!clickable) return
-          submitChoice(card)
-        }}
-        className={clickable && 'cursor-pointer'}
         sx={{
           height: cardHeight,
           width: cardWidth,
@@ -87,8 +91,7 @@ const PurpleDeckCard = ({
           border: `${borderThickness}px solid ${borderColor}`,
           transition: '0.2s',
           margin: cardMargin,
-          position: 'relative',
-          bottom: selected ? '15px' : 0,
+
           display: 'flex',
           justifyContent: 'center',
           backgroundColor: selected ? selectedBgColor : bgColor,

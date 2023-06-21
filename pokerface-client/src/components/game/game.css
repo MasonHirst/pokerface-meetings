@@ -21,4 +21,7 @@
   }
 }
 
-
+/* this class disables the highlighting effect when a user taps something on mobile. Causes unwanted popups */
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+}
