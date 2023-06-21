@@ -79,5 +79,6 @@ add a setting for "show custom card images"
 
 add a game host who can kick players or end the game
 
+the vote summary section should order the vote counts based on number of votes, and show a little graph style indicator
 
-BUG - sam's buttons to change card image were disabled after he removed his card image once
+BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
