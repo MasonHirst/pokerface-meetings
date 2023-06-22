@@ -59,7 +59,7 @@ const PlayingTable = ({ disableButton }) => {
         borderRadius: '20px',
         boxShadow: 'none',
         display: 'flex',
-        margin: '10px 0 20px 0',
+        margin: isSmallScreen ? '0 0 7px 0' : '10px 0 20px 0',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundImage: tableTopBackground && `url(${tableTop})`,

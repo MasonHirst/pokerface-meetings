@@ -71,7 +71,7 @@ const PurpleDeckCard = ({
         if (!clickable) return
         submitChoice(card)
       }}
-      className={clickable && 'cursor-pointer'}
+      className={clickable ? 'cursor-pointer no-tap-highlight' : 'no-tap-highlight'}
       // className="no-tap-highlight"
       sx={{
         display: 'flex',
@@ -91,7 +91,6 @@ const PurpleDeckCard = ({
           border: `${borderThickness}px solid ${borderColor}`,
           transition: '0.2s',
           margin: cardMargin,
-
           display: 'flex',
           justifyContent: 'center',
           backgroundColor: selected ? selectedBgColor : bgColor,

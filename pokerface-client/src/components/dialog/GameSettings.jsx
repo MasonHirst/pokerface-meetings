@@ -22,6 +22,8 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
   const [newName, setNewName] = useState(gameData.gameRoomName)
   const [showDeckDialog, setShowDeckDialog] = useState(false)
   const [updatedDeck, setUpdatedDeck] = useState('')
+  const [gamePowers, setGamePowers] = useState(gameData.gamePowers)
+  console.log('game powers: ', gamePowers)
 
   function updateGameName(e) {
     e.preventDefault()
@@ -29,6 +31,10 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
     setEditingGameName(!editingGameName)
     if (!newName || trimmedName === gameData.gameRoomName) return
     sendMessage('updatedGameName', { name: trimmedName })
+  }
+
+  function updateGamePowers(action, power) {
+    sendMessage('updatedPowers', { action, power })
   }
 
   useEffect(() => {
@@ -120,6 +126,45 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
         >
           Change Deck
         </Button>
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: '10px',
+            width: '100%',
+          }}
+        >
+          {/* <Button
+            disableElevation
+            fullWidth
+            variant="contained"
+            color="error"
+            // onClick={() => setShowUploader(false)}
+            sx={{
+              textTransform: 'none',
+              marginTop: '10px',
+              fontWeight: 'bold',
+              fontSize: '17px',
+            }}
+          >
+            Cancel
+          </Button> */}
+          <Button
+            disableElevation
+            fullWidth
+            variant="contained"
+            color="primary"
+            // onClick={handleCrop}
+            sx={{
+              textTransform: 'none',
+              marginTop: '10px',
+              fontWeight: 'bold',
+              fontSize: '17px',
+            }}
+          >
+            Save
+          </Button>
+        </Box>
       </Dialog>
       <ChooseDeck
         showDeckDialog={showDeckDialog}

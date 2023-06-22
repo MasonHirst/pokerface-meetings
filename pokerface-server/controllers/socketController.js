@@ -276,6 +276,18 @@ async function startSocketServer(app, port) {
           gameRooms[gameId].currentIssueName = body.issueName
           broadcastToRoom(gameId, 'gameUpdated')
         }
+        else if (type === 'updatedPowers') {
+          if (!gameRooms[gameId]) return console.log('game room not found (setPower) function')
+          const { powerObj } = body
+          const { action, userId } = powerObj
+          console.log(action, userId)
+          if (action === 'add') {
+            console.log('adding power')
+          } else if (action === 'remove') {
+            console.log('removing power')
+          }
+          broadcastToRoom(gameId, 'gameUpdated')
+        }
       })
       //! END MESSAGES HANLDERS
 
@@ -326,6 +338,14 @@ module.exports = {
         gameRoomId: gameId,
         gameRoomName: gameName,
         gameState: 'voting',
+        powers: {
+          gameOwner: '',
+          changeGameState: [],
+          changeDeck: [],
+          changeIssue: [],
+          changeGameName: [],
+          kickPlayers: [],
+        },
         currentIssueName: '',
         lastAction: Date.now(),
         voteHistory: [],

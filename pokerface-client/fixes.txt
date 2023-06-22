@@ -63,11 +63,11 @@ FIXED------ make each row in the vote history clickable to show an expanded view
 
 FIXED------ vote history - decide what to show if someone didn't vote (null)
 
+FIXED------ the vote summary section should order the vote counts based on number of votes, and show a little graph style indicator
+
 use Redis in the server to better store game rooms
 
 make it so you leave a game if you navigate away from a game page, and the socket should only be connected if in a game page
-
-add skeletons when cards or content is loading where appropriate
 
 add a sweet alert to confirm leaving game or delete a deck
 
@@ -79,6 +79,6 @@ add a setting for "show custom card images"
 
 add a game host who can kick players or end the game
 
-the vote summary section should order the vote counts based on number of votes, and show a little graph style indicator
-
 BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
+
+BUG - on mobile, tapping the deck card twice pops up a google thingy

@@ -85,8 +85,10 @@ import EditNoteIcon from '@mui/icons-material/EditNote'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import Collapse from '@mui/material/Collapse'
+import { CircularProgress } from '@mui/material'
 
 let muiStyles = {
+  CircularProgress,
   Collapse,
   EditNoteIcon,
   KeyboardArrowDownIcon,
