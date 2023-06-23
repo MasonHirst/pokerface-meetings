@@ -20,6 +20,9 @@ const theme = createTheme({
     white: {
       main: '#ffffff',
     },
+    success: {
+      main: '#4caf50',
+    },
   },
 })
 

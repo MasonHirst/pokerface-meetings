@@ -23,7 +23,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     successDuration: 1500,
   })
   const [editingIssueName, setEditingIssueName] = useState(false)
-  const [newIssueName, setNewIssueName] = useState(gameData.currentIssueName || '')
+  const [newIssueName, setNewIssueName] = useState(gameData?.gameSettings?.currentIssueName || '')
   const newIssueNameRef = useRef()
 
   function submitNewIssueName() {
@@ -54,14 +54,14 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   }
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
+    if (!gameData?.gameSettings?.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
-    setGameState(gameData.gameState)
+    setGameState(gameData.gameSettings.gameState)
     setLatestVoting(gameData.voteHistory[gameData.voteHistory.length - 1])
     if (
       !stateButtonDisabled &&
-      gameState !== gameData.gameState &&
-      gameData.gameState === 'reveal'
+      gameState !== gameData.gameSettings.gameState &&
+      gameData.gameSettings.gameState === 'reveal'
     ) {
       setStateButtonDisabled(true)
       setTimeout(() => {
@@ -295,7 +295,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             alignItems: 'center',
           }}
         >
-          {(gameData.currentIssueName && gameData.currentIssueName) ||
+          {(gameData?.gameSettings?.currentIssueName && gameData?.gameSettings?.currentIssueName) ||
           editingIssueName ? (
             <Box
               sx={{
@@ -355,7 +355,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     }, 50)
                   }}
                 >
-                  {gameData.currentIssueName}
+                  {gameData.gameSettings.currentIssueName}
                 </Typography>
               )}
             </Box>

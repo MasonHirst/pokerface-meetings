@@ -22,9 +22,10 @@ const {
   Switch,
   FormControlLabel,
   Divider,
+  Backdrop,
 } = muiStyles
 
-const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
+const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp, hasOverlay }) => {
   const deckInputRef = useRef()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [autoCommas, setAutoCommas] = useState(true)
@@ -44,9 +45,9 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     JSON.parse(localStorage.getItem('savedDecks'))
   )
 
-  function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
-  }
+  // function isNativeEmoji(str) {
+  //   return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+  // }
 
   function setDeckInStorage() {
     if (!customDeck) return
@@ -98,7 +99,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
           )}
           <MenuItem
             onClick={() => {
-              setDeckProp(deck.values)
+              setDeckProp(deck)
               setShowDeckDialog(false)
             }}
             sx={{
@@ -148,6 +149,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     <Dialog
       onClose={() => setShowDeckDialog(false)}
       fullScreen={isSmallScreen}
+      BackdropComponent={(props) => <Backdrop {...props} style={{ backgroundColor: !hasOverlay && 'transparent' }} />}
       PaperProps={{
         style: {
           borderRadius: !isSmallScreen && 12,

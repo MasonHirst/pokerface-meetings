@@ -3,6 +3,9 @@ import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 import ChooseDeck from './ChooseDeck'
 import { GameContext } from '../../context/GameContext'
+import { ToastContainer, toast, Slide } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
 const {
   Box,
   Typography,
@@ -11,49 +14,73 @@ const {
   IconButton,
   Button,
   TextField,
-  CheckIcon,
   StyleIcon,
+  Switch,
+  FormControlLabel,
+  LightTooltip,
+  Select,
 } = muiStyles
 
 const GameSettings = ({ showDialog, setShowDialog }) => {
-  const { gameData, sendMessage } = useContext(GameContext)
+  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const [editingGameName, setEditingGameName] = useState(false)
-  const [newName, setNewName] = useState(gameData.gameRoomName)
+  const [newName, setNewName] = useState(gameData.gameSettings.gameRoomName)
   const [showDeckDialog, setShowDeckDialog] = useState(false)
   const [updatedDeck, setUpdatedDeck] = useState('')
-  const [gamePowers, setGamePowers] = useState(gameData.gamePowers)
-  console.log('game powers: ', gamePowers)
+  const [gameSettingsToSave, setGameSettingsToSave] = useState(
+    gameData.gameSettings
+  )
 
-  function updateGameName(e) {
-    e.preventDefault()
-    const trimmedName = newName.trim()
-    setEditingGameName(!editingGameName)
-    if (!newName || trimmedName === gameData.gameRoomName) return
-    sendMessage('updatedGameName', { name: trimmedName })
-  }
-
-  function updateGamePowers(action, power) {
-    sendMessage('updatedPowers', { action, power })
+  function saveGameSettings() {
+    if (
+      JSON.stringify(gameSettingsToSave) ===
+      JSON.stringify(gameData.gameSettings)
+    ) {
+      toast('No changes were made')
+    } else {
+      sendMessage('updatedGameSettings', { gameSettingsToSave })
+      toast.success('Game settings saved')
+    }
+    setShowDialog(!showDialog)
   }
 
   useEffect(() => {
-    if (updatedDeck) {
-      sendMessage('updatedDeck', { deck: updatedDeck })
+    if (!updatedDeck) return
+    if (checkPowerLvl('med')) {
+      setGameSettingsToSave({ ...gameSettingsToSave, deck: updatedDeck })
+    } else {
+      toast.warning('You do not have this power')
     }
   }, [updatedDeck])
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
-    setNewName(gameData.gameRoomName)
-  }, [gameData.gameRoomName])
+    if (!newName) return
+    setGameSettingsToSave({
+      ...gameSettingsToSave,
+      gameRoomName: newName.trim(),
+    })
+  }, [newName])
+
+  useEffect(() => {
+    if (!gameData.gameSettings.gameRoomName) return
+    setNewName(gameData.gameSettings.gameRoomName)
+  }, [gameData.gameSettings.gameRoomName])
 
   return (
     <>
+      <ToastContainer
+        position="top-center"
+        newestOnTop
+        draggable
+        hideProgressBar={false}
+        autoClose={2500}
+        transition={Slide}
+        pauseOnHover
+        theme="light"
+      />
       <Dialog
         onClose={() => {
           setShowDialog(!showDialog)
-          setEditingGameName(false)
         }}
         fullScreen={isSmallScreen}
         PaperProps={{
@@ -61,10 +88,12 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             borderRadius: !isSmallScreen && 15,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: isSmallScreen ? 'flex-start' : 'center',
             gap: 20,
-            width: !isSmallScreen && 'min(800px, calc(100vw - 16px))',
-            padding: isSmallScreen ? '0 10px' : '60px 60px',
+            minWidth: isSmallScreen
+              ? '100vw'
+              : 'min(850px, calc(100vw - 16px))',
+            padding: isSmallScreen ? '50px 10px' : '60px 60px',
           },
         }}
         open={showDialog}
@@ -74,20 +103,19 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           aria-label="close"
           onClick={() => {
             setShowDialog(!showDialog)
-            setEditingGameName(false)
           }}
         >
           <CloseIcon />
         </IconButton>
-        <form
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: isSmallScreen ? '5px' : '15px',
-            position: 'relative',
-          }}
-          onSubmit={updateGameName}
+
+        <LightTooltip
+          title={
+            checkPowerLvl('low')
+              ? ''
+              : 'You do not have power to change the game name'
+          }
+          enterDelay={200}
+          placement="top"
         >
           <TextField
             spellCheck={false}
@@ -95,37 +123,83 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             inputProps={{ maxLength: 20 }}
             value={newName}
             placeholder="Enter a game name"
+            disabled={!checkPowerLvl('low')}
             label="Game name"
             onChange={(e) => setNewName(e.target.value)}
           />
-          {newName !== gameData.gameRoomName && (
-            <Box sx={{ position: 'absolute', right: '5px' }}>
-              <IconButton
-                size="small"
-                onClick={() => setNewName(gameData.gameRoomName)}
-              >
-                <CloseIcon />
-              </IconButton>
-              <IconButton type="submit" size="small" onClick={updateGameName}>
-                <CheckIcon />
-              </IconButton>
-            </Box>
-          )}
-        </form>
+        </LightTooltip>
 
-        <Button
+        {gameSettingsToSave.deck.values && (
+          <TextField
+            label="Deck"
+            value={`${gameSettingsToSave.deck.name} (${gameSettingsToSave.deck.values})`}
+            onMouseDown={() => {
+              setShowDeckDialog(!showDeckDialog)
+            }}
+          />
+        )}
+
+        {/* <Button
           onClick={() => {
             setShowDeckDialog(!showDeckDialog)
-            setShowDialog(!showDialog)
           }}
           color="secondary"
           disableElevation
           variant="contained"
-          sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
+          sx={{ textTransform: 'none', fontSize: '16px', fontWeight: 'bold' }}
           startIcon={<StyleIcon />}
         >
           Change Deck
-        </Button>
+        </Button> */}
+
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '5px',
+            marginTop: '-5px',
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Switch
+                checked={gameSettingsToSave.showAgreement}
+                onChange={(e) => {
+                  if (checkPowerLvl('low')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      showAgreement: e.target.checked,
+                    })
+                  } else {
+                    toast.warning('You do not have this power')
+                  }
+                }}
+                color="success"
+              />
+            }
+            label="Show Agreement"
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={gameSettingsToSave.showAverage}
+                onChange={(e) => {
+                  if (checkPowerLvl('low')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      showAverage: e.target.checked,
+                    })
+                  } else {
+                    toast.warning('You do not have this power')
+                  }
+                }}
+                color="success"
+              />
+            }
+            label="Show Average"
+          />
+        </Box>
 
         <Box
           sx={{
@@ -134,27 +208,13 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             width: '100%',
           }}
         >
-          {/* <Button
-            disableElevation
-            fullWidth
-            variant="contained"
-            color="error"
-            // onClick={() => setShowUploader(false)}
-            sx={{
-              textTransform: 'none',
-              marginTop: '10px',
-              fontWeight: 'bold',
-              fontSize: '17px',
-            }}
-          >
-            Cancel
-          </Button> */}
           <Button
             disableElevation
             fullWidth
+            disableRipple
             variant="contained"
             color="primary"
-            // onClick={handleCrop}
+            onClick={saveGameSettings}
             sx={{
               textTransform: 'none',
               marginTop: '10px',
@@ -167,6 +227,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
         </Box>
       </Dialog>
       <ChooseDeck
+        hasOverlay={false}
         showDeckDialog={showDeckDialog}
         setShowDeckDialog={setShowDeckDialog}
         setDeckProp={setUpdatedDeck}

@@ -42,6 +42,32 @@ export const GameProvider = ({ children }) => {
     socket?.send(bodyStr)
   }
 
+  function checkPowerLvl(powerLvl) {
+    const { powers } = gameData.gameSettings
+    const localUserToken = localStorage.getItem('localUserToken')
+    if (powers.gameOwner === localUserToken) {
+      return true
+    } else if (powerLvl === 'low') {
+      if (powers.lowAccess.includes(localUserToken) || powers.medAccess.includes(localUserToken) || powers.highAccess.includes(localUserToken)) {
+        return true
+      } else {
+        return false
+      }
+    } else if (powerLvl === 'med') {
+      if (powers.medAccess.includes(localUserToken) || powers.highAccess.includes(localUserToken)) {
+        return true
+      } else {
+        return false
+      }
+    } else if (powerLvl === 'high') {
+      if (powers.highAccess.includes(localUserToken)) {
+        return true
+      } else {
+        return false
+      }
+    }
+  }
+
   function confirmFailJoin(socket) {
     Swal.fire({
       title: 'Could not join game room',
@@ -100,8 +126,8 @@ export const GameProvider = ({ children }) => {
         let messageData = JSON.parse(event.data)
 
         if (messageData.event_type === 'playerJoinedGame') {
-          setJoinGameLoading(false)
           setGameData(messageData.game)
+          setJoinGameLoading(false)
         } else if (messageData.event_type === 'gameUpdated') {
           setGameData(messageData.game)
         } else if (messageData.event_type === 'gameNotFound') {
@@ -154,6 +180,7 @@ export const GameProvider = ({ children }) => {
         joinGameLoading,
         setPlayerName,
         toggleActiveSocket,
+        checkPowerLvl,
       }}
     >
       {children}

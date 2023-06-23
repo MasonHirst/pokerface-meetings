@@ -3,7 +3,7 @@ import { GameContext } from '../../context/GameContext'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 import tableTop from '../../assets/table-top.jpeg'
-const { Card, Typography, Button, purple, blue } = muiStyles
+const { Card, Typography, Button, blue } = muiStyles
 
 const PlayingTable = ({ disableButton }) => {
   const { gameData, sendMessage } = useContext(GameContext)
@@ -19,9 +19,9 @@ const PlayingTable = ({ disableButton }) => {
   let allVoted = false
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
+    if (!gameData?.gameSettings?.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
-    setGameState(gameData.gameState)
+    setGameState(gameData.gameSettings.gameState)
   }, [gameData])
 
   playersData.forEach((player) => {

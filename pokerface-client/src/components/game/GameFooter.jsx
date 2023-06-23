@@ -27,12 +27,12 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
   }
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
-    setGameState(gameData.gameState)
+    if (!gameData?.gameSettings?.gameRoomName) return
+    setGameState(gameData.gameSettings.gameState)
     const votes = gameData.voteHistory
     setLatestVoting(votes[votes.length - 1])
     setPlayersData(Object.values(gameData.players))
-    setDeckCards([...new Set(gameData.deck.split(','))])
+    setDeckCards([...new Set(gameData.gameSettings.deck.values.split(','))])
   }, [gameData])
 
   const mappedDeckCards = deckCards.map((card, index) => {
@@ -97,7 +97,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
           <Typography variant="h6">No cards</Typography>
         )
       ) : (
-        <VoteSummary voteDetails={latestVoting} gameState={gameState} wrapMode={isSmallScreen} />
+        <VoteSummary voteDetails={latestVoting} gameState={gameState} wrapMode={isSmallScreen} gameData={gameData} />
       )}
     </Box>
   )
