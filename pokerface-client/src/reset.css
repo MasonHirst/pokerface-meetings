@@ -55,7 +55,7 @@ table {
 } */
 
 .cursor-pointer:hover {
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 em-emoji-picker {

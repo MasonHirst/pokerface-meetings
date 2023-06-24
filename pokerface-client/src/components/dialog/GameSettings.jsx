@@ -130,27 +130,19 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
         </LightTooltip>
 
         {gameSettingsToSave.deck.values && (
-          <TextField
-            label="Deck"
-            value={`${gameSettingsToSave.deck.name} (${gameSettingsToSave.deck.values})`}
-            onMouseDown={() => {
-              setShowDeckDialog(!showDeckDialog)
-            }}
-          />
+            <TextField
+              label="Deck"
+              sx={{
+                '& :hover': {
+                  cursor: 'pointer',
+                },
+              }}
+              value={`${gameSettingsToSave.deck.name} (${gameSettingsToSave.deck.values})`}
+              onMouseDown={() => {
+                setShowDeckDialog(!showDeckDialog)
+              }}
+            />
         )}
-
-        {/* <Button
-          onClick={() => {
-            setShowDeckDialog(!showDeckDialog)
-          }}
-          color="secondary"
-          disableElevation
-          variant="contained"
-          sx={{ textTransform: 'none', fontSize: '16px', fontWeight: 'bold' }}
-          startIcon={<StyleIcon />}
-        >
-          Change Deck
-        </Button> */}
 
         <Box
           sx={{
@@ -198,6 +190,27 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               />
             }
             label="Show Average"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                // checked={gameSettingsToSave.funMode}
+                checked={false}
+                onChange={(e) => {
+                  return toast('This feature is not available yet')
+                  if (checkPowerLvl('low')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      funMode: e.target.checked,
+                    })
+                  } else {
+                    toast.warning('You do not have this power')
+                  }
+                }}
+                color="success"
+              />
+            }
+            label="Enable crazy mode"
           />
         </Box>
 
