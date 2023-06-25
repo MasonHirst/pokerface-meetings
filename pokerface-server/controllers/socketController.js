@@ -178,7 +178,9 @@ async function startSocketServer(app, port) {
           }
           gameRooms[gameId].players[token].currentChoice = body.card
           broadcastToRoom(gameId, 'gameUpdated')
-        } else if (type === 'playerLeaveGame') {
+        } 
+        // spacer
+        else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
             return console.log('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
@@ -186,19 +188,21 @@ async function startSocketServer(app, port) {
             'gameRooms[gameId].players after leave: ',
             gameRooms[gameId].players
           )
-        } else if (type === 'updateGameState') {
+        } 
+        // spacer
+        else if (type === 'updateGameState') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updateGameState) function')
+          console.log('----------------', gameRooms[gameId].gameSettings)
           if (body.gameState === 'voting') {
             Object.values(gameRooms[gameId].players).forEach((player) => {
               player.currentChoice = null
             })
-            gameRooms[gameId].currentIssueName = null
+            gameRooms[gameId].gameSettings.currentIssueName = null
           }
           if (body.gameState === 'reveal') {
-            console.log('body: ', body)
             const votingObj = {
-              issueName: gameRooms[gameId].currentIssueName,
+              issueName: gameRooms[gameId].gameSettings.currentIssueName,
               voteTime: Date.now(),
               agreement: null,
               playerVotes: {},
@@ -241,25 +245,33 @@ async function startSocketServer(app, port) {
             //push the voting object into the game vote history
             gameRooms[gameId].voteHistory.push(votingObj)
           }
-          gameRooms[gameId].gameState = body.gameState
+          gameRooms[gameId].gameSettings.gameState = body.gameState
           broadcastToRoom(gameId, 'gameUpdated')
-        } else if (type === 'playerLeaveGame') {
+        }
+        // spacer
+        else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
             return console.log('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
           console.log('Removed player from game')
           broadcastToRoom(gameId, 'gameUpdated')
-        } else if (type === 'updatedDeck') {
+        } 
+        // spacer
+        else if (type === 'updatedDeck') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updatedDeck) function')
-          gameRooms[gameId].deck = body.deck
+          gameRooms[gameId].gameSettings.deck = body.deck
           broadcastToRoom(gameId, 'gameUpdated')
-        } else if (type === 'updatedGameName') {
+        } 
+        // spacer
+        else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updatedGameName) function')
-          gameRooms[gameId].gameRoomName = body.name
+          gameRooms[gameId].gameSettings.gameRoomName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
-        } else if (type === 'updateProfile') {
+        } 
+        // spacer
+        else if (type === 'updateProfile') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updateProfile) function')
           const { playerCardImage, name } = body
@@ -267,25 +279,20 @@ async function startSocketServer(app, port) {
             gameRooms[gameId].players[token].playerCardImage = playerCardImage
           if (name) gameRooms[gameId].players[token].playerName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
-          
-        }
+        } 
+        // spacer
         else if (type === 'setIssueName') {
           if (!gameRooms[gameId])
             return console.log('game room not found (setIssueName) function')
-            console.log('-----------------', body.issueName)
-          gameRooms[gameId].currentIssueName = body.issueName
+          console.log('-----------------', body.issueName)
+          gameRooms[gameId].gameSettings.currentIssueName = body.issueName
           broadcastToRoom(gameId, 'gameUpdated')
-        }
-        else if (type === 'updatedPowers') {
-          if (!gameRooms[gameId]) return console.log('game room not found (setPower) function')
-          const { powerObj } = body
-          const { action, userId } = powerObj
-          console.log(action, userId)
-          if (action === 'add') {
-            console.log('adding power')
-          } else if (action === 'remove') {
-            console.log('removing power')
-          }
+        } 
+        // spacer
+        else if (type === 'updatedGameSettings') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (updatedGameSettings) function')
+          gameRooms[gameId].gameSettings = body.gameSettingsToSave
           broadcastToRoom(gameId, 'gameUpdated')
         }
       })
@@ -329,27 +336,31 @@ module.exports = {
   },
 
   createNewGame: async (req, res) => {
-    const { gameName, deck } = req.body
+    const { gameName, deck, gameHost } = req.body
     try {
       const gameId = uuidv4()
       if (!gameName || !gameId)
         return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
         gameRoomId: gameId,
-        gameRoomName: gameName,
-        gameState: 'voting',
-        powers: {
-          gameOwner: '',
-          changeGameState: [],
-          changeDeck: [],
-          changeIssue: [],
-          changeGameName: [],
-          kickPlayers: [],
+        gameSettings: {
+          gameRoomName: gameName,
+          deck,
+          gameState: 'voting',
+          showAgreement: true,
+          showAverage: true,
+          useWoodTable: false,
+          funMode: true,
+          powers: {
+            gameOwner: gameHost,
+            highAccess: [],
+            lowAccess: [],
+            defaultPlayerPower: 'low',
+          },
         },
         currentIssueName: '',
         lastAction: Date.now(),
         voteHistory: [],
-        deck,
         players: {},
       }
       res.send(gameRooms[gameId])
@@ -377,7 +388,7 @@ module.exports = {
         })
         gameRooms[gameId].voteHistory.push(cardCounts)
       }
-      gameRooms[gameId].gameState = gameState
+      gameRooms[gameId].gameSettings.gameState = gameState
       broadcastToRoom(gameId, localUserToken, 'gameUpdated')
       res.send(gameRooms[gameId])
     } catch (err) {
@@ -450,8 +461,12 @@ module.exports = {
           htmlContent: `<html>
                           <body>
                             <h1>New message from Pokerface user - ${localUserToken}</h1>
-                            <h2>Name: <span style="font-size: 17px;">${name ? name : 'not provided'}</span></h2>
-                            <h2>Contact: <span style="font-size: 17px;">${contact ? contact : 'not provided'}</span></h2>
+                            <h2>Name: <span style="font-size: 17px;">${
+                              name ? name : 'not provided'
+                            }</span></h2>
+                            <h2>Contact: <span style="font-size: 17px;">${
+                              contact ? contact : 'not provided'
+                            }</span></h2>
                             <h2>Message:</h2>
                             <p style="font-size: 16px;">${message}</p>
                           </body>
@@ -466,7 +481,6 @@ module.exports = {
             return res.status(500).send(error)
           }
         )
-
     } catch (err) {
       console.error(err)
       res.status(500).send(err)

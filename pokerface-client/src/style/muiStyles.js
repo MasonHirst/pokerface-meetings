@@ -80,14 +80,36 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import { purple, blue, pink } from '@mui/material/colors'
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
-import Tooltip from '@mui/material/Tooltip'
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip'
 import EditNoteIcon from '@mui/icons-material/EditNote'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import Collapse from '@mui/material/Collapse'
 import { CircularProgress } from '@mui/material'
+import Alert from '@mui/material/Alert'
+import { styled } from '@mui/material/styles'
+import { Backdrop } from '@mui/material';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+
+const LightTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.common.white,
+    color: 'rgba(0, 0, 0, 0.87)',
+    boxShadow: theme.shadows[2],
+    fontSize: 14,
+    padding: '7px 10px',
+  },
+}))
 
 let muiStyles = {
+  Radio,
+  RadioGroup,
+  Backdrop,
+  LightTooltip,
+  Alert,
   CircularProgress,
   Collapse,
   EditNoteIcon,

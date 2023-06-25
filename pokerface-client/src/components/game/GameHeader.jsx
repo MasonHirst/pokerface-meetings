@@ -43,7 +43,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [showProfileDialog, setShowProfileDialog] = useState(false)
   const open = Boolean(anchorEl)
-  const roomName = gameData.gameRoomName
+  const [roomName, setRoomName] = useState('')
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const inviteLinkInputRef = useRef()
@@ -53,6 +53,11 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
   })
   const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+
+  useEffect(() => {
+    if (!gameData || !gameData?.gameSettings?.gameRoomName) return
+    setRoomName(gameData.gameSettings.gameRoomName)
+  }, [gameData])
 
   useEffect(() => {
     if (!footerRef.current) return
@@ -403,10 +408,12 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         </Dialog>
       </Box>
 
-      <GameSettings
-        showDialog={showGameSettingsDialog}
-        setShowDialog={setShowGameSettingsDialog}
-      />
+      {gameData.gameSettings && showGameSettingsDialog && (
+        <GameSettings
+          showDialog={showGameSettingsDialog}
+          setShowDialog={setShowGameSettingsDialog}
+        />
+      )}
 
       {showProfileDialog && (
         <ProfileDialog

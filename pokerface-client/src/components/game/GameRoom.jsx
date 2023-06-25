@@ -4,6 +4,7 @@ import { useMediaQuery } from '@mui/material'
 import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
+import { ToastContainer, Slide } from 'react-toastify'
 import muiStyles from '../../style/muiStyles'
 const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
 
@@ -72,6 +73,17 @@ const GameRoom = () => {
 
   return (
     <>
+    <ToastContainer
+        position="top-center"
+        newestOnTop
+        draggable
+        hideProgressBar={false}
+        autoClose={2500}
+        transition={Slide}
+        pauseOnHover
+        pauseOnFocusLoss={false}
+        theme="light"
+      />
       {!joinGameLoading && playerName ? (
         <Box
           sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
