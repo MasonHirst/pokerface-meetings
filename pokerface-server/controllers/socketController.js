@@ -351,11 +351,11 @@ module.exports = {
           showAverage: true,
           useWoodTable: false,
           funMode: true,
-          defaultPlayerPower: 'med',
           powers: {
             gameOwner: gameHost,
             highAccess: [],
             lowAccess: [],
+            defaultPlayerPower: 'low',
           },
         },
         currentIssueName: '',

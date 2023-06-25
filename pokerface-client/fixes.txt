@@ -81,3 +81,7 @@ BUG - on mobile, tapping the deck card twice pops up a google thingy
 
 BUG - fix the power level needed to change the deck
 
+The input box to change the issue name should not submit on focus loss. It needs a cancel button and a submit button
+
+add tooltips or something to power collapses to explain what they are
+
