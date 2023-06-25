@@ -5,13 +5,15 @@ import useClipboard from 'react-use-clipboard'
 import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
 import { useMediaQuery } from '@mui/material'
+import { toast } from 'react-toastify'
 import PurpleDeckCard from './PurpleDeckCard'
-const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon } = muiStyles
+const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon } =
+  muiStyles
 
 const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const isSmallScreen = useMediaQuery('(max-width:600px)')
   const isXsScreen = useMediaQuery('(max-width:400px)')
-  const { gameData, sendMessage } = useContext(GameContext)
+  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
   const gameBodyRef = useRef()
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
@@ -23,7 +25,9 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     successDuration: 1500,
   })
   const [editingIssueName, setEditingIssueName] = useState(false)
-  const [newIssueName, setNewIssueName] = useState(gameData.currentIssueName || '')
+  const [newIssueName, setNewIssueName] = useState(
+    gameData?.gameSettings?.currentIssueName || ''
+  )
   const newIssueNameRef = useRef()
 
   function submitNewIssueName() {
@@ -54,14 +58,14 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   }
 
   useEffect(() => {
-    if (!gameData.gameRoomName) return
+    if (!gameData?.gameSettings?.gameRoomName) return
     setPlayersData(Object.values(gameData.players))
-    setGameState(gameData.gameState)
+    setGameState(gameData.gameSettings.gameState)
     setLatestVoting(gameData.voteHistory[gameData.voteHistory.length - 1])
     if (
       !stateButtonDisabled &&
-      gameState !== gameData.gameState &&
-      gameData.gameState === 'reveal'
+      gameState !== gameData.gameSettings.gameState &&
+      gameData.gameSettings.gameState === 'reveal'
     ) {
       setStateButtonDisabled(true)
       setTimeout(() => {
@@ -273,6 +277,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
         alignItems: 'center',
         overflowX: 'auto',
         overflowY: 'auto',
+        // backgroundColor: '#2196f3',
       }}
     >
       <Box
@@ -294,7 +299,8 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             alignItems: 'center',
           }}
         >
-          {(gameData.currentIssueName && gameData.currentIssueName) ||
+          {(gameData?.gameSettings?.currentIssueName &&
+            gameData?.gameSettings?.currentIssueName) ||
           editingIssueName ? (
             <Box
               sx={{
@@ -341,7 +347,14 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 />
               ) : (
                 <Typography
-                  sx={{ fontSize: { xs: '18px', sm: '24px', position: 'relative', top: '-3px', } }}
+                  sx={{
+                    fontSize: {
+                      xs: '18px',
+                      sm: '24px',
+                      position: 'relative',
+                      top: '-3px',
+                    },
+                  }}
                   className={gameState === 'voting' ? 'cursor-pointer' : ''}
                   onClick={() => {
                     if (gameState !== 'voting') return
@@ -354,7 +367,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     }, 50)
                   }}
                 >
-                  {gameData.currentIssueName}
+                  {gameData.gameSettings.currentIssueName}
                 </Typography>
               )}
             </Box>
@@ -362,10 +375,12 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             gameState === 'voting' && (
               <Button
                 onClick={() => {
-                  setEditingIssueName(true)
-                  setTimeout(() => {
-                    newIssueNameRef.current.focus()
-                  }, 50)
+                  if (checkPowerLvl('low')) {
+                    setEditingIssueName(true)
+                    setTimeout(() => {
+                      newIssueNameRef.current.focus()
+                    }, 50)
+                  } else toast.warning('You do not have power to do this')
                 }}
                 endIcon={<EditIcon />}
                 sx={{
@@ -391,7 +406,12 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   alignItems: 'center',
                 }}
               >
-                <Typography variant="body1" sx={{fontSize: isSmallScreen ? '13px' : '16px'}}>It's just you here 😞</Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontSize: isSmallScreen ? '13px' : '16px' }}
+                >
+                  It's just you here 😞
+                </Typography>
                 {isCopied ? (
                   <Typography
                     variant="body1"
@@ -428,7 +448,13 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             <Box sx={topPlayersBox(true, '5px 0')}>{topPlayers}</Box>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: isXsScreen ? '5px' : '10px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isXsScreen ? '5px' : '10px',
+            }}
+          >
             {leftPlayers.length > 0 && (
               <Box sx={sidePlayersBox}>{leftPlayers}</Box>
             )}

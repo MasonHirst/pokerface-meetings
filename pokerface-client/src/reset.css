@@ -45,7 +45,6 @@ table {
 
 /* ::-webkit-scrollbar {
   background-color: transparent;
-  background-color: blue;
   max-width: clamp(6px, 2vw, 10px) !important;
   max-height: clamp(6px, 1vw, 10px);
   width: max-content;
@@ -56,7 +55,7 @@ table {
 } */
 
 .cursor-pointer:hover {
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 em-emoji-picker {

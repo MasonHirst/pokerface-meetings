@@ -45,8 +45,6 @@ FIXED------ build a feature to add an issueName to the voting
 
 FIXED------ make the vote history display in reverse so the newest vote is at the top
 
-ON HOLD - make it so your card has another indicator you have chosen a value (if you have a custom card image, as it can be harder to tell when someone has picked)
-
 FIXED------ add an issue input for voting
 
 FIXED------ add a page (opens in a new tab) with text fields, and they can use that page to send me an email with suggestions or bugs
@@ -59,24 +57,31 @@ FIXED------ add character limits to inputs
 
 FIXED------ agreement % in vote history is not rounding correctly
 
-make each row in the vote history clickable to show an expanded view similar to the footer during the reveal state
+FIXED------ make each row in the vote history clickable to show an expanded view similar to the footer during the reveal state
+
+FIXED------ vote history - decide what to show if someone didn't vote (null)
+
+FIXED------ the vote summary section should order the vote counts based on number of votes, and show a little graph style indicator
+
+FIXED------ BUG - if the gameOwner refreshes, everyone else errors out
+
+FIXED------ add a sweet alert to confirm leaving game or delete a deck
 
 use Redis in the server to better store game rooms
-
-make it so you leave a game if you navigate away from a game page, and the socket should only be connected if in a game page
-
-add skeletons when cards or content is loading where appropriate
-
-add a sweet alert to confirm leaving game or delete a deck
-
-add a custom background color picker for custom card images
 
 build a feature where the game creator can choose who can make changes to game room
 
 add a setting for "show custom card images"
 
-add a game host who can kick players or end the game
+add a game host who can kick players
 
-vote history - decide what to show if someone didn't vote (null)
+BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
 
-BUG - sam's buttons to change card image were disabled after he removed his card image once
+BUG - on mobile, tapping the deck card twice pops up a google thingy
+
+BUG - fix the power level needed to change the deck
+
+The input box to change the issue name should not submit on focus loss. It needs a cancel button and a submit button
+
+add tooltips or something to power collapses to explain what they are
+

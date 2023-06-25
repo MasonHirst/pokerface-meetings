@@ -8,7 +8,11 @@ import 'sweetalert2/dist/sweetalert2.css'
 export const GameContext = createContext()
 
 export const GameProvider = ({ children }) => {
-  if (localStorage.getItem('playerName') && localStorage.getItem('playerName').length > 9) localStorage.removeItem('playerName')
+  if (
+    localStorage.getItem('playerName') &&
+    localStorage.getItem('playerName').length > 9
+  )
+    localStorage.removeItem('playerName')
   const [playerName, setPlayerName] = useState(
     localStorage.getItem('playerName')
   )
@@ -40,6 +44,29 @@ export const GameProvider = ({ children }) => {
       token: localStorage.getItem('localUserToken'),
     })
     socket?.send(bodyStr)
+  }
+
+  function checkPowerLvl(powerLvl) {
+    const { powers } = gameData.gameSettings
+    const localUserToken = localStorage.getItem('localUserToken')
+    if (powers.gameOwner === localUserToken) {
+      return true
+    } else if (powerLvl === 'low') {
+      if (
+        powers.lowAccess.includes(localUserToken) ||
+        powers.highAccess.includes(localUserToken)
+      ) {
+        return true
+      } else {
+        return false
+      }
+    } else if (powerLvl === 'high') {
+      if (powers.highAccess.includes(localUserToken)) {
+        return true
+      } else {
+        return false
+      }
+    }
   }
 
   function confirmFailJoin(socket) {
@@ -79,10 +106,13 @@ export const GameProvider = ({ children }) => {
       if (process.env.NODE_ENV === 'development') {
         serverUrl = 'ws://localhost:8080'
       }
+
       const ws = new WebSocket(
         `${serverUrl}?token=${localStorage.getItem(
           'localUserToken'
-        )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem('pokerCardImage')}`
+        )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem(
+          'pokerCardImage'
+        )}`
       )
 
       ws.addEventListener('open', function () {
@@ -99,8 +129,8 @@ export const GameProvider = ({ children }) => {
         let messageData = JSON.parse(event.data)
 
         if (messageData.event_type === 'playerJoinedGame') {
-          setJoinGameLoading(false)
           setGameData(messageData.game)
+          setJoinGameLoading(false)
         } else if (messageData.event_type === 'gameUpdated') {
           setGameData(messageData.game)
         } else if (messageData.event_type === 'gameNotFound') {
@@ -125,8 +155,6 @@ export const GameProvider = ({ children }) => {
           if (!activeSocket || !game_id) {
             return
           } else {
-            // console.log('active socket:', activeSocket)
-            // console.log('connecting again! yay!')
             connectClient() // try to reconnect after a delay
           }
         }, 1000) // wait for 1 second before reconnecting
@@ -153,6 +181,7 @@ export const GameProvider = ({ children }) => {
         joinGameLoading,
         setPlayerName,
         toggleActiveSocket,
+        checkPowerLvl,
       }}
     >
       {children}

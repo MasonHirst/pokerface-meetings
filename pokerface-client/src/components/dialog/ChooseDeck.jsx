@@ -22,13 +22,21 @@ const {
   Switch,
   FormControlLabel,
   Divider,
+  Backdrop,
+  Collapse,
 } = muiStyles
 
-const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
+const ChooseDeck = ({
+  showDeckDialog,
+  setShowDeckDialog,
+  setDeckProp,
+  hasOverlay,
+}) => {
   const deckInputRef = useRef()
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const [autoCommas, setAutoCommas] = useState(true)
   const splitter = GraphemeSplitter()
+  const [deleteWarningIndex, setDeleteWarningIndex] = useState(null)
   const [customDeckName, setCustomDeckName] = useState('')
   const [customDeck, setCustomDeck] = useState('1,2,👍,true')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -44,9 +52,9 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     JSON.parse(localStorage.getItem('savedDecks'))
   )
 
-  function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
-  }
+  // function isNativeEmoji(str) {
+  //   return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+  // }
 
   function setDeckInStorage() {
     if (!customDeck) return
@@ -75,51 +83,85 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
   function mapDeckButtons(decks, isCustom) {
     const mappedDeckButtons = decks.map((deck, index) => {
       return (
-        <Box
-          key={index}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          {isCustom && (
-            <IconButton
-              onClick={() => {
-                const newSavedDecks = savedDecks.filter((d) => d !== deck)
-                localStorage.setItem(
-                  'savedDecks',
-                  JSON.stringify(newSavedDecks)
-                )
-                setSavedDecks(newSavedDecks)
-              }}
-            >
-              <DeleteOutlineIcon color="error" />
-            </IconButton>
-          )}
-          <MenuItem
-            onClick={() => {
-              setDeckProp(deck.values)
-              setShowDeckDialog(false)
-            }}
+        <React.Fragment key={index}>
+          <Box
             sx={{
-              marginLeft: '-8px',
-              padding: '8px',
-              minWidth: isCustom ? 'calc(100% - 35px)': '100%',
-              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
-            <Typography
-              variant="body2"
+            {isCustom && (
+              <IconButton onClick={() => setDeleteWarningIndex(index)}>
+                <DeleteOutlineIcon color="error" />
+              </IconButton>
+            )}
+            <MenuItem
+              onClick={() => {
+                setDeckProp(deck)
+                setShowDeckDialog(false)
+              }}
               sx={{
-                textTransform: 'none',
-                color: 'black',
-                fontSize: { xs: '16px', sm: '20px' },
+                marginLeft: '-8px',
+                padding: '8px',
+                minWidth: isCustom ? 'calc(100% - 35px)' : '100%',
+                borderRadius: '10px',
               }}
             >
-              {deck.name} ({deck.values})
-            </Typography>
-          </MenuItem>
-        </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  textTransform: 'none',
+                  color: 'black',
+                  fontSize: { xs: '16px', sm: '20px' },
+                }}
+              >
+                {deck.name} ({deck.values})
+              </Typography>
+            </MenuItem>
+          </Box>
+          <Collapse in={deleteWarningIndex === index && isCustom}>
+            <Box
+              sx={{
+                margin: '-10px 0 10px 40px',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                }}
+              >
+                Delete this deck?
+              </Typography>
+              <Button
+                variant="text"
+                sx={{ textTransform: 'none', fontSize: '17px' }}
+                onClick={() => setDeleteWarningIndex(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="text"
+                color="error"
+                sx={{ textTransform: 'none', fontSize: '17px' }}
+                onClick={() => {
+                  const newSavedDecks = savedDecks.filter((d) => d !== deck)
+                  localStorage.setItem(
+                    'savedDecks',
+                    JSON.stringify(newSavedDecks)
+                  )
+                  setSavedDecks(newSavedDecks)
+                }}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Collapse>
+        </React.Fragment>
       )
     })
     return mappedDeckButtons
@@ -131,15 +173,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
       (card, index) => {
         let length = splitter.splitGraphemes(card.trim()).length
         if (length > 4 || card.trim().length < 1) return
-        return (
-          <PurpleDeckCard
-            key={index}
-            card={card}
-            // useCase="customDeckPreview"
-            borderColor="#902bf5"
-            sizeMultiplier={.9}
-          />
-        )
+        return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />
       }
     )
   }
@@ -148,46 +182,61 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
     <Dialog
       onClose={() => setShowDeckDialog(false)}
       fullScreen={isSmallScreen}
+      BackdropComponent={(props) => (
+        <Backdrop
+          {...props}
+          style={{ backgroundColor: !hasOverlay && 'transparent' }}
+        />
+      )}
       PaperProps={{
         style: {
           borderRadius: !isSmallScreen && 12,
           padding: isSmallScreen ? '35px 8px' : '55px 50px',
           minWidth: !isSmallScreen && 'min(calc(100vw - 18px), 1000px)',
-          height: !isSmallScreen && 'fit-content',
+          minHeight: !isSmallScreen && 'min(100vh - 30px, 700px)',
           display: 'flex',
         },
       }}
       open={showDeckDialog}
     >
       {!showCustomDeckForm ? (
-        <>
-          <Typography variant="h5" align="center" color="primary">
-            Default decks
-          </Typography>
-          <Box
-            sx={{
-              paddingTop: '20px',
-              marginBottom: '20px',
-              overflowX: 'scroll',
-            }}
-          >
-            {mapDeckButtons(defaultDecks, false)}
-          </Box>
-          <Typography variant="h5" align="center" color="primary">
-            Saved decks
-          </Typography>
-          <Box
-            sx={{
-              paddingTop: '20px',
-              marginBottom: '20px',
-              overflowX: 'scroll',
-            }}
-          >
-            {savedDecks.length > 0 ? (
-              mapDeckButtons(savedDecks, true)
-            ) : (
-              <Typography sx={{ opacity: 0.7 }}>No saved decks</Typography>
-            )}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            flex: 1,
+          }}
+        >
+          <Box>
+            <Typography variant="h5" align="center" color="primary">
+              Default decks
+            </Typography>
+            <Box
+              sx={{
+                paddingTop: '20px',
+                marginBottom: '20px',
+                overflowX: 'auto',
+              }}
+            >
+              {mapDeckButtons(defaultDecks, false)}
+            </Box>
+            <Typography variant="h5" align="center" color="primary">
+              Saved decks
+            </Typography>
+            <Box
+              sx={{
+                paddingTop: '20px',
+                marginBottom: '20px',
+                overflowX: 'auto',
+              }}
+            >
+              {savedDecks.length > 0 ? (
+                mapDeckButtons(savedDecks, true)
+              ) : (
+                <Typography sx={{ opacity: 0.7 }}>No saved decks</Typography>
+              )}
+            </Box>
           </Box>
 
           <Button
@@ -195,11 +244,11 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             endIcon={<StyleIcon />}
             disableElevation
             variant="contained"
-            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
+            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
           >
             Create custom deck
           </Button>
-        </>
+        </Box>
       ) : (
         <Box
           style={{
@@ -319,7 +368,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
             sx={{
               minHeight: '50px',
               display: 'flex',
-              overflowX: 'scroll',
+              overflowX: 'auto',
               gap: '10px',
               paddingBottom: '8px',
             }}
@@ -337,7 +386,7 @@ const ChooseDeck = ({ showDeckDialog, setShowDeckDialog, setDeckProp }) => {
               setShowCustomDeckForm(false)
               setDeckInStorage()
             }}
-            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold', }}
+            sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
           >
             Save Deck
           </Button>

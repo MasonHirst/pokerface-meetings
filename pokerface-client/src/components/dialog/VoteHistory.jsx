@@ -189,7 +189,7 @@ const VoteHistory = ({ showDialog, setShowDialog, gameData }) => {
       </IconButton>
       <Typography variant="h5">Vote History</Typography>
 
-      <Box ref={voteHistoryRef} sx={{ overflowX: 'scroll' }}>
+      <Box ref={voteHistoryRef} sx={{ overflowX: 'auto' }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>

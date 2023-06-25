@@ -29,14 +29,14 @@ const HomePage = () => {
           sx={{
             width: isSmallScreen ? '40px' : '50px',
             height: isSmallScreen ? '40px' : '50px',
-            backgroundColor: '#aa00ff',
+            backgroundColor: '#9c4fd7',
             position: 'fixed',
             bottom: isSmallScreen ? '10px' : '22px',
             right: isSmallScreen ? '10px' : '22px',
             padding: '15px',
             boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
             color: '#ffffff',
-            '&:hover': { backgroundColor: '#aa00ffdd' },
+            '&:hover': { backgroundColor: '#9c4fd7dd' },
           }}
         >
           <QuestionMarkIcon

@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
-import { purple, blue, } from '@mui/material/colors'
+import { blue } from '@mui/material/colors'
 
 const theme = createTheme({
   palette: {
@@ -14,14 +14,17 @@ const theme = createTheme({
       main: blue[500],
     },
     secondary: {
-      main: '#aa00ff',
+      // main: '#aa00ff',
+      main: '#9c4fd7',
     },
     white: {
       main: '#ffffff',
     },
+    success: {
+      main: '#4caf50',
+    },
   },
-});
-
+})
 
 const localUserToken = localStorage.getItem('localUserToken')
 if (!localUserToken) {

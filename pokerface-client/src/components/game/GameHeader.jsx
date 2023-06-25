@@ -43,7 +43,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [showProfileDialog, setShowProfileDialog] = useState(false)
   const open = Boolean(anchorEl)
-  const roomName = gameData.gameRoomName
+  const [roomName, setRoomName] = useState('')
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const inviteLinkInputRef = useRef()
@@ -53,6 +53,11 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
   })
   const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+
+  useEffect(() => {
+    if (!gameData || !gameData?.gameSettings?.gameRoomName) return
+    setRoomName(gameData.gameSettings.gameRoomName)
+  }, [gameData])
 
   useEffect(() => {
     if (!footerRef.current) return
@@ -67,6 +72,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
       imageUrl: dontGo,
       imageWidth: 'min(90vw, 400px',
       confirmButtonText: 'Take me home',
+      confirmButtonColor: '#9c4fd7',
       showCancelButton: true,
       cancelButtonText: 'Stay',
       customClass: {
@@ -103,7 +109,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
         height: { xs: '70px', sm: '95px' },
-        backgroundColor: '#902bf5',
+        backgroundColor: '#9c4fd7',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -208,7 +214,14 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             sx={{
               textTransform: 'none',
               fontSize: '18px',
+              fontWeight: 'bold',
+              borderWidth: '1.5px',
+              borderColor: '#ffffff',
               display: { xs: 'none', md: 'block' },
+              borderRadius: '8px',
+              '&:hover': {
+                borderWidth: '1.5px',
+              },
             }}
           >
             Invite players
@@ -395,10 +408,12 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         </Dialog>
       </Box>
 
-      <GameSettings
-        showDialog={showGameSettingsDialog}
-        setShowDialog={setShowGameSettingsDialog}
-      />
+      {gameData.gameSettings && showGameSettingsDialog && (
+        <GameSettings
+          showDialog={showGameSettingsDialog}
+          setShowDialog={setShowGameSettingsDialog}
+        />
+      )}
 
       {showProfileDialog && (
         <ProfileDialog

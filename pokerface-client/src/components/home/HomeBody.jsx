@@ -49,7 +49,7 @@ const HomeBody = () => {
           alignItems: 'center',
           padding: !isMdScreen && '0 25px',
           paddingTop: '10px',
-          paddingBottom: isSmallScreen ? '80px' : '120px',
+          // paddingBottom: isSmallScreen ? '80px' : '120px',
           width: '100%',
         }}
       >
@@ -91,7 +91,7 @@ const HomeBody = () => {
                 textAlign: isMdScreen ? 'center' : 'left',
               }}
             >
-              Make planning simple and fun (and free) with Pokerface.
+              Make planning simple, fun and free with Pokerface.
             </Typography>
             <Button
               disableElevation
@@ -108,26 +108,15 @@ const HomeBody = () => {
             >
               Host new game
             </Button>
-            <Typography
+            {/* <Typography
               variant="h6"
               sx={{ marginTop: '10px', marginBottom: '-18px' }}
             >
               Trusted by
             </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: '10px',
-                fontWeight: 'bold',
-                color: '#47545D',
-                flexWrap: 'wrap',
-                justifyContent: isSmallScreen ? 'center' : 'left',
-              }}
-            >
               <Typography sx={{ fontSize: isSmallScreen ? '14px' : '18px' }}>
                 My mom, My wife, Steven, and many more
-              </Typography>
-            </Box>
+              </Typography> */}
           </Box>
         </Box>
         <Box
@@ -170,7 +159,7 @@ const HomeBody = () => {
         </Box>
       </Box>
 
-      <svg style={{ transform: 'translateY(40%)' }}>{greyWaveSvg}</svg>
+      <svg viewBox="0 0 1440 128" style={{ transform: 'translateY(1px)' }}>{greyWaveSvg}</svg>
 
       <Box
         className="2nd section"
@@ -484,7 +473,7 @@ const HomeBody = () => {
         </Box>
       </Box>
 
-      <svg style={{ transform: 'translateY(40%)' }}>{greyWaveSvg}</svg>
+      <svg viewBox="0 0 1440 128" style={{ transform: 'translateY(40%)' }}>{greyWaveSvg}</svg>
 
       <Box
         className="7th-section"
@@ -495,9 +484,10 @@ const HomeBody = () => {
           alignItems: 'center',
           justifyContent: 'space-evenly',
           padding: '80px 10px',
+          paddingBottom: '170px',
           backgroundColor: '#F9F9F9',
           gap: '20px',
-          position: 'relative',
+          marginBottom: '-70px',
         }}
       >
         <Box
@@ -505,7 +495,7 @@ const HomeBody = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: '15px',
-            maxWidth: 'min(500px, 100%)',
+            maxWidth: 'min(600px, 100%)',
           }}
         >
           <Typography
@@ -546,6 +536,9 @@ const HomeBody = () => {
                 borderRadius: '8px',
                 borderColor: '#2096F3',
                 borderWidth: '2.5px',
+                '&:hover': {
+                  borderWidth: '2.5px',
+                },
               }}
             >
               Contact me
@@ -554,6 +547,7 @@ const HomeBody = () => {
               disableElevation
               variant="outlined"
               href="https://github.com/MasonHirst/pokerface-meetings"
+              target="_blank"
               size="large"
               sx={{
                 textTransform: 'none',
@@ -562,6 +556,9 @@ const HomeBody = () => {
                 borderWidth: '2.5px',
                 borderColor: '#2096F3',
                 borderRadius: '8px',
+                '&:hover': {
+                  borderWidth: '2.5px',
+                },
               }}
             >
               View Github Repo
@@ -574,10 +571,22 @@ const HomeBody = () => {
         />
       </Box>
 
-      <svg style={{ width: '100%', transform: 'translateY(23px)' }}>{darkWaveSvg}</svg>
+      <svg
+        viewBox="0 0 1440 128"
+        style={{
+          width: '100%',
+          // border: '1px solid red',
+        }}
+      >
+        {darkWaveSvg}
+      </svg>
       <Box
         className="footer"
-        sx={{ padding: '0 10px 80px 10px', width: '100%', backgroundColor: '#1A2935' }}
+        sx={{
+          padding: '0 10px 80px 10px',
+          width: '100%',
+          backgroundColor: '#1A2935',
+        }}
       >
         <Box
           sx={{
@@ -590,7 +599,7 @@ const HomeBody = () => {
         >
           <Typography
             variant="h4"
-            color='#ffffff'
+            color="#ffffff"
             sx={{
               fontWeight: 'bold',
               fontSize: isSmallScreen ? '25px' : '32px',
@@ -598,9 +607,12 @@ const HomeBody = () => {
           >
             Ready to get started?
           </Typography>
-          <Typography color='#A8AEB2' sx={{fontSize: { xs: '16px', sm: '18px' },}}>
-            Pokerface is free to use. No sign-up required.
-            Just click the button below to start a new game.
+          <Typography
+            color="#A8AEB2"
+            sx={{ fontSize: { xs: '16px', sm: '18px' } }}
+          >
+            Pokerface is free to use. No sign-up required. Just click the button
+            below to start a new game.
           </Typography>
           <Button
             disableElevation
