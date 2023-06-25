@@ -355,7 +355,6 @@ module.exports = {
           powers: {
             gameOwner: gameHost,
             highAccess: [],
-            medAccess: [],
             lowAccess: [],
           },
         },

@@ -3,7 +3,7 @@ import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 import ChooseDeck from './ChooseDeck'
 import { GameContext } from '../../context/GameContext'
-import { ToastContainer, toast, Slide } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 const {
@@ -14,17 +14,26 @@ const {
   IconButton,
   Button,
   TextField,
-  StyleIcon,
+  Collapse,
   Switch,
+  KeyboardArrowDownIcon,
+  KeyboardArrowRightIcon,
   FormControlLabel,
   LightTooltip,
-  Select,
+  RadioGroup,
+  Radio,
+  Checkbox,
 } = muiStyles
 
 const GameSettings = ({ showDialog, setShowDialog }) => {
   const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const [showPowersExpansion, setShowPowersExpansion] = useState(false)
+  const [showGameOwnerCollapse, setShowGameOwnerCollapse] = useState(false)
+  const [showHighAccessCollapse, setShowHighAccessCollapse] = useState(false)
+  const [showLowAccessCollapse, setShowLowAccessCollapse] = useState(false)
   const [newName, setNewName] = useState(gameData.gameSettings.gameRoomName)
+  const players = gameData.players
   const [showDeckDialog, setShowDeckDialog] = useState(false)
   const [updatedDeck, setUpdatedDeck] = useState('')
   const [gameSettingsToSave, setGameSettingsToSave] = useState(
@@ -46,12 +55,26 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
 
   useEffect(() => {
     if (!updatedDeck) return
-    if (checkPowerLvl('med')) {
+    if (checkPowerLvl()) {
       setGameSettingsToSave({ ...gameSettingsToSave, deck: updatedDeck })
     } else {
       toast.warning('You do not have this power')
     }
   }, [updatedDeck])
+
+  useEffect(() => {
+    // if the game owner changes, update the game owner in the gameSettingsToSave so it reflects in the UI for everyone
+    if (!gameData?.gameSettings?.powers?.gameOwner) return
+    setGameSettingsToSave({
+      ...gameSettingsToSave,
+      powers: {
+        ...gameSettingsToSave.powers,
+        gameOwner: gameData.gameSettings.powers.gameOwner,
+        highAccess: gameData.gameSettings.powers.highAccess,
+        lowAccess: gameData.gameSettings.powers.lowAccess,
+      },
+    })
+  }, [gameData])
 
   useEffect(() => {
     if (!newName) return
@@ -66,21 +89,132 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
     setNewName(gameData.gameSettings.gameRoomName)
   }, [gameData.gameSettings.gameRoomName])
 
+  function getGameOwner() {
+    const owner = gameSettingsToSave.powers.gameOwner
+    const localUserToken = localStorage.getItem('localUserToken')
+    if (owner === localUserToken) {
+      return 'You'
+    } else if (players[owner]) {
+      return players[owner].playerName
+    } else {
+      return ''
+    }
+  }
+
+  function getMyPowerLvl() {
+    const { powers } = gameData.gameSettings
+    const localUserToken = localStorage.getItem('localUserToken')
+    if (powers.gameOwner === localUserToken) {
+      return 'owner'
+    } else if (powers.highAccess.includes(localUserToken)) {
+      return 'high'
+    } else if (powers.lowAccess.includes(localUserToken)) {
+      return 'low'
+    } else {
+      return 'none'
+    }
+  }
+
+  function orderByPowerLvl(player) {
+    const { powers } = gameData.gameSettings
+
+    if (player.token === powers.gameOwner) {
+      return 1 // Place gameOwner player first
+    } else if (powers.highAccess.includes(player.token)) {
+      return 2 // Place highAccess players next
+    } else if (powers.lowAccess.includes(player.token)) {
+      return 3 // Place lowAccess players next
+    } else {
+      return 4 // Place other players last
+    }
+  }
+
+  function handleHighAccessChange(e, player) {
+    if (!checkPowerLvl('high')) return
+    if (e.target.checked) {
+      setGameSettingsToSave({
+        ...gameSettingsToSave,
+        powers: {
+          ...gameSettingsToSave.powers,
+          highAccess: [...gameSettingsToSave.powers.highAccess, player.token],
+        },
+      })
+    } else {
+      setGameSettingsToSave({
+        ...gameSettingsToSave,
+        powers: {
+          ...gameSettingsToSave.powers,
+          highAccess: gameSettingsToSave.powers.highAccess.filter(
+            (token) => token !== player.token
+          ),
+        },
+      })
+    }
+  }
+
+  function handleLowAccessChange(e, player) {
+    if (checkPowerLvl('high')) {
+      if (e.target.checked) {
+        setGameSettingsToSave({
+          ...gameSettingsToSave,
+          powers: {
+            ...gameSettingsToSave.powers,
+            lowAccess: [...gameSettingsToSave.powers.lowAccess, player.token],
+          },
+        })
+      } else {
+        setGameSettingsToSave({
+          ...gameSettingsToSave,
+          powers: {
+            ...gameSettingsToSave.powers,
+            lowAccess: gameSettingsToSave.powers.lowAccess.filter(
+              (token) => token !== player.token
+            ),
+          },
+        })
+      }
+    } else {
+      toast.warning('You need high power can do this')
+    }
+  }
+
+  function handleOwnerChange(e) {
+    if (checkPowerLvl()) {
+      // remove the new owner from power arrays
+      const highAccessArr = gameSettingsToSave.powers.highAccess.filter(
+        (token) => token !== e.target.value
+      )
+      const lowAccessArr = gameSettingsToSave.powers.lowAccess.filter(
+        (token) => token !== e.target.value
+      )
+      //add the old owner to high access if he's not already there
+      if (!highAccessArr.includes(gameSettingsToSave.powers.gameOwner)) {
+        highAccessArr.push(gameSettingsToSave.powers.gameOwner)
+      }
+      // change the game owner in gameSettingsToSave to the new owner
+      setGameSettingsToSave({
+        ...gameSettingsToSave,
+        powers: {
+          ...gameSettingsToSave.powers,
+          gameOwner: e.target.value,
+          highAccess: highAccessArr,
+          lowAccess: lowAccessArr,
+        },
+      })
+    } else {
+      toast.warning('Only the game owner can do this')
+    }
+  }
+
   return (
     <>
-      <ToastContainer
-        position="top-center"
-        newestOnTop
-        draggable
-        hideProgressBar={false}
-        autoClose={2500}
-        transition={Slide}
-        pauseOnHover
-        theme="light"
-      />
       <Dialog
         onClose={() => {
           setShowDialog(!showDialog)
+          setShowPowersExpansion(false)
+          setShowGameOwnerCollapse(false)
+          setShowHighAccessCollapse(false)
+          setShowLowAccessCollapse(false)
         }}
         fullScreen={isSmallScreen}
         PaperProps={{
@@ -115,7 +249,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               : 'You do not have power to change the game name'
           }
           enterDelay={200}
-          placement="top"
+          placement="bottom"
         >
           <TextField
             spellCheck={false}
@@ -130,18 +264,18 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
         </LightTooltip>
 
         {gameSettingsToSave.deck.values && (
-            <TextField
-              label="Deck"
-              sx={{
-                '& :hover': {
-                  cursor: 'pointer',
-                },
-              }}
-              value={`${gameSettingsToSave.deck.name} (${gameSettingsToSave.deck.values})`}
-              onMouseDown={() => {
-                setShowDeckDialog(!showDeckDialog)
-              }}
-            />
+          <TextField
+            label="Deck"
+            sx={{
+              '& :hover': {
+                cursor: 'pointer',
+              },
+            }}
+            value={`${gameSettingsToSave.deck.name} (${gameSettingsToSave.deck.values})`}
+            onMouseDown={() => {
+              setShowDeckDialog(!showDeckDialog)
+            }}
+          />
         )}
 
         <Box
@@ -210,8 +344,165 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 color="success"
               />
             }
-            label="Enable crazy mode"
+            label="Fun mode"
           />
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <Box
+            onClick={() => {
+              setShowPowersExpansion(!showPowersExpansion)
+              setShowGameOwnerCollapse(false)
+            }}
+            className="cursor-pointer"
+            sx={{
+              display: 'flex',
+              gap: '10px',
+              width: '100%',
+            }}
+          >
+            {showPowersExpansion ? (
+              <KeyboardArrowDownIcon />
+            ) : (
+              <KeyboardArrowRightIcon />
+            )}
+            <Typography sx={{ fontSize: '18px', fontWeight: 'bold' }}>
+              Powers
+              <span style={{ opacity: 0.6, marginLeft: '20px' }}>
+                my power level: {getMyPowerLvl()}
+              </span>
+            </Typography>
+          </Box>
+
+          {/* First level collapse */}
+          <Collapse
+            sx={{
+              overflowY: 'auto',
+              paddingLeft: '30px',
+            }}
+            in={showPowersExpansion}
+          >
+            <Box
+              className="cursor-pointer"
+              onClick={() => setShowGameOwnerCollapse(!showGameOwnerCollapse)}
+              sx={{ display: 'flex', gap: '10px', marginBottom: '10px' }}
+            >
+              {showGameOwnerCollapse ? (
+                <KeyboardArrowDownIcon />
+              ) : (
+                <KeyboardArrowRightIcon />
+              )}
+              <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                Game owner ({getGameOwner()})
+              </Typography>
+            </Box>
+            {/* Second level collapse */}
+            <Collapse in={showGameOwnerCollapse} sx={{ paddingLeft: '30px' }}>
+              <RadioGroup
+                sx={{ marginTop: '-10px', marginBottom: '10px' }}
+                aria-labelledby="game-owner-radio-group"
+                value={gameSettingsToSave.powers.gameOwner}
+                name="owner-radio-buttons-group"
+                onChange={(e) => handleOwnerChange(e)}
+              >
+                {Object.values(players)
+                  .sort((a, b) => orderByPowerLvl(a) - orderByPowerLvl(b))
+                  .map((player, index) => (
+                    <FormControlLabel
+                      sx={{ maxHeight: '35px' }}
+                      key={index}
+                      value={player.token}
+                      control={<Radio />}
+                      label={player.playerName}
+                    />
+                  ))}
+              </RadioGroup>
+            </Collapse>
+
+            <Box
+              className="cursor-pointer"
+              onClick={() => setShowHighAccessCollapse(!showHighAccessCollapse)}
+              sx={{ display: 'flex', gap: '10px', marginBottom: '10px' }}
+            >
+              {showHighAccessCollapse ? (
+                <KeyboardArrowDownIcon />
+              ) : (
+                <KeyboardArrowRightIcon />
+              )}
+              <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                High power ({gameSettingsToSave.powers.highAccess.length})
+              </Typography>
+            </Box>
+            <Collapse in={showHighAccessCollapse} sx={{ paddingLeft: '30px' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  marginTop: '-5px',
+                }}
+              >
+                {Object.values(players)
+                  .sort((a, b) => orderByPowerLvl(a) - orderByPowerLvl(b))
+                  .map((player, index) => (
+                    <FormControlLabel
+                      key={index}
+                      sx={{ maxHeight: '35px' }}
+                      label={player.playerName}
+                      control={
+                        <Checkbox
+                          checked={gameSettingsToSave.powers.highAccess.includes(
+                            player.token
+                          )}
+                          onChange={(e) => handleHighAccessChange(e, player)}
+                        />
+                      }
+                    />
+                  ))}
+              </Box>
+            </Collapse>
+
+            <Box
+              className="cursor-pointer"
+              onClick={() => setShowLowAccessCollapse(!showLowAccessCollapse)}
+              sx={{ display: 'flex', gap: '10px', marginBottom: '10px' }}
+            >
+              {showLowAccessCollapse ? (
+                <KeyboardArrowDownIcon />
+              ) : (
+                <KeyboardArrowRightIcon />
+              )}
+              <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                Low power ({gameSettingsToSave.powers.lowAccess.length})
+              </Typography>
+            </Box>
+            <Collapse in={showLowAccessCollapse} sx={{ paddingLeft: '30px' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  marginTop: '-5px',
+                }}
+              >
+                {Object.values(players)
+                  .sort((a, b) => orderByPowerLvl(a) - orderByPowerLvl(b))
+                  .map((player, index) => (
+                    <FormControlLabel
+                      key={index}
+                      sx={{ maxHeight: '35px' }}
+                      label={player.playerName}
+                      control={
+                        <Checkbox
+                          checked={gameSettingsToSave.powers.lowAccess.includes(
+                            player.token
+                          )}
+                          onChange={(e) => handleLowAccessChange(e, player)}
+                        />
+                      }
+                    />
+                  ))}
+              </Box>
+            </Collapse>
+          </Collapse>
         </Box>
 
         <Box

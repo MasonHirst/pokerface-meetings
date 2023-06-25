@@ -89,6 +89,8 @@ import { CircularProgress } from '@mui/material'
 import Alert from '@mui/material/Alert'
 import { styled } from '@mui/material/styles'
 import { Backdrop } from '@mui/material';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 
 const LightTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -103,6 +105,8 @@ const LightTooltip = styled(({ className, ...props }) => (
 }))
 
 let muiStyles = {
+  Radio,
+  RadioGroup,
   Backdrop,
   LightTooltip,
   Alert,

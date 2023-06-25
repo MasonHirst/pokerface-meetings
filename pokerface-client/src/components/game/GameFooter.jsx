@@ -37,7 +37,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
 
   const mappedDeckCards = deckCards.map((card, index) => {
     const length = splitter.splitGraphemes(card.trim()).length
-    if (length < 5) {
+    if (length > 0 && length < 5) {
       return (
         <PurpleDeckCard
           key={index}

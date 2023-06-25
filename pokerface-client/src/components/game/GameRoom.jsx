@@ -81,6 +81,7 @@ const GameRoom = () => {
         autoClose={2500}
         transition={Slide}
         pauseOnHover
+        pauseOnFocusLoss={false}
         theme="light"
       />
       {!joinGameLoading && playerName ? (

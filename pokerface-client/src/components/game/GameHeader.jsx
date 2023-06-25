@@ -408,7 +408,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         </Dialog>
       </Box>
 
-      {gameData.gameSettings && (
+      {gameData.gameSettings && showGameSettingsDialog && (
         <GameSettings
           showDialog={showGameSettingsDialog}
           setShowDialog={setShowGameSettingsDialog}
