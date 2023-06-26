@@ -85,3 +85,4 @@ The input box to change the issue name should not submit on focus loss. It needs
 
 add tooltips or something to power collapses to explain what they are
 
+add some sort of indicator on collapse headers to show if there have been internal changes. also highlight if there has been a change on an individual power settings
