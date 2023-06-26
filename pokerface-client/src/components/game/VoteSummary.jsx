@@ -40,8 +40,8 @@ const VoteSummary = ({
     if (!gameData?.gameSettings) return
     setShowAgreement(gameData.gameSettings.showAgreement)
     setShowAverage(gameData.gameSettings.showAverage)
-  },[gameData])
-  
+  }, [gameData])
+
   useEffect(() => {
     setFillPercentage(0)
     setTimeout(() => {
@@ -66,8 +66,8 @@ const VoteSummary = ({
 
   const revealCardCount = Object.values(cardCounts)
     .sort((a, b) => b.count - a.count) // Sort the objects by vote count in descending order
-    .map((obj, index, array) => {
-      const votePercentage = (obj.count / array.length) * 100
+    .map((obj, index) => {
+      const votePercentage = (obj.count / Object.values(voteDetails.playerVotes).filter((vote) => vote).length) * 100
       return (
         <Box
           key={index}
@@ -133,99 +133,98 @@ const VoteSummary = ({
       >
         {revealCardCount}
       </Box>
-      {(showAgreement ||
-        showAverage) && (
-          <Box sx={{ display: 'flex', gap: '20px' }}>
-            {showAgreement && (
+      {(showAgreement || showAverage) && (
+        <Box sx={{ display: 'flex', gap: '20px' }}>
+          {showAgreement && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '2px',
+                position: 'relative',
+                bottom: wrapMode ? '0px' : '15px',
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
+              >
+                Agreement
+              </Typography>
+
+              <Box sx={{ position: 'relative' }}>
+                <ThemeProvider theme={circleIndicatorTheme}>
+                  <CircularProgress
+                    variant="determinate"
+                    color="primary"
+                    value={fillPercentage}
+                    size={wrapMode ? 60 : 90}
+                  />
+                  <CircularProgress
+                    variant="determinate"
+                    color="fourth"
+                    value={100}
+                    size={wrapMode ? 60 : 90}
+                    sx={{ position: 'absolute', left: '0px', top: '0px' }}
+                  />
+                </ThemeProvider>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      marginTop: wrapMode ? '-5px' : '-8px',
+                      fontSize: { xs: '18px', sm: '25px' },
+                    }}
+                  >
+                    {parseFloat((voteDetails.agreement * 100).toFixed(1))}%
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          {Object.values(voteDetails).length &&
+            voteDetails.average &&
+            showAverage && (
               <Box
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '2px',
+                  gap: '7px',
                   position: 'relative',
-                  bottom: wrapMode ? '0px' : '15px',
+                  bottom: wrapMode ? '0px' : !showAgreement ? '45px' : '15px',
                 }}
               >
                 <Typography
                   variant="body1"
                   sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
                 >
-                  Agreement
+                  Average
                 </Typography>
-
-                <Box sx={{ position: 'relative' }}>
-                  <ThemeProvider theme={circleIndicatorTheme}>
-                    <CircularProgress
-                      variant="determinate"
-                      color="primary"
-                      value={fillPercentage}
-                      size={wrapMode ? 60 : 90}
-                    />
-                    <CircularProgress
-                      variant="determinate"
-                      color="fourth"
-                      value={100}
-                      size={wrapMode ? 60 : 90}
-                      sx={{ position: 'absolute', left: '0px', top: '0px' }}
-                    />
-                  </ThemeProvider>
-                  <Box
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                  <Typography
+                    variant="h5"
                     sx={{
-                      position: 'absolute',
-                      left: '50%',
-                      top: '50%',
-                      transform: 'translate(-50%, -50%)',
+                      marginTop: '-10px',
+                      fontSize: { xs: '34px', sm: '38px' },
                     }}
                   >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        marginTop: wrapMode ? '-5px' : '-8px',
-                        fontSize: { xs: '18px', sm: '25px' },
-                      }}
-                    >
-                      {parseFloat((voteDetails.agreement * 100).toFixed(1))}%
-                    </Typography>
-                  </Box>
+                    {voteDetails.average}
+                  </Typography>
                 </Box>
               </Box>
             )}
-
-            {Object.values(voteDetails).length &&
-              voteDetails.average &&
-              showAverage && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '7px',
-                    position: 'relative',
-                    bottom: wrapMode ? '0px' : !showAgreement ? '45px' : '15px',
-                  }}
-                >
-                  <Typography
-                    variant="body1"
-                    sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
-                  >
-                    Average
-                  </Typography>
-                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        marginTop: '-10px',
-                        fontSize: { xs: '34px', sm: '38px' },
-                      }}
-                    >
-                      {voteDetails.average}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-          </Box>
-        )}
+        </Box>
+      )}
     </Box>
   )
 }
