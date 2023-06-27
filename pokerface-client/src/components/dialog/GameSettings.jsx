@@ -24,6 +24,7 @@ const {
   Radio,
   MenuItem,
   Select,
+  HelpOutlineIcon,
 } = muiStyles
 
 const GameSettings = ({ showDialog, setShowDialog }) => {
@@ -100,7 +101,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
     if (checkPowerLvl('low')) {
       setGameSettingsToSave({ ...gameSettingsToSave, deck: updatedDeck })
     } else {
-      toast.warning('You do not have this power')
+      toast.warning('You need low power to do this')
     }
   }, [updatedDeck])
 
@@ -233,6 +234,11 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
 
   function handlePlayerPowerChange(e, token) {
     const newPowerLvl = e.target.value
+    if (
+      token === localUserToken &&
+      gameData.gameSettings.playerPowers[token].powerLvl === 'owner'
+    )
+      return toast.warning('You must assign another owner first')
     if (newPowerLvl === 'owner' && !checkPowerLvl())
       return toast.warning('Only the game owner can do this')
     if (newPowerLvl === 'high' && !checkPowerLvl())
@@ -315,7 +321,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           title={
             checkPowerLvl('low')
               ? ''
-              : 'You do not have power to change the game name'
+              : 'You need low power to change the game name'
           }
           enterDelay={200}
           placement="bottom"
@@ -359,6 +365,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             control={
               <Switch
                 checked={gameSettingsToSave.showAgreement}
+                color="success"
                 onChange={(e) => {
                   if (checkPowerLvl('low')) {
                     setGameSettingsToSave({
@@ -366,10 +373,9 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                       showAgreement: e.target.checked,
                     })
                   } else {
-                    toast.warning('You do not have this power')
+                    toast.warning('You need low power to do this')
                   }
                 }}
-                color="success"
               />
             }
             label="Show Agreement"
@@ -386,7 +392,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                       showAverage: e.target.checked,
                     })
                   } else {
-                    toast.warning('You do not have this power')
+                    toast.warning('You need low power to do this')
                   }
                 }}
                 color="success"
@@ -394,6 +400,27 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             }
             label="Show Average"
           />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={gameSettingsToSave.woodTable}
+                color="success"
+                onChange={(e) => {
+                  if (checkPowerLvl('low')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      woodTable: e.target.checked,
+                    })
+                  } else {
+                    toast.warning('You need low power to do this')
+                  }
+                }}
+              />
+            }
+            label="Wood Table"
+          />
+
           <FormControlLabel
             control={
               <Switch
@@ -451,6 +478,27 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             }}
             in={showPowersExpansion}
           >
+            <Typography
+              color="primary"
+              sx={{ fontSize: '16px', marginTop: '-2px', marginBottom: '10px' }}
+            >
+              <HelpOutlineIcon
+                sx={{
+                  fontSize: '22px',
+                  marginRight: '5px',
+                  marginBottom: '-5px',
+                }}
+              />
+              Player powers is a new feature. Please{' '}
+              <a
+                href={`${document.location.origin}/contact`}
+                target="_blank"
+                style={{ textDecoration: 'underline', fontWeight: 'bold', color: 'inherit' }}
+              >
+                report any bugs
+              </a>{' '}
+              to the developer.
+            </Typography>
             <Box
               className="cursor-pointer"
               onClick={() => setShowPowerLvlCollapse(!showPowerLvlCollapse)}
@@ -463,6 +511,19 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               )}
               <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
                 Player power levels
+                <LightTooltip
+                  placement="top"
+                  title="The power level of each player. Low power players can change basic game settings, high power players can change basic settings and some power settings."
+                >
+                  <HelpOutlineIcon
+                    color="primary"
+                    sx={{
+                      fontSize: '22px',
+                      marginBottom: '-6px',
+                      marginLeft: '8px',
+                    }}
+                  />
+                </LightTooltip>
               </Typography>
             </Box>
             {powerWarningMessage && showPowerLvlCollapse && (
@@ -538,9 +599,18 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                                 'You must assign a new owner before changing your power level'
                               )
                             }
+
                             if (e.target.value === 'owner') {
                               handleOwnerChange(token)
-                            } else handlePlayerPowerChange(e, token)
+                            } else if (
+                              gameData.gameSettings.playerPowers[token]
+                                .powerLvl === 'owner' &&
+                              localUserToken !== token
+                            ) {
+                              toast.warning('Only the game owner can do this')
+                            } else {
+                              handlePlayerPowerChange(e, token)
+                            }
                           }}
                         >
                           <MenuItem value="none">
@@ -570,6 +640,19 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               )}
               <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
                 Default player power ({gameSettingsToSave.defaultPlayerPower})
+                <LightTooltip
+                  placement="top"
+                  title="The default power level that will be assigned to joining players. Changing this does not affect current players."
+                >
+                  <HelpOutlineIcon
+                    color="primary"
+                    sx={{
+                      fontSize: '22px',
+                      marginBottom: '-6px',
+                      marginLeft: '8px',
+                    }}
+                  />
+                </LightTooltip>
               </Typography>
             </Box>
             {/* default power collapse */}

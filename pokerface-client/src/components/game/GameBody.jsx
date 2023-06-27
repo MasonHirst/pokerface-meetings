@@ -372,7 +372,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   className={gameState === 'voting' ? 'cursor-pointer' : ''}
                   onClick={() => {
                     if (gameState !== 'voting') return
-                    if (!checkPowerLvl('low')) return toast.warning('You do not have power to do this')
+                    if (!checkPowerLvl('low')) return toast.warning('You need low power to do this')
                     setEditingIssueName(true)
                     setTimeout(() => {
                       newIssueNameRef.current.focus()
@@ -395,7 +395,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     setTimeout(() => {
                       newIssueNameRef.current.focus()
                     }, 50)
-                  } else toast.warning('You do not have power to do this')
+                  } else toast.warning('You need low power to do this')
                 }}
                 endIcon={<EditIcon />}
                 sx={{

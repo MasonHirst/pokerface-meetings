@@ -382,6 +382,7 @@ module.exports = {
         gameSettings: {
           gameRoomName: gameName,
           deck,
+          woodTable: false,
           gameState: 'voting',
           showAgreement: true,
           showAverage: true,

@@ -67,6 +67,8 @@ FIXED------ BUG - if the gameOwner refreshes, everyone else errors out
 
 FIXED------ add a sweet alert to confirm leaving game or delete a deck
 
+FIXED------ BUG - fix the power level needed to change the deck
+
 use Redis in the server to better store game rooms
 
 build a feature where the game creator can choose who can make changes to game room
@@ -78,8 +80,6 @@ add a game host who can kick players
 BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
 
 BUG - on mobile, tapping the deck card twice pops up a google thingy
-
-BUG - fix the power level needed to change the deck
 
 The input box to change the issue name should not submit on focus loss. It needs a cancel button and a submit button
 
