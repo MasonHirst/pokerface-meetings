@@ -93,6 +93,7 @@ import { Backdrop } from '@mui/material'
 import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import InputLabel from '@mui/material/InputLabel'
+import { ChevronRightOutlined } from '@mui/icons-material'
 
 const LightTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -107,6 +108,7 @@ const LightTooltip = styled(({ className, ...props }) => (
 }))
 
 let muiStyles = {
+  ChevronRightOutlined,
   FormControl,
   InputLabel,
   Radio,

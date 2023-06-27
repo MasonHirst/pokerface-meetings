@@ -21,7 +21,7 @@ let gameRooms = {}
 let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type) {
-  console.log('game rooms status: ', gameRooms)
+  // console.log('game rooms status: ', gameRooms)
   console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length)
   // arguments: target game room, event type, message
   const gameRoom = gameRooms[gameRoomId]
@@ -30,9 +30,6 @@ function broadcastToRoom(gameRoomId, event_type) {
 
   // Loop through all clients in the game room and send the message
   Object.values(gameRoom.players).forEach((playerObj) => {
-    // if (playerObj.userToken === userId)
-    //   return console.log('not sending to self')
-
     const client = clientsList[playerObj.token]
     if (client && client.readyState === WebSocket.OPEN) {
       const body = JSON.stringify({ event_type, game: gameRoom })
@@ -76,7 +73,6 @@ function isMoreThanTwoHoursAgo(date) {
 }
 
 function averageNumericValues(arr) {
-  console.log(arr)
   let sum = 0
   let count = 0
   for (let val of arr) {
@@ -147,7 +143,7 @@ async function startSocketServer(app, port) {
     clientsList[token] = ws
 
     if (gameRooms[gameId]) {
-      console.log('gameRooms at player join.......: ', gameRooms[gameId].gameSettings.playerPowers)
+      // console.log('gameRooms at player join.......: ', gameRooms[gameId].gameSettings.playerPowers)
       gameRooms[gameId].players[token] = {
         currentGameId: gameId,
         token,
@@ -184,14 +180,13 @@ async function startSocketServer(app, port) {
       //! MESSAGES HANDLERS
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
-        // console.log('new message recieved: ', dataBody)
         const { type, body, gameId, token } = dataBody
 
         if (type === 'updatedChoice') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (updatedChoice) function')
+            return console.error('game room not found (updatedChoice) function')
           if (!gameRooms[gameId].players[token])
-            return console.log('player not found (updatedChoice) function')
+            return console.error('player not found (updatedChoice) function')
           if (gameRooms[gameId].players[token].currentChoice === body.card) {
             gameRooms[gameId].players[token].currentChoice = null
             return broadcastToRoom(gameId, 'gameUpdated')
@@ -202,7 +197,7 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (playerLeaveGame) function')
+            return console.error('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
           console.log(
             'gameRooms[gameId].players after leave: ',
@@ -212,8 +207,7 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'updateGameState') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (updateGameState) function')
-          console.log('----------------', gameRooms[gameId].gameSettings)
+            return console.error('game room not found (updateGameState) function')
           if (body.gameState === 'voting') {
             Object.values(gameRooms[gameId].players).forEach((player) => {
               player.currentChoice = null
@@ -271,7 +265,7 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (playerLeaveGame) function')
+            return console.error('game room not found (playerLeaveGame) function')
           delete gameRooms[gameId].players[token]
           console.log('Removed player from game')
           broadcastToRoom(gameId, 'gameUpdated')
@@ -279,21 +273,21 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'updatedDeck') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (updatedDeck) function')
+            return console.error('game room not found (updatedDeck) function')
           gameRooms[gameId].gameSettings.deck = body.deck
           broadcastToRoom(gameId, 'gameUpdated')
         }
         // spacer
         else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (updatedGameName) function')
+            return console.error('game room not found (updatedGameName) function')
           gameRooms[gameId].gameSettings.gameRoomName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
         }
         // spacer
         else if (type === 'updateProfile') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (updateProfile) function')
+            return console.error('game room not found (updateProfile) function')
           const { playerCardImage, name } = body
           if (playerCardImage || playerCardImage === '')
             gameRooms[gameId].players[token].playerCardImage = playerCardImage
@@ -306,7 +300,7 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'setIssueName') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (setIssueName) function')
+            return console.loerrorg('game room not found (setIssueName) function')
           console.log('-----------------', body.issueName)
           gameRooms[gameId].gameSettings.currentIssueName = body.issueName
           broadcastToRoom(gameId, 'gameUpdated')
@@ -314,7 +308,7 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'updatedGameSettings') {
           if (!gameRooms[gameId])
-            return console.log(
+            return console.error(
               'game room not found (updatedGameSettings) function'
             )
           gameRooms[gameId].gameSettings = body.gameSettingsToSave
@@ -323,13 +317,24 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'kickPlayer') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (kickPlayer) function')
+            return console.error('game room not found (kickPlayer) function')
           body.playerTokens.forEach((token) => {
             delete gameRooms[gameId].players[token]
             broadCastToClient(token, 'kickedFromGame')
           })
           broadcastToRoom(gameId, 'gameUpdated')
+        }
+        // spacer
+        else if (type === 'newChatMessage') {
+          if (!gameRooms[gameId])
+            return console.error('game room not found (newChatMessage) function')
 
+          if (gameRooms[gameId].chatMessages.length >= 30) {
+            // delete the oldest message if there are at least 30 messages
+            gameRooms[gameId].chatMessages.shift()
+          }
+          gameRooms[gameId].chatMessages.push(body)
+          broadcastToRoom(gameId, 'gameUpdated')
         }
       })
       //! END MESSAGES HANLDERS
@@ -396,11 +401,11 @@ module.exports = {
         currentIssueName: '',
         lastAction: Date.now(),
         voteHistory: [],
+        chatMessages: [],
         players: {},
       }
       res.send(gameRooms[gameId])
-      console.log('game created: ', gameRooms[gameId])
-      console.log('gameId at creation: ', gameId)
+      // console.log('game created: ', gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)
@@ -446,7 +451,6 @@ module.exports = {
             console.error(error)
             res.status(500).send(error)
           } else {
-            console.log(result)
             res.send(result.url)
           }
         }
@@ -467,7 +471,6 @@ module.exports = {
             console.error(deleteError)
             res.status(500).send(deleteError)
           } else {
-            console.log(deleteResult)
             res.send(deleteResult)
           }
         }
@@ -497,7 +500,7 @@ module.exports = {
           to: [{ name: 'Cool Developer', email: EMAIL_TARGET }],
           htmlContent: `<html>
                           <body>
-                            <h1>New message from Pokerface user - ${localUserToken}</h1>
+                            <h1>New message from Pokerface user ${localUserToken}</h1>
                             <h2>Name: <span style="font-size: 17px;">${
                               name ? name : 'not provided'
                             }</span></h2>

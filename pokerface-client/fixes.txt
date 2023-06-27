@@ -71,6 +71,8 @@ FIXED------ BUG - fix the power level needed to change the deck
 
 use Redis in the server to better store game rooms
 
+consider changing the broadcast functions in server to only send the changed data, not the whole game room everytime
+
 build a feature where the game creator can choose who can make changes to game room
 
 add a setting for "show custom card images"
@@ -86,3 +88,7 @@ The input box to change the issue name should not submit on focus loss. It needs
 add tooltips or something to power collapses to explain what they are
 
 add some sort of indicator on collapse headers to show if there have been internal changes. also highlight if there has been a change on an individual power settings
+
+BUG - when you delete a deck, it keeps the delete confirmation thing open
+
+BUG - server is crashing when someone saves personal settings or something

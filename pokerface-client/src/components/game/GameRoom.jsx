@@ -5,6 +5,7 @@ import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
 import { ToastContainer, Slide } from 'react-toastify'
+import ChatDrawer from './ChatDrawer'
 import muiStyles from '../../style/muiStyles'
 const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
 
@@ -18,12 +19,16 @@ const GameRoom = () => {
     toggleActiveSocket,
   } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const is750Screen = useMediaQuery('(max-width: 750px)')
+  const isMedScreen = useMediaQuery('(max-width: 900px)')
   const [nameError, setNameError] = useState('')
   const [nameInput, setNameInput] = useState('')
   const [footerHeight, setFooterHeight] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
   const [availableBodyHeight, setAvailableBodyHeight] = useState(0)
   const [bodyIsScrolling, setBodyIsScrolling] = useState(false)
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false)
+  const [drawerWidth, setDrawerWidth] = useState(300)
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
   const bodyRef = useRef()
@@ -34,6 +39,16 @@ const GameRoom = () => {
     if (!trimmedName) return setNameError('Please enter a name')
     localStorage.setItem('playerName', trimmedName)
     setPlayerName(trimmedName)
+  }
+
+  useEffect(() => {
+    if (isMedScreen) {
+      setDrawerWidth(220)
+    } else setDrawerWidth(300)
+  }, [isMedScreen])
+
+  function toggleChatDrawer() {
+    setChatDrawerOpen(!chatDrawerOpen)
   }
 
   useEffect(() => {
@@ -73,7 +88,7 @@ const GameRoom = () => {
 
   return (
     <>
-    <ToastContainer
+      <ToastContainer
         position="top-center"
         newestOnTop
         draggable
@@ -86,21 +101,45 @@ const GameRoom = () => {
       />
       {!joinGameLoading && playerName ? (
         <Box
-          sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+          id="wrapper-for-the-app-and-chat-drawer"
+          sx={{
+            flexGrow: 1,
+          }}
         >
-          <GameHeader
-            shadowOn={bodyIsScrolling}
-            setComponentHeight={setHeaderHeight}
-          />
-          <Box ref={bodyRef} sx={{ width: '100%' }}>
-            <GameBody
-              availableHeight={availableBodyHeight}
-              setBodyIsScrolling={setBodyIsScrolling}
+          <Box
+            sx={{
+              minHeight: '100vh',
+              width: is750Screen
+                ? '100vw'
+                : chatDrawerOpen
+                ? `calc(100vw - ${drawerWidth}px)`
+                : '100vw',
+              display: 'flex',
+              transition: '0.2s',
+              flexDirection: 'column',
+            }}
+          >
+            <GameHeader
+              shadowOn={bodyIsScrolling}
+              setComponentHeight={setHeaderHeight}
+              setChatDrawerOpen={setChatDrawerOpen}
+              chatDrawerOpen={chatDrawerOpen}
+            />
+            <Box ref={bodyRef} sx={{ width: '100%' }}>
+              <GameBody
+                availableHeight={availableBodyHeight}
+                setBodyIsScrolling={setBodyIsScrolling}
+              />
+            </Box>
+            <GameFooter
+              shadowOn={bodyIsScrolling}
+              setComponentHeight={setFooterHeight}
             />
           </Box>
-          <GameFooter
-            shadowOn={bodyIsScrolling}
-            setComponentHeight={setFooterHeight}
+          <ChatDrawer
+            drawerWidth={drawerWidth}
+            chatDrawerOpen={chatDrawerOpen}
+            toggleChatDrawer={toggleChatDrawer}
           />
         </Box>
       ) : (
