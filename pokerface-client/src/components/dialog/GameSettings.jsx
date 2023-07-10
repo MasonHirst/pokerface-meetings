@@ -744,7 +744,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                         }}
                         onClick={() => handleAddPlayerToKick(token)}
                       >
-                        {playersToKickOnSave.includes(token) ? 'Undo' : 'Kick'}
+                        {playersToKickOnSave.includes(token) ? 'Cancel' : 'Kick'}
                       </Button>
                     </Box>
                   ))}

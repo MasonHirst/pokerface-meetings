@@ -21,7 +21,7 @@ let gameRooms = {}
 let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type) {
-  console.log('game rooms status: ', gameRooms)
+  // console.log('game rooms status: ', gameRooms)
   console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length)
   // arguments: target game room, event type, message
   const gameRoom = gameRooms[gameRoomId]
@@ -299,7 +299,7 @@ async function startSocketServer(app, port) {
             gameRooms[gameId].players[token].playerCardImage = playerCardImage
           if (name) {
             gameRooms[gameId].players[token].playerName = body.name
-            gameRooms[gameId].playerPowers[token].playerName = body.name
+            gameRooms[gameId].gameSettings.playerPowers[token].playerName = body.name
           }
           broadcastToRoom(gameId, 'gameUpdated')
         }
