@@ -19,7 +19,6 @@ const {
   Dialog,
   TextField,
   ExpandMoreIcon,
-  EditNoteIcon,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -32,11 +31,19 @@ const {
   EditIcon,
   Tooltip,
   LinkIcon,
+  ChatOutlinedIcon,
+  Badge,
 } = muiStyles
 
-const GameHeader = ({ setComponentHeight, shadowOn }) => {
+const GameHeader = ({
+  setComponentHeight,
+  shadowOn,
+  setChatDrawerOpen,
+  chatDrawerOpen,
+}) => {
   const navigate = useNavigate()
   const footerRef = useRef()
+  const isMedScreen = useMediaQuery('(max-width: 900px)')
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const isXsScreen = useMediaQuery('(max-width: 400px)')
   const { gameData } = useContext(GameContext)
@@ -206,26 +213,31 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         </Menu>
 
         <Box sx={{ display: 'flex', gap: '22px', alignItems: 'center' }}>
-          <Button
-            color="white"
-            size="large"
-            onClick={() => setShowInviteDialog(!showInviteDialog)}
-            variant="outlined"
-            sx={{
-              textTransform: 'none',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              borderWidth: '1.5px',
-              borderColor: '#ffffff',
-              display: { xs: 'none', md: 'block' },
-              borderRadius: '8px',
-              '&:hover': {
-                borderWidth: '1.5px',
-              },
-            }}
-          >
-            Invite players
-          </Button>
+          {
+            // hide the button if the screen is less tha 600px, or if the screen is less than 900px and the chat drawer is open
+            isSmallScreen ||
+              (!isMedScreen && !chatDrawerOpen && (
+                <Button
+                  color="white"
+                  size="large"
+                  onClick={() => setShowInviteDialog(!showInviteDialog)}
+                  variant="outlined"
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    borderWidth: '1.5px',
+                    borderColor: '#ffffff',
+                    borderRadius: '8px',
+                    '&:hover': {
+                      borderWidth: '1.5px',
+                    },
+                  }}
+                >
+                  Invite players
+                </Button>
+              ))
+          }
 
           {!isSmallScreen ? (
             <Button
@@ -262,6 +274,21 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
               <MenuIcon color="white" />
             </IconButton>
           )}
+          <IconButton
+            onClick={() => {
+              // set chat drawer open to the opposite of what it currently is
+              setChatDrawerOpen(!chatDrawerOpen)
+            }}
+          >
+            <Badge
+              color="error"
+              variant="dot"
+              overlap="circular"
+              // invisible={hideChatsNotifications}
+            >
+              <ChatOutlinedIcon color="white" sx={{ fontSize: '22px' }} />
+            </Badge>
+          </IconButton>
         </Box>
 
         <Drawer
