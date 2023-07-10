@@ -73,9 +73,9 @@ FIXED------ add a game host who can kick players
 
 FIXED------ build a feature where the game creator can choose who can make changes to game room
 
-use Redis in the server to better store game rooms
+FIXED------ change the button on the contact dev page to say "done" or something, and it closes the tab.
 
-add a setting for "show custom card images"
+use Redis in the server to better store game rooms
 
 BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
 
@@ -85,8 +85,7 @@ The input box to change the issue name should not submit on focus loss. It needs
 
 add tooltips or something to power collapses to explain what they are
 
-add some sort of indicator on collapse headers to show if there have been internal changes. also highlight if there has been a change on an individual power settings
-
 make the server broadcast function only send the necesary info from the message recieved. So if the player powers changed, it would only send (gameRooms[gameId].gameSettings.playersPowers). The front end would need to handle it correctly
 
-FIXED------ change the button on the contact dev page to say "done" or something, and it closes the tab.
+implement a basic chat feature
+
