@@ -7,13 +7,13 @@ import muiStyles from '../../style/muiStyles'
 import { useMediaQuery } from '@mui/material'
 import { toast } from 'react-toastify'
 import PurpleDeckCard from './PurpleDeckCard'
-const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon } =
+const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon, Alert } =
   muiStyles
 
 const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const isSmallScreen = useMediaQuery('(max-width:600px)')
   const isXsScreen = useMediaQuery('(max-width:400px)')
-  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
+  const { gameData, sendMessage, checkPowerLvl, iHaveBeenKicked } = useContext(GameContext)
   const gameBodyRef = useRef()
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
@@ -299,6 +299,20 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             alignItems: 'center',
           }}
         >
+          {iHaveBeenKicked && (
+            <Alert
+              severity="error"
+              sx={{
+                width: '100%',
+                marginBottom: '20px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+              }}
+            >
+              You have been kicked from this game, and are no longer getting updates
+            </Alert>
+          )}
+
           {(gameData?.gameSettings?.currentIssueName &&
             gameData?.gameSettings?.currentIssueName) ||
           editingIssueName ? (
@@ -358,6 +372,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   className={gameState === 'voting' ? 'cursor-pointer' : ''}
                   onClick={() => {
                     if (gameState !== 'voting') return
+                    if (!checkPowerLvl('low')) return toast.warning('You need low power to do this')
                     setEditingIssueName(true)
                     setTimeout(() => {
                       newIssueNameRef.current.focus()
@@ -380,7 +395,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     setTimeout(() => {
                       newIssueNameRef.current.focus()
                     }, 50)
-                  } else toast.warning('You do not have power to do this')
+                  } else toast.warning('You need low power to do this')
                 }}
                 endIcon={<EditIcon />}
                 sx={{

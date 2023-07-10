@@ -21,7 +21,7 @@ let gameRooms = {}
 let clientsList = {}
 
 function broadcastToRoom(gameRoomId, event_type) {
-  console.log('game rooms status: ', gameRooms)
+  // console.log('game rooms status: ', gameRooms)
   console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length)
   // arguments: target game room, event type, message
   const gameRoom = gameRooms[gameRoomId]
@@ -41,6 +41,14 @@ function broadcastToRoom(gameRoomId, event_type) {
   })
 
   removeUnusedGameRooms()
+}
+
+function broadCastToClient(PlaerToken, event_type) {
+  const client = clientsList[PlaerToken]
+  if (client && client.readyState === WebSocket.OPEN) {
+    const body = JSON.stringify({ event_type })
+    client.send(body)
+  }
 }
 
 function removeUnusedGameRooms() {
@@ -138,8 +146,8 @@ async function startSocketServer(app, port) {
     ws.currentGameId = gameId
     clientsList[token] = ws
 
-    console.log('gameRooms at player join.......: ', gameRooms)
     if (gameRooms[gameId]) {
+      console.log('gameRooms at player join.......: ', gameRooms[gameId].gameSettings.playerPowers)
       gameRooms[gameId].players[token] = {
         currentGameId: gameId,
         token,
@@ -147,6 +155,18 @@ async function startSocketServer(app, port) {
         playerName,
         playerCardImage,
       }
+      if (!gameRooms[gameId].gameSettings.playerPowers[token]) {
+        // add the player to the powers object, unless they are already there
+        // const { playerPowers } = gameRooms[gameId].gameSettings
+        gameRooms[gameId].gameSettings.playerPowers[token] = {
+          powerLvl: gameRooms[gameId].gameSettings.defaultPlayerPower,
+          playerName,
+        }
+      }
+      if (!gameRooms[gameId].gameSettings.playerPowers[token].playerName) {
+        gameRooms[gameId].gameSettings.playerPowers[token].playerName = playerName
+      }
+
       const body = JSON.stringify({
         event_type: 'playerJoinedGame',
         game: gameRooms[gameId],
@@ -178,7 +198,7 @@ async function startSocketServer(app, port) {
           }
           gameRooms[gameId].players[token].currentChoice = body.card
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
+        }
         // spacer
         else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
@@ -188,7 +208,7 @@ async function startSocketServer(app, port) {
             'gameRooms[gameId].players after leave: ',
             gameRooms[gameId].players
           )
-        } 
+        }
         // spacer
         else if (type === 'updateGameState') {
           if (!gameRooms[gameId])
@@ -255,21 +275,21 @@ async function startSocketServer(app, port) {
           delete gameRooms[gameId].players[token]
           console.log('Removed player from game')
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
+        }
         // spacer
         else if (type === 'updatedDeck') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updatedDeck) function')
           gameRooms[gameId].gameSettings.deck = body.deck
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
+        }
         // spacer
         else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
             return console.log('game room not found (updatedGameName) function')
           gameRooms[gameId].gameSettings.gameRoomName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
+        }
         // spacer
         else if (type === 'updateProfile') {
           if (!gameRooms[gameId])
@@ -277,9 +297,12 @@ async function startSocketServer(app, port) {
           const { playerCardImage, name } = body
           if (playerCardImage || playerCardImage === '')
             gameRooms[gameId].players[token].playerCardImage = playerCardImage
-          if (name) gameRooms[gameId].players[token].playerName = body.name
+          if (name) {
+            gameRooms[gameId].players[token].playerName = body.name
+            gameRooms[gameId].gameSettings.playerPowers[token].playerName = body.name
+          }
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
+        }
         // spacer
         else if (type === 'setIssueName') {
           if (!gameRooms[gameId])
@@ -287,13 +310,26 @@ async function startSocketServer(app, port) {
           console.log('-----------------', body.issueName)
           gameRooms[gameId].gameSettings.currentIssueName = body.issueName
           broadcastToRoom(gameId, 'gameUpdated')
-        } 
+        }
         // spacer
         else if (type === 'updatedGameSettings') {
           if (!gameRooms[gameId])
-            return console.log('game room not found (updatedGameSettings) function')
+            return console.log(
+              'game room not found (updatedGameSettings) function'
+            )
           gameRooms[gameId].gameSettings = body.gameSettingsToSave
           broadcastToRoom(gameId, 'gameUpdated')
+        }
+        // spacer
+        else if (type === 'kickPlayer') {
+          if (!gameRooms[gameId])
+            return console.log('game room not found (kickPlayer) function')
+          body.playerTokens.forEach((token) => {
+            delete gameRooms[gameId].players[token]
+            broadCastToClient(token, 'kickedFromGame')
+          })
+          broadcastToRoom(gameId, 'gameUpdated')
+
         }
       })
       //! END MESSAGES HANLDERS
@@ -346,16 +382,15 @@ module.exports = {
         gameSettings: {
           gameRoomName: gameName,
           deck,
+          woodTable: false,
           gameState: 'voting',
           showAgreement: true,
           showAverage: true,
           useWoodTable: false,
           funMode: true,
-          powers: {
-            gameOwner: gameHost,
-            highAccess: [],
-            lowAccess: [],
-            defaultPlayerPower: 'low',
+          defaultPlayerPower: 'low',
+          playerPowers: {
+            [gameHost]: { powerLvl: 'owner', playerName: '' },
           },
         },
         currentIssueName: '',
@@ -374,7 +409,9 @@ module.exports = {
 
   updateGameState: async (req, res) => {
     const { gameState, gameId, localUserToken } = req.body
-    console.log('THE UPDATE STATE FUNCTION IS BEING USED YAYAYAYAY')
+    console.log(
+      'THE UPDATE STATE FUNCTION IS BEING USED YAYAYAYAY--------------------------------'
+    )
     try {
       if (gameState === 'voting') {
         Object.values(gameRooms[gameId].players).forEach((player) => {

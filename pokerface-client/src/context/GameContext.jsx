@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useRef } from 'react'
+import React, { createContext, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import spidermanCrying from '../assets/spiderman-crying.gif'
@@ -26,7 +26,35 @@ export const GameProvider = ({ children }) => {
   const [gameData, setGameData] = useState({})
   const [gameExists, setGameExists] = useState(false)
   const [joinGameLoading, setJoinGameLoading] = useState(false)
+  const [iHaveBeenKicked, setIHaveBeenKicked] = useState(false)
   const { game_id } = useParams()
+  let iAmKicked = false
+
+  const kickedGames = JSON.parse(sessionStorage.getItem('kickedGames'))
+  if (kickedGames && kickedGames.includes(game_id)) iAmKicked = true
+
+  useEffect(() => {
+    if (sessionStorage.getItem('kickedGames')) {
+      if (kickedGames.includes(game_id)) {
+        setIHaveBeenKicked(true)
+        Swal.fire({
+          title: 'You were kicked from that game',
+          text: 'How rude!',
+          width: 'min(100vw - 20px, 550px)',
+          imageUrl: spidermanCrying,
+          imageWidth: 'min(90vw, 400px',
+          confirmButtonText: 'Darn',
+          confirmButtonColor: '#9c4fd7',
+          customClass: {
+            popup: 'swal2-popup',
+          },
+        })
+        navigate('/')
+      }
+    } else {
+      sessionStorage.setItem('kickedGames', JSON.stringify([]))
+    }
+  }, [])
 
   console.success = function (message) {
     console.log('%c✅ ' + message, 'color: #04A57D; font-weight: bold;')
@@ -46,22 +74,20 @@ export const GameProvider = ({ children }) => {
     socket?.send(bodyStr)
   }
 
-  function checkPowerLvl(powerLvl) {
-    const { powers } = gameData.gameSettings
+  function checkPowerLvl(powerCheck) {
+    const { playerPowers } = gameData.gameSettings
     const localUserToken = localStorage.getItem('localUserToken')
-    if (powers.gameOwner === localUserToken) {
+    const powerLvl = playerPowers[localUserToken].powerLvl
+    if (powerLvl === 'owner') {
       return true
-    } else if (powerLvl === 'low') {
-      if (
-        powers.lowAccess.includes(localUserToken) ||
-        powers.highAccess.includes(localUserToken)
-      ) {
+    } else if (powerCheck === 'low') {
+      if (powerLvl === 'low' || powerLvl === 'high') {
         return true
       } else {
         return false
       }
-    } else if (powerLvl === 'high') {
-      if (powers.highAccess.includes(localUserToken)) {
+    } else if (powerCheck === 'high') {
+      if (powerLvl === 'high') {
         return true
       } else {
         return false
@@ -77,7 +103,7 @@ export const GameProvider = ({ children }) => {
       imageWidth: 'min(90vw, 400px',
       confirmButtonText: 'Take me home',
       customClass: {
-        popup: 'swal2-popup', // Add the custom CSS class to the 'popup' element
+        popup: 'swal2-popup',
       },
     }).then((result) => {
       if (result.isConfirmed) {
@@ -92,7 +118,7 @@ export const GameProvider = ({ children }) => {
   let notFoundConnectCounter = 0
 
   useEffect(() => {
-    if (!playerName || !game_id || !activeSocket) return
+    if (!playerName || !game_id || !activeSocket || iHaveBeenKicked || iAmKicked) return
     function connectClient() {
       if (!game_id) return console.log('not in game room, aborting connection')
       setJoinGameLoading(true)
@@ -133,6 +159,14 @@ export const GameProvider = ({ children }) => {
           setJoinGameLoading(false)
         } else if (messageData.event_type === 'gameUpdated') {
           setGameData(messageData.game)
+          setIHaveBeenKicked(false)
+        } else if (messageData.event_type === 'kickedFromGame') {
+          console.warning('I have been kicked from the game, and am now sad :(')
+          setIHaveBeenKicked(true)
+          const kickedGames =
+            JSON.parse(sessionStorage.getItem('kickedGames')) || []
+          kickedGames.push(game_id)
+          sessionStorage.setItem('kickedGames', JSON.stringify(kickedGames))
         } else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt')
           notFoundConnectCounter++
@@ -182,6 +216,7 @@ export const GameProvider = ({ children }) => {
         setPlayerName,
         toggleActiveSocket,
         checkPowerLvl,
+        iHaveBeenKicked,
       }}
     >
       {children}

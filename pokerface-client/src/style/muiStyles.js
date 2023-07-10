@@ -43,6 +43,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import FormControlLabel from '@mui/material/FormControlLabel'
+import FormControl from '@mui/material/FormControl'
 import Switch from '@mui/material/Switch'
 import LoadingButton from '@mui/lab/LoadingButton'
 import FormGroup from '@mui/material/FormGroup'
@@ -88,9 +89,10 @@ import Collapse from '@mui/material/Collapse'
 import { CircularProgress } from '@mui/material'
 import Alert from '@mui/material/Alert'
 import { styled } from '@mui/material/styles'
-import { Backdrop } from '@mui/material';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
+import { Backdrop } from '@mui/material'
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
+import InputLabel from '@mui/material/InputLabel'
 
 const LightTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -105,6 +107,8 @@ const LightTooltip = styled(({ className, ...props }) => (
 }))
 
 let muiStyles = {
+  FormControl,
+  InputLabel,
   Radio,
   RadioGroup,
   Backdrop,
