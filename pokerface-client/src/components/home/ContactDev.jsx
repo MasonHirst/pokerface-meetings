@@ -4,7 +4,7 @@ import pokerLogo from '../../assets/poker-logo.png'
 import { useMediaQuery } from '@mui/material'
 import axios from 'axios'
 import { validate } from 'email-validator'
-const { Paper, TextField, Box, Typography, LoadingButton } = muiStyles
+const { Paper, TextField, Box, Typography, LoadingButton, Button } = muiStyles
 
 const ContactDev = () => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
@@ -137,9 +137,25 @@ const ContactDev = () => {
           >
             <Typography variant="h4">Message has been sent</Typography>
             <Typography variant="h6">Thank you for your feedback!</Typography>
-            <Typography color="GrayText">
+            {/* <Typography color="GrayText">
               You can safely close this tab
-            </Typography>
+            </Typography> */}
+            <Button
+              disableElevation
+              variant="contained"
+              // color="secondary"
+              onClick={() => {
+                // close the current tab
+                window.close()
+              }}
+              sx={{
+                textTransform: 'none',
+                marginTop: '10px',
+                fontWeight: 'bold',
+                fontSize: '18px',
+                width: '170px',
+              }}
+            >Continue</Button>
             <Typography color="primary">
               App built and maintained by Mason Hirst
             </Typography>

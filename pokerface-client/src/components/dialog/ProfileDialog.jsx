@@ -126,7 +126,7 @@ const ProfileDialog = ({ showDialog, setShowDialog, gameData }) => {
               <Button
                 disabled={saveLoading}
                 onClick={() => {
-                  localStorage.removeItem('pokerCardImage')
+                  // localStorage.removeItem('pokerCardImage')
                   setUploadedPicture('')
                   setShowImageUpload(!showImageUpload)
                 }}
