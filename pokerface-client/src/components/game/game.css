@@ -31,6 +31,7 @@
   padding-bottom: 15px;
   background-color: rgba(0, 0, 0, 0.04);
   border-left: 1px solid rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 .chat-container::-webkit-scrollbar {
   width: 9px;

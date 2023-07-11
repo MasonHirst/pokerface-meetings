@@ -4,6 +4,7 @@ import muiStyles from '../../style/muiStyles'
 import ChatMessage from './ChatMessage'
 import { GameContext } from '../../context/GameContext'
 import { blue } from '@mui/material/colors'
+import noMessageImg from '../../assets/no-messages.webp'
 
 const {
   Box,
@@ -33,7 +34,6 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
   }, [gameData.chatMessages])
 
   useEffect(() => {
-
     return () => {
       console.log('chat drawer unmounted')
     }
@@ -118,7 +118,21 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
         </Box>
 
         <div id='drawer-body' className='chat-container'>
-          {chatMessages}
+          {gameData.chatMessages?.length > 0 ? (
+            chatMessages
+          ) : (
+            <img
+              src={noMessageImg}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%,-50%)',
+                width: 'calc(100% - 25px)'
+              }}
+              alt='no messages'
+            />
+          )}
         </div>
 
         <Box
