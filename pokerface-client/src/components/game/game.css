@@ -49,3 +49,7 @@
 .no-tap-highlight {
   -webkit-tap-highlight-color: transparent;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

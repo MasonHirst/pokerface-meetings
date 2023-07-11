@@ -72,19 +72,23 @@ const GameRoom = () => {
 
   useEffect(() => {
     toggleActiveSocket(true)
-  }, [])
 
-  useEffect(() => {
     return () => {
       sendMessage('playerLeaveGame', {})
     }
-  }, [playerName])
+  }, [])
 
   useEffect(() => {
     if (!footerHeight || !headerHeight) return
     const availableHeight = window.innerHeight - footerHeight - headerHeight
     setAvailableBodyHeight(availableHeight - 1)
-  }, [footerHeight, headerHeight, viewportHeight, viewportWidth])
+  }, [
+    footerHeight,
+    headerHeight,
+    viewportHeight,
+    viewportWidth,
+    chatDrawerOpen,
+  ])
 
   return (
     <>
@@ -107,8 +111,10 @@ const GameRoom = () => {
           }}
         >
           <Box
+            className='hide-scrollbar'
             sx={{
               minHeight: '100vh',
+              maxHeight: '100vh',
               width: is750Screen
                 ? '100vw'
                 : chatDrawerOpen
