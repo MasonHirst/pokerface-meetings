@@ -75,9 +75,11 @@ FIXED------ build a feature where the game creator can choose who can make chang
 
 FIXED------ change the button on the contact dev page to say "done" or something, and it closes the tab.
 
-use Redis in the server to better store game rooms
+FIXED------ implement a basic chat feature
 
-BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
+FIXED------ BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
+
+use Redis in the server to better store game rooms
 
 BUG - on mobile, tapping the deck card twice pops up a google thingy
 
@@ -87,5 +89,4 @@ add tooltips or something to power collapses to explain what they are
 
 make the server broadcast function only send the necesary info from the message recieved. So if the player powers changed, it would only send (gameRooms[gameId].gameSettings.playersPowers). The front end would need to handle it correctly
 
-implement a basic chat feature
-
+bug - users can change their name while in a game room to exactly another players name.

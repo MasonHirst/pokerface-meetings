@@ -78,6 +78,7 @@ const ContactDev = () => {
               spellCheck={false}
               inputProps={{ maxLength: 20 }}
               label="Name (optional)"
+              autoFocus
               disabled={disableForm}
               variant="outlined"
               value={nameInput}

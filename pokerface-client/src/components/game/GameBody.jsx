@@ -4,16 +4,27 @@ import { GameContext } from '../../context/GameContext'
 import useClipboard from 'react-use-clipboard'
 import GraphemeSplitter from 'grapheme-splitter'
 import muiStyles from '../../style/muiStyles'
-import { useMediaQuery } from '@mui/material'
+import { IconButton, useMediaQuery } from '@mui/material'
 import { toast } from 'react-toastify'
 import PurpleDeckCard from './PurpleDeckCard'
-const { Box, Typography, Button, ContentCopyIcon, TextField, EditIcon, Alert } =
-  muiStyles
+const {
+  Box,
+  Typography,
+  Button,
+  ContentCopyIcon,
+  TextField,
+  EditIcon,
+  Alert,
+  CheckIcon,
+  CloseIcon,
+  blue,
+} = muiStyles
 
 const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const isSmallScreen = useMediaQuery('(max-width:600px)')
   const isXsScreen = useMediaQuery('(max-width:400px)')
-  const { gameData, sendMessage, checkPowerLvl, iHaveBeenKicked } = useContext(GameContext)
+  const { gameData, sendMessage, checkPowerLvl, iHaveBeenKicked } =
+    useContext(GameContext)
   const gameBodyRef = useRef()
   const [playersData, setPlayersData] = useState([])
   const [gameState, setGameState] = useState('')
@@ -115,89 +126,6 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     }
   }
 
-  // const playersData = [
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 1',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 2',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 3',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 4',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 5',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 6',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 7',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 8',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 9',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 10',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 11',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 12',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 13',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 14',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 15',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 16',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 17',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 18',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 19',
-  //   },
-  //   {
-  //     currentChoice: '🤣',
-  //     playerName: 'Player 20',
-  //   },
-  // ]
-
   if (gameState === 'voting') {
     playersData.forEach((player, index) => {
       if (!player) return
@@ -220,10 +148,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
           key={index}
           bottomMessageMultiplier={fontSizeMultiplier}
           fontSizeMultiplier={1.3}
-          bottomMessageMargin="3px 0 0 0"
+          bottomMessageMargin='3px 0 0 0'
           showBgImage={player.currentChoice}
-          borderColor="#902bf5"
-          bgColor="#f2f2f2"
+          borderColor='#902bf5'
+          bgColor='#f2f2f2'
           cardImage={player.playerCardImage}
           bottomMessage={player.playerName}
           sizeMultiplier={cardSizeMultiplier}
@@ -250,10 +178,9 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
           bottomMessageMultiplier={fontSizeMultiplier}
           fontSizeMultiplier={1.3}
           card={player[1]}
-          // showCard={true}
-          bottomMessageMargin="3px 0 0 0"
-          borderColor="#902bf5"
-          bgColor="#f2f2f2"
+          bottomMessageMargin='3px 0 0 0'
+          borderColor='#902bf5'
+          bgColor='#f2f2f2'
           bottomMessage={player[0]}
           sizeMultiplier={cardSizeMultiplier}
         />
@@ -265,7 +192,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   // Yes, I do need the three parent boxes for scroll styling
   return (
     <Box
-      className="game-body-container"
+      className='game-body-container'
       ref={gameBodyRef}
       sx={{
         width: '100%',
@@ -277,11 +204,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
         alignItems: 'center',
         overflowX: 'auto',
         overflowY: 'auto',
-        // backgroundColor: '#2196f3',
       }}
     >
       <Box
-        className="game-body"
+        className='game-body'
         sx={{
           maxHeight: '100%',
           maxWidth: '100%',
@@ -301,7 +227,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
         >
           {iHaveBeenKicked && (
             <Alert
-              severity="error"
+              severity='error'
               sx={{
                 width: '100%',
                 marginBottom: '20px',
@@ -309,13 +235,12 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 fontWeight: 'bold',
               }}
             >
-              You have been kicked from this game, and are no longer getting updates
+              You have been kicked from this game, and are no longer getting
+              updates
             </Alert>
           )}
 
-          {(gameData?.gameSettings?.currentIssueName &&
-            gameData?.gameSettings?.currentIssueName) ||
-          editingIssueName ? (
+          {gameData?.gameSettings?.currentIssueName || editingIssueName ? (
             <Box
               sx={{
                 marginBottom: '20px',
@@ -333,33 +258,14 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
               >
                 Matter at hand:
               </Typography>
-              {editingIssueName ? (
-                <TextField
-                  inputRef={newIssueNameRef}
-                  size="small"
-                  spellCheck="false"
-                  value={newIssueName}
-                  onChange={(e) => setNewIssueName(e.target.value)}
-                  onBlur={() => {
-                    submitNewIssueName()
-                    setEditingIssueName(false)
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      submitNewIssueName()
-                      setEditingIssueName(false)
-                    }
-                  }}
-                  inputProps={{
-                    maxLength: 75,
-                    style: {
-                      fontSize: isSmallScreen ? '16px' : '20px',
-                      width: 'clamp(240px, 50vw, 500px)',
-                      textAlign: 'center',
-                    },
-                  }}
-                />
-              ) : (
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+              >
                 <Typography
                   sx={{
                     fontSize: {
@@ -370,20 +276,105 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                     },
                   }}
                   className={gameState === 'voting' ? 'cursor-pointer' : ''}
-                  onClick={() => {
-                    if (gameState !== 'voting') return
-                    if (!checkPowerLvl('low')) return toast.warning('You need low power to do this')
-                    setEditingIssueName(true)
-                    setTimeout(() => {
-                      newIssueNameRef.current.focus()
-                      if (newIssueNameRef.current) {
-                        newIssueNameRef.current.select()
-                      }
-                    }, 50)
-                  }}
                 >
                   {gameData.gameSettings.currentIssueName}
                 </Typography>
+                {!editingIssueName && gameState === 'voting' && (
+                  <IconButton
+                    sx={
+                      {
+                        // opacity: 0.8,
+                      }
+                    }
+                    onClick={() => {
+                      if (gameState !== 'voting') return
+                      if (!checkPowerLvl('low'))
+                        return toast.warning('You need low power to do this')
+                      setEditingIssueName(true)
+                      setTimeout(() => {
+                        newIssueNameRef.current.focus()
+                        if (newIssueNameRef.current) {
+                          newIssueNameRef.current.select()
+                        }
+                      }, 50)
+                    }}
+                  >
+                    <EditIcon
+                      // color='primary'
+                      sx={{
+                        fontSize: { xs: '23px', sm: '26px' },
+                        marginTop: '-4px',
+                        color: blue[300],
+                      }}
+                    />
+                  </IconButton>
+                )}
+              </Box>
+
+              {editingIssueName && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    flexDirection: isSmallScreen ? 'column' : 'row',
+                  }}
+                >
+                  <TextField
+                    inputRef={newIssueNameRef}
+                    size='small'
+                    spellCheck='false'
+                    value={newIssueName}
+                    onChange={(e) => setNewIssueName(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        submitNewIssueName()
+                        setEditingIssueName(false)
+                      }
+                    }}
+                    inputProps={{
+                      maxLength: 250,
+                      style: {
+                        fontSize: isSmallScreen ? '16px' : '20px',
+                        width: 'clamp(240px, 50vw, 500px)',
+                        textAlign: 'center',
+                      },
+                    }}
+                  />
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: isSmallScreen ? '10px' : '1px',
+                  }}>
+                    <IconButton
+                      sx={{
+                        padding: '3px',
+                      }}
+                      onClick={() => {
+                        setEditingIssueName(false)
+                      }}
+                    >
+                      <CloseIcon
+                        color='primary'
+                        sx={{ fontSize: '24px' }}
+                      />
+                    </IconButton>
+                    <IconButton
+                      sx={{
+                        padding: '3px',
+                      }}
+                      onClick={() => {
+                        submitNewIssueName()
+                        setEditingIssueName(false)
+                      }}
+                    >
+                      <CheckIcon
+                        color='primary'
+                        sx={{ fontSize: '24px' }}
+                      />
+                    </IconButton>
+                  </Box>
+                </Box>
               )}
             </Box>
           ) : (
@@ -406,7 +397,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   fontSize: isSmallScreen ? '16px' : '20px',
                 }}
               >
-                Set voting topic
+                Set vote subject
               </Button>
             )
           )}
@@ -422,14 +413,14 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 }}
               >
                 <Typography
-                  variant="body1"
+                  variant='body1'
                   sx={{ fontSize: isSmallScreen ? '13px' : '16px' }}
                 >
                   It's just you here 😞
                 </Typography>
                 {isCopied ? (
                   <Typography
-                    variant="body1"
+                    variant='body1'
                     sx={{
                       color: '#4caf50',
                       marginBottom: '14px',
@@ -442,7 +433,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 ) : (
                   <Button
                     startIcon={<ContentCopyIcon />}
-                    variant="text"
+                    variant='text'
                     sx={{
                       textTransform: 'none',
                       fontSize: isSmallScreen ? '16px' : '18px',
