@@ -29,11 +29,12 @@
   gap: 15px;
   padding: 0 10px;
   padding-bottom: 15px;
+  padding-top: 15px;
   background-color: rgba(0, 0, 0, 0.04);
   border-left: 1px solid rgba(0, 0, 0, 0.2);
   position: relative;
 }
-.chat-container::-webkit-scrollbar {
+/* .chat-container::-webkit-scrollbar {
   width: 9px;
 }
 .chat-container::-webkit-scrollbar-track {
@@ -43,7 +44,7 @@
 .chat-container::-webkit-scrollbar-thumb {
   background-color: rgba(128, 112, 112, 0.6);
   border-radius: 6px;
-}
+} */
 
 /* this class disables the highlighting effect when a user taps something on mobile. Causes unwanted popups */
 .no-tap-highlight {

@@ -94,6 +94,8 @@ import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import InputLabel from '@mui/material/InputLabel'
 import { ChevronRightOutlined } from '@mui/icons-material'
+import GifBoxOutlinedIcon from '@mui/icons-material/GifBoxOutlined'
+import GifOutlinedIcon from '@mui/icons-material/GifOutlined';
 
 const LightTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -108,6 +110,8 @@ const LightTooltip = styled(({ className, ...props }) => (
 }))
 
 let muiStyles = {
+  GifOutlinedIcon,
+  GifBoxOutlinedIcon,
   ChevronRightOutlined,
   FormControl,
   InputLabel,

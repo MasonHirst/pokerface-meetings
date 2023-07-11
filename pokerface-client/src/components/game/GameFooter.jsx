@@ -20,10 +20,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
   useEffect(() => {
     if (!footerRef.current) return
     setComponentHeight(footerRef.current.offsetHeight)
-  }, [
-    footerRef.current?.offsetHeight,
-    gameState,
-  ])
+  }, [footerRef.current?.offsetHeight, gameState])
 
   function submitChoice(card) {
     sendMessage('updatedChoice', { card })

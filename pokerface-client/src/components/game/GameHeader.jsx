@@ -307,6 +307,9 @@ const GameHeader = ({
             </IconButton>
           )}
           <IconButton
+            sx={{
+              padding: '14px',
+            }}
             onClick={() => {
               if (!chatDrawerOpen) {
                 if (gameData.chatMessages.length > 0) {
@@ -331,7 +334,7 @@ const GameHeader = ({
             >
               <ChatOutlinedIcon
                 color='white'
-                sx={{ fontSize: { sx: '22px', sm: '32px' } }}
+                sx={{ fontSize: { sx: '20px', sm: '25px' } }}
               />
             </Badge>
           </IconButton>

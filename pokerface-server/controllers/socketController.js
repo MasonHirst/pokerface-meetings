@@ -10,6 +10,7 @@ const {
   CLOUDINARY_NAME,
   SEND_IN_BLUE_API_KEY,
   EMAIL_TARGET,
+  TENOR_API_KEY,
 } = process.env
 cloudinary.config({
   cloud_name: CLOUDINARY_NAME,
@@ -404,6 +405,7 @@ module.exports = {
         voteHistory: [],
         chatMessages: [],
         players: {},
+        tenorApi: TENOR_API_KEY,
       }
       res.send(gameRooms[gameId])
       // console.log('game created: ', gameRooms[gameId])
