@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect, useRef } from 'react'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
 import ChatMessage from './ChatMessage'
@@ -13,6 +13,7 @@ const {
   Divider,
   ChevronRightOutlined,
   TextField,
+  SendIcon,
 } = muiStyles
 
 const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
@@ -21,23 +22,42 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
   const is750Screen = useMediaQuery('(max-width: 750px)')
   const isMedScreen = useMediaQuery('(max-width: 900px)')
   const [chatInput, setChatInput] = useState('')
+  const [chatMessages, setChatMessages] = useState([])
 
-  const mappedMessages =
-    gameData.chatMessages &&
-    gameData.chatMessages.map((msg, i) => <ChatMessage key={i} msg={msg} />)
+  useEffect(() => {
+    if (!gameData.chatMessages) return
+    const mappedMessages = gameData.chatMessages.map((msg, i) => (
+      <ChatMessage key={i} msg={msg} />
+    ))
+    setChatMessages(mappedMessages)
+  }, [gameData.chatMessages])
+
+  useEffect(() => {
+
+    return () => {
+      console.log('chat drawer unmounted')
+    }
+  }, [])
 
   function handleSubmitMessage(e) {
-    e.preventDefault()
+    if (e) e.preventDefault()
     const messageBody = {
       senderName: localStorage.getItem('playerName'),
       senderPhoto: localStorage.getItem('pokerCardImage'),
       message: chatInput,
       sendTime: Date.now(),
       type: 'text',
+      chatNumber: null,
     }
     sendMessage('newChatMessage', messageBody)
-
     setChatInput('')
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmitMessage()
+    }
   }
 
   return (
@@ -51,7 +71,8 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: drawerWidth,
-          boxSizing: 'border-box',
+          marginLeft: '-5px',
+          border: 'none',
         },
       }}
     >
@@ -62,76 +83,69 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
           justifyContent: 'space-between',
           height: '100%',
           width: '100%',
-          position: 'relative',
         }}
       >
         <Box
           id='drawer-header'
           sx={{
-            minHeight: '45px',
+            minHeight: { xs: '45px', sm: '65px' },
+            // height: '102px',
             display: 'flex',
-            alignItems: 'center',
-            position: 'sticky',
-            top: 0,
-            backgroundColor: blue[300],
-            boxShadow: '0px 2px 5px 0px rgba(0,0,0,0.45)',
             width: '100%',
-            zIndex: 1,
+            alignItems: 'center',
+            justifyContent: is750Screen ? 'flex-start' : 'center',
+            backgroundColor: blue[500],
+            boxShadow: 'rgba(99, 99, 99, 0.5) 0px 3px 8px 0px',
           }}
         >
           {is750Screen && (
             <IconButton onClick={toggleChatDrawer}>
-              <ChevronRightOutlined sx={{ fontSize: '30px' }} />
+              <ChevronRightOutlined
+                sx={{ fontSize: '30px', color: '#ffffff' }}
+              />
             </IconButton>
           )}
-          <Typography variant='h6' sx={{ marginLeft: 1 }}>
+          <Typography
+            variant='h6'
+            sx={{
+              marginLeft: 1,
+              fontSize: { xs: '20px', sm: '24px' },
+              color: '#ffffff',
+            }}
+          >
             Chat room
           </Typography>
         </Box>
-        <Divider />
+
+        <div id='drawer-body' className='chat-container'>
+          {chatMessages}
+        </div>
 
         <Box
-          id='drawer-body'
+          id='drawer-footer'
           sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            flexDirection: 'column',
-            gap: '15px',
-            padding: '0 10px',
-            paddingBottom: '20px',
-            paddingTop: '50px',
+            width: '100%',
+            boxShadow:
+              'rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px',
+            padding: { xs: '5px', sm: '10px 5px' },
+            borderLeft: '1px solid rgba(0, 0, 0, 0.2)',
           }}
         >
-          {mappedMessages}
-        </Box>
-
-        <Box id='drawer-footer' sx={{
-          position: 'sticky',
-          bottom: 0,
-          width: '100%',
-          backgroundColor: blue[300],
-          zIndex: 1,
-        }}>
-          <form onSubmit={handleSubmitMessage} style={{ position: 'relative' }}>
+          <form onSubmit={handleSubmitMessage} style={{ display: 'flex' }}>
             <TextField
               fullWidth
+              autoFocus
               variant='outlined'
               placeholder='Message'
               size='small'
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              sx={{ marginBottom: 1 }}
+              onKeyDown={handleKeyDown}
+              multiline
+              maxRows={3}
             />
-            <IconButton
-              type='submit'
-              sx={{
-                position: 'absolute',
-                right: 0,
-                bottom: 0,
-                backgroundColor: blue[300],
-              }}
-            >
-              <ChevronRightOutlined sx={{ fontSize: '30px' }} />
+            <IconButton type='submit' color='primary'>
+              <SendIcon sx={{ fontSize: '22px' }} />
             </IconButton>
           </form>
         </Box>

@@ -89,7 +89,7 @@ const GameRoom = () => {
   return (
     <>
       <ToastContainer
-        position="top-center"
+        position='top-center'
         newestOnTop
         draggable
         hideProgressBar={false}
@@ -97,11 +97,11 @@ const GameRoom = () => {
         transition={Slide}
         pauseOnHover
         pauseOnFocusLoss={false}
-        theme="light"
+        theme='light'
       />
       {!joinGameLoading && playerName ? (
         <Box
-          id="wrapper-for-the-app-and-chat-drawer"
+          id='wrapper-for-the-app-and-chat-drawer'
           sx={{
             flexGrow: 1,
           }}
@@ -136,20 +136,22 @@ const GameRoom = () => {
               setComponentHeight={setFooterHeight}
             />
           </Box>
-          <ChatDrawer
-            drawerWidth={drawerWidth}
-            chatDrawerOpen={chatDrawerOpen}
-            toggleChatDrawer={toggleChatDrawer}
-          />
+          {chatDrawerOpen && (
+            <ChatDrawer
+              drawerWidth={drawerWidth}
+              chatDrawerOpen={chatDrawerOpen}
+              toggleChatDrawer={toggleChatDrawer}
+            />
+          )}
         </Box>
       ) : (
         joinGameLoading && (
           <Box>
             <LinearProgress
-              size="large"
+              size='large'
               sx={{ position: 'fixed', top: 0, width: '100vw' }}
             />
-            <Typography variant="h4" align="center" sx={{ marginTop: '20px' }}>
+            <Typography variant='h4' align='center' sx={{ marginTop: '20px' }}>
               Joining Game...
             </Typography>
           </Box>
@@ -179,7 +181,7 @@ const GameRoom = () => {
             justifyContent: 'center',
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '22px' }}>
+          <Typography variant='h6' sx={{ fontSize: '22px' }}>
             Enter a display name to join game
           </Typography>
           <TextField
@@ -189,14 +191,14 @@ const GameRoom = () => {
             fullWidth
             autoFocus
             error={!!nameError}
-            label="Player Name"
-            placeholder="Enter your name"
+            label='Player Name'
+            placeholder='Enter your name'
             helperText={nameError}
           />
           <Button
             fullWidth
-            type="submit"
-            variant="contained"
+            type='submit'
+            variant='contained'
             sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '18px' }}
             disableElevation
           >

@@ -2,7 +2,8 @@ import React from 'react'
 import muiStyles from '../../style/muiStyles'
 import PurpleDeckCard from './PurpleDeckCard'
 
-const { Box, Typography, Avatar, blue } = muiStyles
+const { Box, Typography, blue } = muiStyles
+
 
 const ChatMessage = ({ msg }) => {
   return (
@@ -15,13 +16,6 @@ const ChatMessage = ({ msg }) => {
             gap: '5px',
           }}
         >
-          {/* <Avatar
-            src={msg.senderPhoto}
-            sx={{
-              width: { xs: '30px', sm: '45px' },
-              height: { xs: '30px', sm: '45px' },
-            }}
-          /> */}
           <PurpleDeckCard
             cardImage={msg.senderPhoto}
             showBgImage

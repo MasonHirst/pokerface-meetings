@@ -329,12 +329,12 @@ async function startSocketServer(app, port) {
           if (!gameRooms[gameId])
             return console.error('game room not found (newChatMessage) function')
 
-          console.log('new chat message: ', body)
+          body.chatNumber = gameRooms[gameId].chatMessages[0]?.chatNumber + 1 || 1
           if (gameRooms[gameId].chatMessages.length >= 30) {
             // delete the oldest message if there are at least 30 messages
             gameRooms[gameId].chatMessages.shift()
           }
-          gameRooms[gameId].chatMessages.push(body)
+          gameRooms[gameId].chatMessages = [body, ...gameRooms[gameId].chatMessages]
           broadcastToRoom(gameId, 'gameUpdated')
         }
       })
