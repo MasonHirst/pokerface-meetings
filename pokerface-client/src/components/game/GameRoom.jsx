@@ -5,7 +5,6 @@ import GameBody from './GameBody'
 import GameFooter from './GameFooter'
 import { GameContext } from '../../context/GameContext'
 import { ToastContainer, Slide } from 'react-toastify'
-import { toast } from 'react-toastify'
 import ChatDrawer from './ChatDrawer'
 import muiStyles from '../../style/muiStyles'
 const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
@@ -33,25 +32,6 @@ const GameRoom = () => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
   const bodyRef = useRef()
-  const [newChatFeatureSeen, setNewChatFeatureSeen] = useState(true)
-
-  useEffect(() => {
-    if (
-      chatDrawerOpen &&
-      !!sessionStorage.getItem('pokerfaceNewChatFeatureSeen') === false
-    ) {
-      sessionStorage.setItem('pokerfaceNewChatFeatureSeen', true)
-    }
-    if (sessionStorage.getItem('pokerfaceNewChatFeatureSeen')) {
-      setNewChatFeatureSeen(true)
-    } else {
-      setNewChatFeatureSeen(false)
-        console.log('do the dang toast')
-        toast('New chat Feature!', {
-          autoClose: 5000,
-        })
-    }
-  }, [chatDrawerOpen])
 
   function updateName(e) {
     e.preventDefault()
@@ -146,7 +126,6 @@ const GameRoom = () => {
             }}
           >
             <GameHeader
-              pulseChatBtn={!newChatFeatureSeen}
               shadowOn={bodyIsScrolling}
               setComponentHeight={setHeaderHeight}
               setChatDrawerOpen={setChatDrawerOpen}

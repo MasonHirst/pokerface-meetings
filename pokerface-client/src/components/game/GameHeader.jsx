@@ -11,6 +11,8 @@ import VoteHistory from '../dialog/VoteHistory'
 import muiStyles from '../../style/muiStyles'
 import Swal from 'sweetalert2'
 import PurpleDeckCard from './PurpleDeckCard'
+import { toast } from 'react-toastify'
+
 const {
   Typography,
   LogoutIcon,
@@ -40,7 +42,6 @@ const GameHeader = ({
   shadowOn,
   setChatDrawerOpen,
   chatDrawerOpen,
-  pulseChatBtn,
 }) => {
   const navigate = useNavigate()
   const footerRef = useRef()
@@ -62,6 +63,27 @@ const GameHeader = ({
   })
   const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+  const [newChatFeatureSeen, setNewChatFeatureSeen] = useState(true)
+
+  useEffect(() => {
+    if (!gameData.gameRoomId) return
+    if (
+      chatDrawerOpen &&
+      !!sessionStorage.getItem('pokerfaceNewChatFeatureSeen') === false
+    ) {
+      sessionStorage.setItem('pokerfaceNewChatFeatureSeen', true)
+    }
+    if (sessionStorage.getItem('pokerfaceNewChatFeatureSeen')) {
+      setNewChatFeatureSeen(true)
+    } else {
+      setNewChatFeatureSeen(false)
+      setTimeout(() => {
+        toast('New chat Feature!', {
+          autoClose: 5000,
+        })
+      }, 400)
+    }
+  }, [chatDrawerOpen, gameData])
 
   useEffect(() => {
     if (!gameData.chatMessages) return
@@ -86,7 +108,6 @@ const GameHeader = ({
       }
     }
   }, [gameData.chatMessages])
-
 
   useEffect(() => {
     if (!gameData || !gameData?.gameSettings?.gameRoomName) return
@@ -130,7 +151,10 @@ const GameHeader = ({
   function getBadgeCount() {
     if (!gameData.chatMessages) return 0
     if (gameData.chatMessages.length < 1) return 0
-    return gameData.chatMessages[0].chatNumber - +sessionStorage.getItem('pokerfaceChatNumber')
+    return (
+      gameData.chatMessages[0].chatNumber -
+      +sessionStorage.getItem('pokerfaceChatNumber')
+    )
   }
 
   useEffect(() => {
@@ -308,7 +332,7 @@ const GameHeader = ({
             </IconButton>
           )}
           <IconButton
-            className={pulseChatBtn && 'pulse-animation'}
+            className={!newChatFeatureSeen ? 'pulse-animation' : ''}
             sx={{
               padding: '14px',
             }}
@@ -317,8 +341,7 @@ const GameHeader = ({
                 if (gameData.chatMessages.length > 0) {
                   sessionStorage.setItem(
                     'pokerfaceChatNumber',
-                    gameData.chatMessages[0]
-                      .chatNumber
+                    gameData.chatMessages[0].chatNumber
                   )
                 } else {
                   sessionStorage.setItem('pokerfaceChatNumber', 0)
