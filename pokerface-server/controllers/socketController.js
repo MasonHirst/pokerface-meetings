@@ -40,8 +40,8 @@ function broadcastToRoom(gameRoomId, event_type) {
   removeUnusedGameRooms()
 }
 
-function broadCastToClient(PlaerToken, event_type) {
-  const client = clientsList[PlaerToken]
+function broadCastToClient(PlayerToken, event_type) {
+  const client = clientsList[PlayerToken]
   if (client && client.readyState === WebSocket.OPEN) {
     const body = JSON.stringify({ event_type })
     client.send(body)
@@ -329,6 +329,7 @@ async function startSocketServer(app, port) {
           if (!gameRooms[gameId])
             return console.error('game room not found (newChatMessage) function')
 
+          console.log('new chat message: ', body)
           if (gameRooms[gameId].chatMessages.length >= 30) {
             // delete the oldest message if there are at least 30 messages
             gameRooms[gameId].chatMessages.shift()

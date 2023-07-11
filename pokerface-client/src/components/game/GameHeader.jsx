@@ -286,7 +286,7 @@ const GameHeader = ({
               overlap="circular"
               // invisible={hideChatsNotifications}
             >
-              <ChatOutlinedIcon color="white" sx={{ fontSize: '22px' }} />
+              <ChatOutlinedIcon color="white" sx={{ fontSize: {sx: '22px', sm: '32px'} }} />
             </Badge>
           </IconButton>
         </Box>
