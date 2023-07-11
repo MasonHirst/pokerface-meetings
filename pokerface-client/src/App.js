@@ -5,7 +5,7 @@ import GameRouter from './components/game/GameRouter'
 function App() {
   
   return (
-    <div className="App" style={{}}>
+    <div className="App">
       <Routes>
         <Route path='/*' element={<HomeRouter />}/>
         <Route path='/game/*' element={<GameRouter />}/>

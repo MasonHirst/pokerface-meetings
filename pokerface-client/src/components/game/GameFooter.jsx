@@ -20,7 +20,10 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
   useEffect(() => {
     if (!footerRef.current) return
     setComponentHeight(footerRef.current.offsetHeight)
-  }, [footerRef.current?.offsetHeight, gameState])
+  }, [
+    footerRef.current?.offsetHeight,
+    gameState,
+  ])
 
   function submitChoice(card) {
     sendMessage('updatedChoice', { card })
@@ -45,23 +48,20 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
           card={card}
           length={length}
           clickable={gameState === 'voting'}
-          gameState={gameState}
           selected={
             gameData?.players[localStorage.getItem('localUserToken')]
               .currentChoice === card
           }
           cardMargin='20px 0 0 0'
-          borderColor="#902bf5"
+          borderColor='#902bf5'
         />
       )
     }
   })
 
-  
-
   return (
     <Box
-      className="game-footer"
+      className='game-footer'
       ref={footerRef}
       sx={{
         width: '100%',
@@ -83,21 +83,26 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
           <Box
             sx={{
               display: 'flex',
-              // paddingTop: '15px',
               gap: { xs: '10px', sm: '18px' },
               overflowX: 'auto',
               height: '100%',
               alignItems: 'flex-end',
               paddingBottom: '6px',
+              // paddingTop: '15px',
             }}
           >
             {mappedDeckCards}
           </Box>
         ) : (
-          <Typography variant="h6">No cards</Typography>
+          <Typography variant='h6'>No cards</Typography>
         )
       ) : (
-        <VoteSummary voteDetails={latestVoting} gameState={gameState} wrapMode={isSmallScreen} gameData={gameData} />
+        <VoteSummary
+          voteDetails={latestVoting}
+          gameState={gameState}
+          wrapMode={isSmallScreen}
+          gameData={gameData}
+        />
       )}
     </Box>
   )

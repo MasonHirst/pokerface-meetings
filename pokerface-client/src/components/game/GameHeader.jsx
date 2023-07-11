@@ -54,12 +54,38 @@ const GameHeader = ({
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const inviteLinkInputRef = useRef()
+  const [hideChatsNotifications, setHideChatsNotifications] = useState(true)
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
   })
   const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+
+  useEffect(() => {
+    if (!gameData.chatMessages) return
+    if (gameData.chatMessages.length < 1) {
+      sessionStorage.setItem('pokerfaceChatNumber', 0)
+      return
+    }
+    // if the chatDrawer is open, set the session storage number to the last message in the chat.
+    if (chatDrawerOpen) {
+      sessionStorage.setItem(
+        'pokerfaceChatNumber',
+        gameData.chatMessages[0].chatNumber
+      )
+      setHideChatsNotifications(true)
+    } else {
+      // if the chat drawer is closed when a new message comes in, set the notification to true
+      if (
+        gameData.chatMessages[0].chatNumber >
+        +sessionStorage.getItem('pokerfaceChatNumber')
+      ) {
+        setHideChatsNotifications(false)
+      }
+    }
+  }, [gameData.chatMessages])
+
 
   useEffect(() => {
     if (!gameData || !gameData?.gameSettings?.gameRoomName) return
@@ -100,6 +126,12 @@ const GameHeader = ({
     setAnchorEl(null)
   }
 
+  function getBadgeCount() {
+    if (!gameData.chatMessages) return 0
+    if (gameData.chatMessages.length < 1) return 0
+    return gameData.chatMessages[0].chatNumber - +sessionStorage.getItem('pokerfaceChatNumber')
+  }
+
   useEffect(() => {
     setTimeout(() => {
       if (inviteLinkInputRef.current) {
@@ -111,7 +143,7 @@ const GameHeader = ({
   return (
     <Box
       ref={footerRef}
-      className="game-header-container"
+      className='game-header-container'
       sx={{
         boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
@@ -124,7 +156,7 @@ const GameHeader = ({
       }}
     >
       <Box
-        className="game-header"
+        className='game-header'
         sx={{
           width: 'min(100%, 1200px)',
           height: '100%',
@@ -141,10 +173,10 @@ const GameHeader = ({
           }}
         >
           <img
-            className="cursor-pointer"
+            className='cursor-pointer'
             onClick={handleLeaveGame}
             src={pokerLogo}
-            alt="logo"
+            alt='logo'
             style={{
               height: isSmallScreen ? '46px' : '70px',
               display: isXsScreen && 'none',
@@ -152,9 +184,9 @@ const GameHeader = ({
           />
           <Box>
             <Button
-              variant="text"
+              variant='text'
               size={isSmallScreen ? 'small' : 'medium'}
-              color="white"
+              color='white'
               endIcon={<ExpandMoreIcon />}
               onClick={handleOpenGameSettings}
               sx={{
@@ -177,7 +209,7 @@ const GameHeader = ({
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
-            <Typography variant="h6">Game Settings</Typography>
+            <Typography variant='h6'>Game Settings</Typography>
           </MenuItem>
 
           <MenuItem
@@ -189,7 +221,7 @@ const GameHeader = ({
             <ListItemIcon>
               <PollOutlinedIcon />
             </ListItemIcon>
-            <Typography variant="h6">Vote History</Typography>
+            <Typography variant='h6'>Vote History</Typography>
           </MenuItem>
 
           <MenuItem
@@ -201,14 +233,14 @@ const GameHeader = ({
             <ListItemIcon>
               <LinkIcon />
             </ListItemIcon>
-            <Typography variant="h6">Invite players</Typography>
+            <Typography variant='h6'>Invite players</Typography>
           </MenuItem>
 
           <MenuItem onClick={handleLeaveGame}>
             <ListItemIcon>
               <LogoutIcon />
             </ListItemIcon>
-            <Typography variant="h6">Leave Game</Typography>
+            <Typography variant='h6'>Leave Game</Typography>
           </MenuItem>
         </Menu>
 
@@ -218,10 +250,10 @@ const GameHeader = ({
             isSmallScreen ||
               (!isMedScreen && !chatDrawerOpen && (
                 <Button
-                  color="white"
-                  size="large"
+                  color='white'
+                  size='large'
                   onClick={() => setShowInviteDialog(!showInviteDialog)}
-                  variant="outlined"
+                  variant='outlined'
                   sx={{
                     textTransform: 'none',
                     fontSize: '18px',
@@ -243,7 +275,7 @@ const GameHeader = ({
             <Button
               onClick={() => setDrawerOpen(!drawerOpen)}
               endIcon={<ExpandMoreIcon />}
-              color="white"
+              color='white'
               sx={{
                 textTransform: 'none',
                 gap: '12px',
@@ -252,7 +284,7 @@ const GameHeader = ({
               <PurpleDeckCard
                 showBgImage
                 showCard={false}
-                borderColor="white"
+                borderColor='white'
                 borderThickness={1}
                 sizeMultiplier={0.6}
                 cardImage={localStorage.getItem('pokerCardImage')}
@@ -271,28 +303,42 @@ const GameHeader = ({
               sx={{ padding: { xs: '7px', sm: '12px' } }}
               onClick={() => setDrawerOpen(!drawerOpen)}
             >
-              <MenuIcon color="white" />
+              <MenuIcon color='white' />
             </IconButton>
           )}
           <IconButton
             onClick={() => {
-              // set chat drawer open to the opposite of what it currently is
+              if (!chatDrawerOpen) {
+                if (gameData.chatMessages.length > 0) {
+                  sessionStorage.setItem(
+                    'pokerfaceChatNumber',
+                    gameData.chatMessages[0]
+                      .chatNumber
+                  )
+                } else {
+                  sessionStorage.setItem('pokerfaceChatNumber', 0)
+                }
+                setHideChatsNotifications(true)
+              }
               setChatDrawerOpen(!chatDrawerOpen)
             }}
           >
             <Badge
-              color="error"
-              variant="dot"
-              overlap="circular"
-              // invisible={hideChatsNotifications}
+              color='primary'
+              overlap='circular'
+              badgeContent={getBadgeCount()}
+              invisible={hideChatsNotifications}
             >
-              <ChatOutlinedIcon color="white" sx={{ fontSize: '22px' }} />
+              <ChatOutlinedIcon
+                color='white'
+                sx={{ fontSize: { sx: '22px', sm: '32px' } }}
+              />
             </Badge>
           </IconButton>
         </Box>
 
         <Drawer
-          anchor="right"
+          anchor='right'
           open={drawerOpen}
           onClose={() => setDrawerOpen(!drawerOpen)}
         >
@@ -314,20 +360,20 @@ const GameHeader = ({
               }}
             >
               <Box sx={{ display: 'flex', gap: '10px' }}>
-                <img src={pokerLogo} width={50} alt="logo" />
+                <img src={pokerLogo} width={50} alt='logo' />
                 <Box>
                   <Typography
-                    color="primary"
+                    color='primary'
                     sx={{ fontSize: '20px', fontWeight: 'bold' }}
                   >
                     Pokerface
                   </Typography>
-                  <Typography sx={{ fontSize: '15px' }} color="GrayText">
+                  <Typography sx={{ fontSize: '15px' }} color='GrayText'>
                     By Mason Hirst
                   </Typography>
                 </Box>
               </Box>
-              <Tooltip title="Close drawer" arrow>
+              <Tooltip title='Close drawer' arrow>
                 <IconButton
                   onClick={() => setDrawerOpen(!drawerOpen)}
                   sx={{
@@ -339,7 +385,7 @@ const GameHeader = ({
                 </IconButton>
               </Tooltip>
             </Box>
-            <Tooltip title="Edit profile" arrow enterDelay={700}>
+            <Tooltip title='Edit profile' arrow enterDelay={700}>
               <MenuItem
                 sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                 onClick={() => {
@@ -355,7 +401,7 @@ const GameHeader = ({
                   sizeMultiplier={0.8}
                   cardImage={localStorage.getItem('pokerCardImage')}
                 />
-                <Typography variant="h6">
+                <Typography variant='h6'>
                   {localStorage.getItem('playerName')}
                 </Typography>
                 <EditIcon />
@@ -364,8 +410,8 @@ const GameHeader = ({
 
             <Button
               href={`${document.location.origin}/contact`}
-              target="_blank"
-              variant="contained"
+              target='_blank'
+              variant='contained'
               disableElevation
               fullWidth
               sx={{
@@ -399,7 +445,7 @@ const GameHeader = ({
         >
           <IconButton
             sx={{ position: 'absolute', top: 7, right: 5 }}
-            aria-label="close"
+            aria-label='close'
             onClick={() => setShowInviteDialog(!showInviteDialog)}
           >
             <CloseIcon />
@@ -419,7 +465,7 @@ const GameHeader = ({
             value={window.location.href}
           />
           <Button
-            variant="contained"
+            variant='contained'
             disableElevation
             fullWidth
             sx={{ textTransform: 'none', fontSize: '18px', fontWeight: 'bold' }}

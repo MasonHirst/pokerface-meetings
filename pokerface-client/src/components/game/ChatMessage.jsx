@@ -1,8 +1,52 @@
 import React from 'react'
+import muiStyles from '../../style/muiStyles'
+import PurpleDeckCard from './PurpleDeckCard'
 
-const ChatMessage = () => {
+const { Box, Typography, blue } = muiStyles
+
+
+const ChatMessage = ({ msg }) => {
   return (
-    <div>ChatMessage</div>
+    <>
+      {msg.type === 'text' ? (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '5px',
+          }}
+        >
+          <PurpleDeckCard
+            cardImage={msg.senderPhoto}
+            showBgImage
+            sizeMultiplier={0.5}
+            borderThickness={.5}
+          />
+          <Box sx={{}}>
+            <Typography
+              variant='body1'
+              sx={{ fontWeight: 'bold', fontSize: { xs: '15px', sm: '17px' } }}
+            >
+              {msg.senderName}
+            </Typography>
+            <Typography
+              variant='body2'
+              sx={{ fontSize: { xs: '14px', sm: '16px' } }}
+            >
+              {msg.message}
+            </Typography>
+          </Box>
+        </Box>
+      ) : (
+        <img
+          src={msg.message}
+          alt='chat image'
+          style={{
+            width: 'min(80%, 300px)',
+          }}
+        />
+      )}
+    </>
   )
 }
 
