@@ -40,6 +40,7 @@ const GameHeader = ({
   shadowOn,
   setChatDrawerOpen,
   chatDrawerOpen,
+  pulseChatBtn,
 }) => {
   const navigate = useNavigate()
   const footerRef = useRef()
@@ -307,6 +308,7 @@ const GameHeader = ({
             </IconButton>
           )}
           <IconButton
+            className={pulseChatBtn && 'pulse-animation'}
             sx={{
               padding: '14px',
             }}
@@ -334,7 +336,7 @@ const GameHeader = ({
             >
               <ChatOutlinedIcon
                 color='white'
-                sx={{ fontSize: { sx: '20px', sm: '25px' } }}
+                sx={{ fontSize: { sx: '24px', sm: '28px' } }}
               />
             </Badge>
           </IconButton>
