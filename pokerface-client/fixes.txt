@@ -104,3 +104,5 @@ bug - kicked players can still send messages. I need to check if a player is in 
 bug - I gave malena high power, then she tried to give herself high power, and the app crashed. error said "cannot read property 'powerLevel' of undefined"
 
 bug - selecting a really tall gif causes bad styling
+
+add an info marker that tells you that there is a 30 message limit

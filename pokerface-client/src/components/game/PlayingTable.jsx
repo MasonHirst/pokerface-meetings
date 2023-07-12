@@ -44,8 +44,6 @@ const PlayingTable = ({ disableButton }) => {
   }
 
   function updateGameState() {
-    console.log(gameData.gameSettings.revealPowerReq)
-    
     if (!checkPowerLvl(gameData.gameSettings.revealPowerReq)) return toast.warning('You need more power to reveal cards')
     sendMessage('updateGameState', {
       gameState: gameState === 'voting' ? 'reveal' : 'voting',

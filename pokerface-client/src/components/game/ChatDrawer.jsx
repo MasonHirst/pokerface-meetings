@@ -125,18 +125,15 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
             display: 'flex',
             width: '100%',
             alignItems: 'center',
-            justifyContent: is750Screen ? 'flex-start' : 'center',
+            justifyContent: 'flex-start',
+            gap: '10px',
             backgroundColor: blue[500],
             boxShadow: 'rgba(99, 99, 99, 0.5) 0px 3px 8px 0px',
           }}
         >
-          {/* {is750Screen && ( */}
-            <IconButton onClick={toggleChatDrawer}>
-              <ChevronRightOutlined
-                sx={{ fontSize: '30px', color: '#ffffff' }}
-              />
-            </IconButton>
-          {/* )} */}
+          <IconButton onClick={toggleChatDrawer}>
+            <ChevronRightOutlined sx={{ fontSize: '30px', color: '#ffffff' }} />
+          </IconButton>
           <Typography
             variant='h6'
             sx={{
