@@ -1,5 +1,4 @@
 const { WebSocketServer, WebSocket } = require('ws')
-const { v4: uuidv4, validate: validateUUID } = require('uuid')
 require('dotenv').config()
 const SibApiV3Sdk = require('sib-api-v3-sdk')
 const cloudinary = require('cloudinary')
@@ -394,7 +393,6 @@ module.exports = {
     const { gameName, deck, gameHost } = req.body
     try {
       const gameId = generateRandomId(6, Object.keys(gameRooms))
-      // const gameId = uuidv4()
       if (!gameName || !gameId)
         return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
