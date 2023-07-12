@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.0",
     "nodemon": "^2.0.22",
     "path": "^0.12.7",
+    "random-word-slugs": "^0.1.7",
     "sib-api-v3-sdk": "^8.5.0",
     "ws": "^8.13.0"
   },

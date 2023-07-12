@@ -2,6 +2,7 @@ const { WebSocketServer, WebSocket } = require('ws')
 require('dotenv').config()
 const SibApiV3Sdk = require('sib-api-v3-sdk')
 const cloudinary = require('cloudinary')
+const { generateSlug } = require('random-word-slugs')
 
 const {
   CLOUDINARY_SECRET,
@@ -392,7 +393,15 @@ module.exports = {
   createNewGame: async (req, res) => {
     const { gameName, deck, gameHost } = req.body
     try {
-      const gameId = generateRandomId(6, Object.keys(gameRooms))
+      function getRandomWords() {
+        // use the random-word-slugs package to generate a random game id, and make sure it doesnt already exist
+        let randomId = generateSlug()
+        while (Object.keys(gameRooms).includes(randomId)) {
+          randomId = generateSlug()
+        }
+        return randomId
+      }
+      const gameId = getRandomWords()
       if (!gameName || !gameId)
         return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
@@ -513,25 +522,4 @@ module.exports = {
       res.status(500).send(err)
     }
   },
-}
-
-function generateRandomId(length, existingIds) {
-  const characters =
-    'abcdefghijklmnopqrstuvwxyz0123456789'
-  let randomId = ''
-
-  let isUnique = false
-  while (!isUnique) {
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length)
-      randomId += characters.charAt(randomIndex)
-    }
-
-    if (!existingIds.includes(randomId)) {
-      isUnique = true
-    } else {
-      randomId = ''
-    }
-  }
-  return randomId
 }
