@@ -2,11 +2,12 @@ import React, { useContext, useState, useEffect } from 'react'
 import { GameContext } from '../../context/GameContext'
 import { useMediaQuery } from '@mui/material'
 import muiStyles from '../../style/muiStyles'
+import { toast } from 'react-toastify'
 import tableTop from '../../assets/table-top.jpeg'
 const { Card, Typography, Button, blue } = muiStyles
 
 const PlayingTable = ({ disableButton }) => {
-  const { gameData, sendMessage } = useContext(GameContext)
+  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
   const isXsScreen = useMediaQuery('(max-width: 400px)')
   const [playersData, setPlayersData] = useState([])
@@ -43,6 +44,9 @@ const PlayingTable = ({ disableButton }) => {
   }
 
   function updateGameState() {
+    console.log(gameData.gameSettings.revealPowerReq)
+    
+    if (!checkPowerLvl(gameData.gameSettings.revealPowerReq)) return toast.warning('You need more power to reveal cards')
     sendMessage('updateGameState', {
       gameState: gameState === 'voting' ? 'reveal' : 'voting',
     })

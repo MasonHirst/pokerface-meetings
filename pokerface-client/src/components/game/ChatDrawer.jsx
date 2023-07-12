@@ -130,13 +130,13 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
             boxShadow: 'rgba(99, 99, 99, 0.5) 0px 3px 8px 0px',
           }}
         >
-          {is750Screen && (
+          {/* {is750Screen && ( */}
             <IconButton onClick={toggleChatDrawer}>
               <ChevronRightOutlined
                 sx={{ fontSize: '30px', color: '#ffffff' }}
               />
             </IconButton>
-          )}
+          {/* )} */}
           <Typography
             variant='h6'
             sx={{

@@ -182,6 +182,7 @@ async function startSocketServer(app, port) {
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
         const { type, body, gameId, token } = dataBody
+        if (!Object.keys(gameRooms[gameId].players).includes(token)) return console.error(`player can't do things, they aren't in the game room.`)
 
         if (type === 'updatedChoice') {
           if (!gameRooms[gameId])
@@ -261,14 +262,6 @@ async function startSocketServer(app, port) {
             gameRooms[gameId].voteHistory.push(votingObj)
           }
           gameRooms[gameId].gameSettings.gameState = body.gameState
-          broadcastToRoom(gameId, 'gameUpdated')
-        }
-        // spacer
-        else if (type === 'playerLeaveGame') {
-          if (!gameRooms[gameId])
-            return console.error('game room not found (playerLeaveGame) function')
-          delete gameRooms[gameId].players[token]
-          console.log('Removed player from game')
           broadcastToRoom(gameId, 'gameUpdated')
         }
         // spacer
@@ -396,6 +389,7 @@ module.exports = {
           useWoodTable: false,
           funMode: true,
           defaultPlayerPower: 'low',
+          revealPowerReq: 'low',
           playerPowers: {
             [gameHost]: { powerLvl: 'owner', playerName: '' },
           },
@@ -413,33 +407,6 @@ module.exports = {
       res.status(500).send(err)
     }
   },
-
-  // updateGameState: async (req, res) => {
-  //   const { gameState, gameId, localUserToken } = req.body
-  //   console.log(
-  //     'THE UPDATE STATE FUNCTION IS BEING USED YAYAYAYAY--------------------------------'
-  //   )
-  //   try {
-  //     if (gameState === 'voting') {
-  //       Object.values(gameRooms[gameId].players).forEach((player) => {
-  //         player.currentChoice = null
-  //       })
-  //     }
-  //     if (gameState === 'reveal') {
-  //       const cardCounts = {}
-  //       Object.values(gameRooms[gameId].players).forEach((player) => {
-  //         cardCounts[player.playerName] = player.currentChoice
-  //       })
-  //       gameRooms[gameId].voteHistory.push(cardCounts)
-  //     }
-  //     gameRooms[gameId].gameSettings.gameState = gameState
-  //     broadcastToRoom(gameId, localUserToken, 'gameUpdated')
-  //     res.send(gameRooms[gameId])
-  //   } catch (err) {
-  //     console.error(err)
-  //     res.status(500).send(err)
-  //   }
-  // },
 
   uploadCloudinaryImage: async (req, res) => {
     const { image, localUserToken } = req.body

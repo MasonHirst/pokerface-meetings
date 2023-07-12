@@ -309,7 +309,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
       >
         <IconButton
           sx={{ position: 'absolute', top: 7, right: 5 }}
-          aria-label="close"
+          aria-label='close'
           onClick={() => {
             setShowDialog(!showDialog)
           }}
@@ -324,23 +324,23 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               : 'You need low power to change the game name'
           }
           enterDelay={200}
-          placement="bottom"
+          placement='bottom'
         >
           <TextField
             spellCheck={false}
             fullWidth
             inputProps={{ maxLength: 20 }}
             value={newName}
-            placeholder="Enter a game name"
+            placeholder='Enter a game name'
             disabled={!checkPowerLvl('low')}
-            label="Game name"
+            label='Game name'
             onChange={(e) => setNewName(e.target.value)}
           />
         </LightTooltip>
 
         {gameSettingsToSave.deck.values && (
           <TextField
-            label="Deck"
+            label='Deck'
             sx={{
               '& :hover': {
                 cursor: 'pointer',
@@ -365,7 +365,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             control={
               <Switch
                 checked={gameSettingsToSave.showAgreement}
-                color="success"
+                color='success'
                 onChange={(e) => {
                   if (checkPowerLvl('low')) {
                     setGameSettingsToSave({
@@ -378,7 +378,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 }}
               />
             }
-            label="Show Agreement"
+            label='Show Agreement'
           />
 
           <FormControlLabel
@@ -395,17 +395,17 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                     toast.warning('You need low power to do this')
                   }
                 }}
-                color="success"
+                color='success'
               />
             }
-            label="Show Average"
+            label='Show Average'
           />
 
           <FormControlLabel
             control={
               <Switch
                 checked={gameSettingsToSave.woodTable}
-                color="success"
+                color='success'
                 onChange={(e) => {
                   if (checkPowerLvl('low')) {
                     setGameSettingsToSave({
@@ -418,7 +418,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 }}
               />
             }
-            label="Wood Table"
+            label='Wood Table'
           />
 
           <FormControlLabel
@@ -437,10 +437,10 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                   //   toast.warning('You need low power to do this')
                   // }
                 }}
-                color="success"
+                color='success'
               />
             }
-            label="Fun mode"
+            label='Fun mode'
           />
         </Box>
 
@@ -449,7 +449,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             onClick={() => {
               setShowPowersExpansion(!showPowersExpansion)
             }}
-            className="cursor-pointer"
+            className='cursor-pointer'
             sx={{
               display: 'flex',
               gap: '10px',
@@ -479,7 +479,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             in={showPowersExpansion}
           >
             <Typography
-              color="primary"
+              color='primary'
               sx={{ fontSize: '16px', marginTop: '-2px', marginBottom: '10px' }}
             >
               <HelpOutlineIcon
@@ -492,15 +492,19 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               Player powers is a new feature. Please{' '}
               <a
                 href={`${document.location.origin}/contact`}
-                target="_blank"
-                style={{ textDecoration: 'underline', fontWeight: 'bold', color: 'inherit' }}
+                target='_blank'
+                style={{
+                  textDecoration: 'underline',
+                  fontWeight: 'bold',
+                  color: 'inherit',
+                }}
               >
                 report any bugs
               </a>{' '}
               to the developer.
             </Typography>
             <Box
-              className="cursor-pointer"
+              className='cursor-pointer'
               onClick={() => setShowPowerLvlCollapse(!showPowerLvlCollapse)}
               sx={{ display: 'flex', gap: '10px', marginBottom: '10px' }}
             >
@@ -512,11 +516,11 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
                 Player power levels
                 <LightTooltip
-                  placement="top"
-                  title="The power level of each player. Low power players can change basic game settings, high power players can change basic settings and some power settings."
+                  placement='top'
+                  title='The power level of each player. Low power players can change basic game settings, high power players can change basic settings and some power settings.'
                 >
                   <HelpOutlineIcon
-                    color="primary"
+                    color='primary'
                     sx={{
                       fontSize: '22px',
                       marginBottom: '-6px',
@@ -580,15 +584,15 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                           {player.playerName}
                         </Typography>
                         <Select
-                          size="small"
+                          size='small'
                           sx={{
                             m: 1,
                             minWidth: 120,
                             maxHeight: '34px',
                             margin: '5px',
                           }}
-                          labelId="demo-select-small-label"
-                          id="demo-select-small"
+                          labelId='demo-select-small-label'
+                          id='demo-select-small'
                           value={powerLvl}
                           onChange={(e) => {
                             if (
@@ -613,12 +617,12 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                             }
                           }}
                         >
-                          <MenuItem value="none">
+                          <MenuItem value='none'>
                             <em>None</em>
                           </MenuItem>
-                          <MenuItem value="low">Low</MenuItem>
-                          <MenuItem value="high">High</MenuItem>
-                          <MenuItem value="owner">Owner</MenuItem>
+                          <MenuItem value='low'>Low</MenuItem>
+                          <MenuItem value='high'>High</MenuItem>
+                          <MenuItem value='owner'>Owner</MenuItem>
                         </Select>
                       </Box>
                     )
@@ -627,7 +631,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             </Collapse>
 
             <Box
-              className="cursor-pointer"
+              className='cursor-pointer'
               onClick={() =>
                 setShowDefaultPowerCollapse(!showDefaultPowerCollapse)
               }
@@ -641,11 +645,11 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
                 Default player power ({gameSettingsToSave.defaultPlayerPower})
                 <LightTooltip
-                  placement="top"
-                  title="The default power level that will be assigned to joining players. Changing this does not affect current players."
+                  placement='top'
+                  title='The default power level that will be assigned to joining players. Changing this does not affect current players.'
                 >
                   <HelpOutlineIcon
-                    color="primary"
+                    color='primary'
                     sx={{
                       fontSize: '22px',
                       marginBottom: '-6px',
@@ -662,9 +666,9 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             >
               <RadioGroup
                 sx={{ marginTop: '-10px', marginBottom: '10px' }}
-                aria-labelledby="game-owner-radio-group"
+                aria-labelledby='game-owner-radio-group'
                 value={gameSettingsToSave.defaultPlayerPower}
-                name="owner-radio-buttons-group"
+                name='owner-radio-buttons-group'
                 onChange={(e) => handleDefaultPowerChange(e)}
               >
                 {[
@@ -684,7 +688,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             </Collapse>
 
             <Box
-              className="cursor-pointer"
+              className='cursor-pointer'
               onClick={() =>
                 setShowKickPlayersCollapse(!showKickPlayersCollapse)
               }
@@ -730,8 +734,8 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                         {player.playerName}
                       </Typography>
                       <Button
-                        color="error"
-                        size="small"
+                        color='error'
+                        size='small'
                         disabled={
                           getCurrentGameOwner().token === token ||
                           getNewGameOwner().token === token
@@ -744,12 +748,49 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                         }}
                         onClick={() => handleAddPlayerToKick(token)}
                       >
-                        {playersToKickOnSave.includes(token) ? 'Cancel' : 'Kick'}
+                        {playersToKickOnSave.includes(token)
+                          ? 'Cancel'
+                          : 'Kick'}
                       </Button>
                     </Box>
                   ))}
               </Box>
             </Collapse>
+
+            {/* Power needed to change game state */}
+            <Box sx={{
+              marginLeft: '7px',
+            }}>
+            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                Power needed to change reveal cards
+              </Typography>
+              <Select
+                size='small'
+                sx={{
+                  m: 1,
+                  minWidth: 120,
+                  maxHeight: '34px',
+                  margin: '5px',
+                }}
+                labelId='demo-select-small-label'
+                id='demo-select-small'
+                value={gameSettingsToSave.revealPowerReq}
+                onChange={(e) => {
+                  if (!checkPowerLvl('high')) return toast.warning('You need high power to do this')
+                  setGameSettingsToSave({
+                    ...gameSettingsToSave,
+                    revealPowerReq: e.target.value,
+                  })
+                }}
+              >
+                <MenuItem value='none'>
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value='low'>Low</MenuItem>
+                <MenuItem value='high'>High</MenuItem>
+                <MenuItem value='owner'>Owner</MenuItem>
+              </Select>
+            </Box>
           </Collapse>
         </Box>
 
@@ -764,8 +805,8 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             disableElevation
             fullWidth
             disableRipple
-            variant="contained"
-            color="primary"
+            variant='contained'
+            color='primary'
             onClick={saveGameSettings}
             sx={{
               textTransform: 'none',

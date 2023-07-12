@@ -90,3 +90,17 @@ add tooltips or something to power collapses to explain what they are
 make the server broadcast function only send the necesary info from the message recieved. So if the player powers changed, it would only send (gameRooms[gameId].gameSettings.playersPowers). The front end would need to handle it correctly
 
 bug - users can change their name while in a game room to exactly another players name.
+
+bug - changing your name does not enforce the character limit
+
+add a powers section to set who can change game state
+
+bug - when trying to change game owner to someone else, it won't let you update your own power level
+
+bug - when a kicked player changes their name, it crashes the server or something
+
+bug - kicked players can still send messages. I need to check if a player is in the gameroom before changing data in the server
+
+bug - I gave malena high power, then she tried to give herself high power, and the app crashed. error said "cannot read property 'powerLevel' of undefined"
+
+bug - selecting a really tall gif causes bad styling
