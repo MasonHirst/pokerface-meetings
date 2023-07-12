@@ -161,7 +161,8 @@ async function startSocketServer(app, port) {
         }
       }
       if (!gameRooms[gameId].gameSettings.playerPowers[token].playerName) {
-        gameRooms[gameId].gameSettings.playerPowers[token].playerName = playerName
+        gameRooms[gameId].gameSettings.playerPowers[token].playerName =
+          playerName
       }
 
       const body = JSON.stringify({
@@ -182,7 +183,10 @@ async function startSocketServer(app, port) {
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
         const { type, body, gameId, token } = dataBody
-        if (!Object.keys(gameRooms[gameId].players).includes(token)) return console.error(`player can't do things, they aren't in the game room.`)
+        if (!Object.keys(gameRooms[gameId].players).includes(token))
+          return console.error(
+            `player can't do things, they aren't in the game room.`
+          )
 
         if (type === 'updatedChoice') {
           if (!gameRooms[gameId])
@@ -199,7 +203,9 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (playerLeaveGame) function')
+            return console.error(
+              'game room not found (playerLeaveGame) function'
+            )
           delete gameRooms[gameId].players[token]
           console.log(
             'gameRooms[gameId].players after leave: ',
@@ -209,7 +215,9 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'updateGameState') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (updateGameState) function')
+            return console.error(
+              'game room not found (updateGameState) function'
+            )
           if (body.gameState === 'voting') {
             Object.values(gameRooms[gameId].players).forEach((player) => {
               player.currentChoice = null
@@ -274,7 +282,9 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (updatedGameName) function')
+            return console.error(
+              'game room not found (updatedGameName) function'
+            )
           gameRooms[gameId].gameSettings.gameRoomName = body.name
           broadcastToRoom(gameId, 'gameUpdated')
         }
@@ -287,14 +297,17 @@ async function startSocketServer(app, port) {
             gameRooms[gameId].players[token].playerCardImage = playerCardImage
           if (name) {
             gameRooms[gameId].players[token].playerName = body.name
-            gameRooms[gameId].gameSettings.playerPowers[token].playerName = body.name
+            gameRooms[gameId].gameSettings.playerPowers[token].playerName =
+              body.name
           }
           broadcastToRoom(gameId, 'gameUpdated')
         }
         // spacer
         else if (type === 'setIssueName') {
           if (!gameRooms[gameId])
-            return console.loerrorg('game room not found (setIssueName) function')
+            return console.loerrorg(
+              'game room not found (setIssueName) function'
+            )
           console.log('-----------------', body.issueName)
           gameRooms[gameId].gameSettings.currentIssueName = body.issueName
           broadcastToRoom(gameId, 'gameUpdated')
@@ -321,14 +334,20 @@ async function startSocketServer(app, port) {
         // spacer
         else if (type === 'newChatMessage') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (newChatMessage) function')
+            return console.error(
+              'game room not found (newChatMessage) function'
+            )
 
-          body.chatNumber = gameRooms[gameId].chatMessages[0]?.chatNumber + 1 || 1
+          body.chatNumber =
+            gameRooms[gameId].chatMessages[0]?.chatNumber + 1 || 1
           if (gameRooms[gameId].chatMessages.length >= 30) {
             // delete the oldest message if there are at least 30 messages
             gameRooms[gameId].chatMessages.shift()
           }
-          gameRooms[gameId].chatMessages = [body, ...gameRooms[gameId].chatMessages]
+          gameRooms[gameId].chatMessages = [
+            body,
+            ...gameRooms[gameId].chatMessages,
+          ]
           broadcastToRoom(gameId, 'gameUpdated')
         }
       })
@@ -374,7 +393,8 @@ module.exports = {
   createNewGame: async (req, res) => {
     const { gameName, deck, gameHost } = req.body
     try {
-      const gameId = uuidv4()
+      const gameId = generateRandomId(6, Object.keys(gameRooms))
+      // const gameId = uuidv4()
       if (!gameName || !gameId)
         return res.status(500).send('missing gameName or gameId')
       gameRooms[gameId] = {
@@ -495,4 +515,25 @@ module.exports = {
       res.status(500).send(err)
     }
   },
+}
+
+function generateRandomId(length, existingIds) {
+  const characters =
+    'abcdefghijklmnopqrstuvwxyz0123456789'
+  let randomId = ''
+
+  let isUnique = false
+  while (!isUnique) {
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length)
+      randomId += characters.charAt(randomIndex)
+    }
+
+    if (!existingIds.includes(randomId)) {
+      isUnique = true
+    } else {
+      randomId = ''
+    }
+  }
+  return randomId
 }
