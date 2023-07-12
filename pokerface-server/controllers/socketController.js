@@ -408,39 +408,38 @@ module.exports = {
         tenorApi: TENOR_API_KEY,
       }
       res.send(gameRooms[gameId])
-      // console.log('game created: ', gameRooms[gameId])
     } catch (err) {
       console.error(err)
       res.status(500).send(err)
     }
   },
 
-  updateGameState: async (req, res) => {
-    const { gameState, gameId, localUserToken } = req.body
-    console.log(
-      'THE UPDATE STATE FUNCTION IS BEING USED YAYAYAYAY--------------------------------'
-    )
-    try {
-      if (gameState === 'voting') {
-        Object.values(gameRooms[gameId].players).forEach((player) => {
-          player.currentChoice = null
-        })
-      }
-      if (gameState === 'reveal') {
-        const cardCounts = {}
-        Object.values(gameRooms[gameId].players).forEach((player) => {
-          cardCounts[player.playerName] = player.currentChoice
-        })
-        gameRooms[gameId].voteHistory.push(cardCounts)
-      }
-      gameRooms[gameId].gameSettings.gameState = gameState
-      broadcastToRoom(gameId, localUserToken, 'gameUpdated')
-      res.send(gameRooms[gameId])
-    } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
-    }
-  },
+  // updateGameState: async (req, res) => {
+  //   const { gameState, gameId, localUserToken } = req.body
+  //   console.log(
+  //     'THE UPDATE STATE FUNCTION IS BEING USED YAYAYAYAY--------------------------------'
+  //   )
+  //   try {
+  //     if (gameState === 'voting') {
+  //       Object.values(gameRooms[gameId].players).forEach((player) => {
+  //         player.currentChoice = null
+  //       })
+  //     }
+  //     if (gameState === 'reveal') {
+  //       const cardCounts = {}
+  //       Object.values(gameRooms[gameId].players).forEach((player) => {
+  //         cardCounts[player.playerName] = player.currentChoice
+  //       })
+  //       gameRooms[gameId].voteHistory.push(cardCounts)
+  //     }
+  //     gameRooms[gameId].gameSettings.gameState = gameState
+  //     broadcastToRoom(gameId, localUserToken, 'gameUpdated')
+  //     res.send(gameRooms[gameId])
+  //   } catch (err) {
+  //     console.error(err)
+  //     res.status(500).send(err)
+  //   }
+  // },
 
   uploadCloudinaryImage: async (req, res) => {
     const { image, localUserToken } = req.body
