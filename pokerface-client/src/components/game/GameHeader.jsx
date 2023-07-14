@@ -63,27 +63,6 @@ const GameHeader = ({
   })
   const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
-  const [newChatFeatureSeen, setNewChatFeatureSeen] = useState(true)
-
-  useEffect(() => {
-    if (!gameData.gameRoomId) return
-    if (
-      chatDrawerOpen &&
-      !!sessionStorage.getItem('pokerfaceNewChatFeatureSeen') === false
-    ) {
-      sessionStorage.setItem('pokerfaceNewChatFeatureSeen', true)
-    }
-    if (sessionStorage.getItem('pokerfaceNewChatFeatureSeen')) {
-      setNewChatFeatureSeen(true)
-    } else {
-      setNewChatFeatureSeen(false)
-      setTimeout(() => {
-        toast('New chat Feature!', {
-          autoClose: 5000,
-        })
-      }, 400)
-    }
-  }, [chatDrawerOpen, gameData])
 
   useEffect(() => {
     if (!gameData.chatMessages) return
@@ -332,7 +311,6 @@ const GameHeader = ({
             </IconButton>
           )}
           <IconButton
-            className={!newChatFeatureSeen ? 'pulse-animation' : ''}
             sx={{
               padding: '14px',
             }}
