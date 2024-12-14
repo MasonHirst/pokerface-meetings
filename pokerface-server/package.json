@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon index.js",
+    "server:wifi": "USE_LOCAL_IP=true nodemon index.js",
     "start": "node index.js",
     "socket": "node controllers/socketController.js"
   },

@@ -43,10 +43,10 @@ const ChooseDeck = ({
   const [showCustomDeckForm, setShowCustomDeckForm] = useState(false)
   const viewportWidth = window.innerWidth
   const defaultDecks = [
-    { values: '1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?, ☕', name: 'Fibonacci' },
-    { values: '1, 2, 3, 4, 5, 6, 7, 8, 9, 10', name: 'Scale 1-10' },
-    { values: '🟢, 🟡, 🔴', name: 'Traffic light' },
-    { values: '👍, 👎, 😐', name: 'Thumbs' },
+    { values: '1,2,3,5,8,13,21,34,55,?,☕', name: 'Fibonacci' },
+    { values: '1,2,3,4,5,6,7,8,9,10', name: 'Scale 1-10' },
+    { values: '🟢,🟡,🔴', name: 'Traffic light' },
+    { values: '👍,👎,😐', name: 'Thumbs' },
   ]
   const [savedDecks, setSavedDecks] = useState(
     JSON.parse(localStorage.getItem('savedDecks'))

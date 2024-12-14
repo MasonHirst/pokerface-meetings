@@ -100,12 +100,6 @@ const VoteHistory = ({ showDialog, setShowDialog, gameData }) => {
                 setExpandedRowIndices([...expandedRowIndices, index])
               }
             }}
-            // sx={{
-            //   borderBottom: expandedRowIndices.includes(index)
-            //     ? '1px solid transparent'
-            //     : '1px solid grey',
-            // }}
-
             sx={{
               borderBottom: '5px solid grey !important',
             }}

@@ -34,10 +34,11 @@ if (!localStorage.getItem('savedDecks')) {
   localStorage.setItem('savedDecks', JSON.stringify([]))
 }
 
-const serverUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:8080/'
-    : document.location.origin
+const { protocol, hostname } = window.location
+let serverUrl = protocol + '//' + hostname
+if (process.env.NODE_ENV === 'development') {
+  serverUrl += ':8080'
+}
 axios.defaults.baseURL = serverUrl
 
 axios.interceptors.request.use(function (config) {

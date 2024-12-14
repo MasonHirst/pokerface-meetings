@@ -68,7 +68,7 @@ const GameRoom = () => {
     if (gameData?.gameRoomName) {
       document.title = `Pokerface - ${gameData.gameRoomName}`
     }
-  }, [gameData.gameRoomName])
+  }, [gameData?.gameRoomName])
 
   useEffect(() => {
     toggleActiveSocket(true)

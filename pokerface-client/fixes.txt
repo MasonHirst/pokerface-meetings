@@ -79,8 +79,6 @@ FIXED------ implement a basic chat feature
 
 FIXED------ BUG - if you click the change picture button, it removes your picture even if you don't end up changing it
 
-use Redis in the server to better store game rooms
-
 BUG - on mobile, tapping the deck card twice pops up a google thingy
 
 The input box to change the issue name should not submit on focus loss. It needs a cancel button and a submit button
@@ -99,10 +97,12 @@ bug - when trying to change game owner to someone else, it won't let you update 
 
 bug - when a kicked player changes their name, it crashes the server or something
 
-bug - kicked players can still send messages. I need to check if a player is in the gameroom before changing data in the server
+FIXED------ bug - kicked players can still send messages. I need to check if a player is in the gameroom before changing data in the server
 
 bug - I gave malena high power, then she tried to give herself high power, and the app crashed. error said "cannot read property 'powerLevel' of undefined"
 
 bug - selecting a really tall gif causes bad styling
 
 add an info marker that tells you that there is a 30 message limit
+
+make sure that the game room updates when a player leaves the room.

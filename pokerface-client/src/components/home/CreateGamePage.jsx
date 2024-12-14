@@ -11,7 +11,7 @@ const { Box, TextField, Button, StyleIcon, TvIcon, Typography } = muiStyles
 const CreateGamePage = () => {
   document.title = 'Pokerface - Create Game'
   const splitter = GraphemeSplitter()
-  const [selectedDeck, setSelectedDeck] = useState({ values: '1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?, ☕', name: 'Fibonacci' })
+  const [selectedDeck, setSelectedDeck] = useState({ values: '1,2,3,5,8,13,21,34,55,?,☕', name: 'Fibonacci' })
   const navigate = useNavigate()
   const [showDeckDialog, setShowDeckDialog] = useState(false)
   const [gameName, setGameName] = useState('')
@@ -71,6 +71,7 @@ const CreateGamePage = () => {
           onChange={(e) => setGameName(e.target.value)}
           sx={{ width: 'min(650px, 100%)' }}
           autoFocus
+          name='pokerface-game-name'
           disabled={appIsLoading}
           error={!!error}
           value={gameName}
