@@ -523,7 +523,7 @@ module.exports = {
 
       new SibApiV3Sdk.TransactionalEmailsApi()
         .sendTransacEmail({
-          subject: 'NEW MESSAGE FROM POKERFACE USER!',
+          subject: `NEW MESSAGE FROM POKERFACE USER (${name})!`,
           sender: {
             email: 'contact@pokerface.app',
             name: 'Pokerface App',
