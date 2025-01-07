@@ -23,7 +23,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
   }, [footerRef.current?.offsetHeight, gameState])
 
   function submitChoice(card) {
-    sendMessage('updatedChoice', { card })
+    sendMessage('updatedCardChoice', { card })
   }
 
   useEffect(() => {

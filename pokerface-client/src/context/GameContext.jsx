@@ -11,11 +11,13 @@ export const GameProvider = ({ children }) => {
   if (
     localStorage.getItem('playerName') &&
     localStorage.getItem('playerName').length > 9
-  )
+  ) {
     localStorage.removeItem('playerName')
+  }
   const [playerName, setPlayerName] = useState(
     localStorage.getItem('playerName')
   )
+  const clientToken = localStorage.getItem('localUserToken')
   const [appIsLoading, setAppIsLoading] = useState(false)
   const [socket, setSocket] = useState(null)
   const navigate = useNavigate()
@@ -63,14 +65,36 @@ export const GameProvider = ({ children }) => {
     console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;')
   }
 
+  // function setLatestCardChoice(body = {}) {
+  //   const gameDataCopy = { ...gameData }
+  //   if (gameDataCopy.players[clientToken].currentChoice === body.card) {
+  //     gameDataCopy.players[clientToken].currentChoice = null
+  //   } else {
+  //     gameDataCopy.players[clientToken].currentChoice = body.card
+  //   }
+  //   setGameData(gameDataCopy)
+  // }
+
   // eslint-disable-next-line
   function sendMessage(type, body) {
-    const bodyStr = JSON.stringify({
+    const reqType = {
       type,
-      body,
+      id: Date.now(),
+      // client: clientToken,
+    }
+
+    if (type === 'updatedCardChoice') {
+      setLatestCardChoice(body)
+    }
+
+    latestReqTypes.current[type] = reqType.id
+
+    const bodyStr = JSON.stringify({
+      body: { ...body, reqType },
       gameId: game_id,
-      token: localStorage.getItem('localUserToken'),
+      token: clientToken,
     })
+
     socket?.send(bodyStr)
   }
 
@@ -118,19 +142,29 @@ export const GameProvider = ({ children }) => {
   let notFoundConnectCounter = 0
 
   useEffect(() => {
-    if (!playerName || !game_id || !activeSocket || iHaveBeenKicked || iAmKicked) return
+    if (
+      !playerName ||
+      !game_id ||
+      !activeSocket ||
+      iHaveBeenKicked ||
+      iAmKicked
+    ) {
+      return
+    }
     function connectClient() {
       if (!game_id) return console.log('not in game room, aborting connection')
       setJoinGameLoading(true)
       let serverUrl
       let scheme = 'ws'
-      let location = document.location
-      if (location.protocol === 'https:') {
+      const { protocol, hostname } = document.location
+
+      if (protocol === 'https:') {
         scheme += 's'
       }
-      serverUrl = `${scheme}://${location.hostname}:${location.port}`
+
+      serverUrl = scheme + '://' + hostname
       if (process.env.NODE_ENV === 'development') {
-        serverUrl = 'ws://localhost:8080'
+        serverUrl += ':8080'
       }
 
       const ws = new WebSocket(

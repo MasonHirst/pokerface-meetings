@@ -21,7 +21,13 @@ cloudinary.config({
 let gameRooms = {}
 let clientsList = {}
 
-function broadcastToRoom(gameRoomId, event_type) {
+// function getRandomNumber() {
+//   return Math.floor(Math.random() * (2000 - 500 + 1)) + 500
+// }
+
+// let shortDelay = false
+
+function broadcastToRoom(gameRoomId, event_type, body = null) {
   // console.log('game rooms status: ', gameRooms)
   console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length)
   // arguments: target game room, event type, message
@@ -33,8 +39,15 @@ function broadcastToRoom(gameRoomId, event_type) {
   Object.values(gameRoom.players).forEach((playerObj) => {
     const client = clientsList[playerObj.token]
     if (client && client.readyState === WebSocket.OPEN) {
-      const body = JSON.stringify({ event_type, game: gameRoom })
-      client.send(body)
+      const bodyObj = JSON.stringify({ event_type, game: gameRoom })
+      // setTimeout(
+      //   () => {
+      //     client.send(bodyObj)
+      //     shortDelay = !shortDelay
+      //   },
+      //   shortDelay ? 600 : 2000
+      // )
+      client.send(bodyObj)
     }
   })
 
@@ -89,12 +102,12 @@ function averageNumericValues(arr) {
   return parseFloat(average.toFixed(1))
 }
 
-async function startSocketServer(app, port) {
-  const wss = new WebSocketServer({
-    server: app.listen(port),
-  })
+async function startSocketServer(app, port, host = 'localhost') {
+  const server = app.listen(port, host)
+
+  const wss = new WebSocketServer({ server })
   wss.on('listening', () => {
-    console.log(`SERVER IS LISTENING ON PORT ${wss.address().port}`)
+    console.log(`SERVER IS LISTENING ON ${host}:${port}`)
     setInterval(() => {
       wss.clients.forEach((client) => {
         client.ping()
@@ -182,23 +195,38 @@ async function startSocketServer(app, port) {
       //! MESSAGES HANDLERS
       ws.on('message', async function message(data, isBinary) {
         const dataBody = JSON.parse(data)
-        const { type, body, gameId, token } = dataBody
-        if (!Object.keys(gameRooms[gameId].players).includes(token))
+
+        const { body, gameId, token } = dataBody || {}
+        const { reqType } = body || {}
+        const { type, id } = reqType || {}
+        if (!Object.keys(gameRooms[gameId].players).includes(token)) {
           return console.error(
             `player can't do things, they aren't in the game room.`
           )
+        }
 
-        if (type === 'updatedChoice') {
-          if (!gameRooms[gameId])
-            return console.error('game room not found (updatedChoice) function')
-          if (!gameRooms[gameId].players[token])
-            return console.error('player not found (updatedChoice) function')
+        //spacer
+        if (type === 'updatedCardChoice') {
+          if (!gameRooms[gameId]) {
+            return console.error(
+              'game room not found (updatedCardChoice) function'
+            )
+          }
+          if (!gameRooms[gameId].players[token]) {
+            return console.error(
+              'player not found (updatedCardChoice) function'
+            )
+          }
+          //! if (id <= gameRooms[gameId].players[token].lastChoiceId) {
+          //   return
+          // }
           if (gameRooms[gameId].players[token].currentChoice === body.card) {
             gameRooms[gameId].players[token].currentChoice = null
-            return broadcastToRoom(gameId, 'gameUpdated')
+          } else {
+            gameRooms[gameId].players[token].currentChoice = body.card
           }
-          gameRooms[gameId].players[token].currentChoice = body.card
-          broadcastToRoom(gameId, 'gameUpdated')
+          gameRooms[gameId].players[token].lastChoiceId = id
+          return broadcastToRoom(gameId, 'updatedCardChoice', dataBody)
         }
         // spacer
         else if (type === 'playerLeaveGame') {

@@ -65,7 +65,9 @@ const GameHeader = ({
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
 
   useEffect(() => {
-    if (!gameData.chatMessages) return
+    if (!gameData?.chatMessages) {
+      return
+    }
     if (gameData.chatMessages.length < 1) {
       sessionStorage.setItem('pokerfaceChatNumber', 0)
       return
@@ -86,10 +88,10 @@ const GameHeader = ({
         setHideChatsNotifications(false)
       }
     }
-  }, [gameData.chatMessages])
+  }, [gameData?.chatMessages])
 
   useEffect(() => {
-    if (!gameData || !gameData?.gameSettings?.gameRoomName) return
+    if (!gameData?.gameSettings?.gameRoomName) return
     setRoomName(gameData.gameSettings.gameRoomName)
   }, [gameData])
 
