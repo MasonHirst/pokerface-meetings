@@ -1,8 +1,8 @@
-const { WebSocketServer, WebSocket } = require('ws')
-require('dotenv').config()
-const SibApiV3Sdk = require('sib-api-v3-sdk')
-const cloudinary = require('cloudinary')
-const { generateSlug } = require('random-word-slugs')
+const { WebSocketServer, WebSocket } = require('ws');
+require('dotenv').config();
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+const cloudinary = require('cloudinary');
+const { generateSlug } = require('random-word-slugs');
 
 const {
   CLOUDINARY_SECRET,
@@ -11,35 +11,35 @@ const {
   SEND_IN_BLUE_API_KEY,
   EMAIL_TARGET,
   TENOR_API_KEY,
-} = process.env
+} = process.env;
 cloudinary.config({
   cloud_name: CLOUDINARY_NAME,
   api_key: CLOUDINARY_KEY,
   api_secret: CLOUDINARY_SECRET,
-})
+});
 
-let gameRooms = {}
-let clientsList = {}
+let gameRooms = {};
+let clientsList = {};
 
 // function getRandomNumber() {
 //   return Math.floor(Math.random() * (2000 - 500 + 1)) + 500
 // }
 
-// let shortDelay = false
+let shortDelay = false
 
 function broadcastToRoom(gameRoomId, event_type, body = null) {
   // console.log('game rooms status: ', gameRooms)
-  console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length)
+  console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length);
   // arguments: target game room, event type, message
-  const gameRoom = gameRooms[gameRoomId]
-  if (!gameRoom) return console.log(`game room ${gameRoomId} not found`)
-  gameRooms[gameRoomId].lastAction = Date.now()
+  const gameRoom = gameRooms[gameRoomId];
+  if (!gameRoom) return console.log(`game room ${gameRoomId} not found`);
+  gameRooms[gameRoomId].lastAction = Date.now();
 
   // Loop through all clients in the game room and send the message
   Object.values(gameRoom.players).forEach((playerObj) => {
-    const client = clientsList[playerObj.token]
+    const client = clientsList[playerObj.token];
     if (client && client.readyState === WebSocket.OPEN) {
-      const bodyObj = JSON.stringify({ event_type, game: gameRoom })
+      const bodyObj = JSON.stringify({ event_type, game: body || gameRoom });
       // setTimeout(
       //   () => {
       //     client.send(bodyObj)
@@ -47,18 +47,18 @@ function broadcastToRoom(gameRoomId, event_type, body = null) {
       //   },
       //   shortDelay ? 600 : 2000
       // )
-      client.send(bodyObj)
+      client.send(bodyObj);
     }
-  })
+  });
 
-  removeUnusedGameRooms()
+  removeUnusedGameRooms();
 }
 
 function broadCastToClient(PlayerToken, event_type) {
-  const client = clientsList[PlayerToken]
+  const client = clientsList[PlayerToken];
   if (client && client.readyState === WebSocket.OPEN) {
-    const body = JSON.stringify({ event_type })
-    client.send(body)
+    const body = JSON.stringify({ event_type });
+    client.send(body);
   }
 }
 
@@ -71,90 +71,92 @@ function removeUnusedGameRooms() {
         gameRooms[gameId].lastAction &&
         isMoreThanTwoHoursAgo(gameRooms[gameId].lastAction)
       ) {
-        console.log('------------------------deleting game room: ', gameId)
-        return false
-      } else return true
+        console.log('------------------------deleting game room: ', gameId);
+        return false;
+      } else {
+        return true;
+      }
     }
-  )
-  gameRooms = Object.fromEntries(filteredOldGames)
+  );
+  gameRooms = Object.fromEntries(filteredOldGames);
 }
 
 function isMoreThanTwoHoursAgo(date) {
-  const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000 // two hours in milliseconds
-  const now = new Date()
-  const diffInMs = now - date
-  return diffInMs > TWO_HOURS_IN_MS
+  const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000; // two hours in milliseconds
+  const now = new Date();
+  const diffInMs = now - date;
+  return diffInMs > TWO_HOURS_IN_MS;
 }
 
 function averageNumericValues(arr) {
-  let sum = 0
-  let count = 0
+  let sum = 0;
+  let count = 0;
   for (let val of arr) {
     if (!isNaN(Number(val)) && val) {
-      sum += +val
-      count++
+      sum += +val;
+      count++;
     }
   }
   if (count === 0) {
-    return null // or whatever value you want to return if there are no numeric values
+    return null; // or whatever value you want to return if there are no numeric values
   }
-  const average = sum / count
-  return parseFloat(average.toFixed(1))
+  const average = sum / count;
+  return parseFloat(average.toFixed(1));
 }
 
 async function startSocketServer(app, port, host = 'localhost') {
-  const server = app.listen(port, host)
+  const server = app.listen(port, host);
 
-  const wss = new WebSocketServer({ server })
+  const wss = new WebSocketServer({ server });
   wss.on('listening', () => {
-    console.log(`SERVER IS LISTENING ON ${host}:${port}`)
+    console.log(`SERVER IS LISTENING ON ${host}:${port}`);
     setInterval(() => {
       wss.clients.forEach((client) => {
-        client.ping()
-      }, 5000)
-    })
-  })
+        client.ping();
+      }, 5000);
+    });
+  });
 
   wss.on('connection', function connection(ws, req) {
-    console.log('new client connected')
+    console.log('new client connected');
     // Extract token from query parameters
-    let token = null
-    let playerName = null
-    let gameId = null
-    let playerCardImage = null
+    let token = null;
+    let playerName = null;
+    let gameId = null;
+    let playerCardImage = null;
 
     // Check if the URL contains a query parameter named 'token'
     if (req.url.includes('?')) {
-      const queryParameters = req.url.split('?')[1]
-      const urlParams = new URLSearchParams(queryParameters)
-      token = urlParams.get('token')
-      playerName = urlParams.get('player_name').trim()
-      gameId = urlParams.get('game_id')
+      const queryParameters = req.url.split('?')[1];
+      const urlParams = new URLSearchParams(queryParameters);
+      token = urlParams.get('token');
+      playerName = urlParams.get('player_name').trim();
+      gameId = urlParams.get('game_id');
       playerCardImage =
         urlParams.get('player_card_image') === 'null'
           ? null
-          : urlParams.get('player_card_image')
+          : urlParams.get('player_card_image');
     }
 
     // check if any players in the game room have the same name, and if they do, append a number to the end of the name
     if (gameRooms[gameId]) {
       const playerNames = Object.values(gameRooms[gameId].players).map(
         (player) => player.playerName
-      )
+      );
       if (playerNames.includes(playerName)) {
-        let i = 1
+        let i = 1;
         while (playerNames.includes(`${playerName}(${i})`)) {
-          i++
+          i++;
         }
-        playerName = `${playerName}(${i})`
+        playerName = `${playerName}(${i})`;
       }
     }
 
     // Attach the token to the WebSocket object
-    ws.token = token
-    ws.playerName = playerName
-    ws.currentGameId = gameId
-    clientsList[token] = ws
+    ws.token = token;
+    ws.playerName = playerName;
+    ws.currentGameId = gameId;
+    clientsList[token] = ws;
 
     if (gameRooms[gameId]) {
       // console.log('gameRooms at player join.......: ', gameRooms[gameId].gameSettings.playerPowers)
@@ -164,93 +166,97 @@ async function startSocketServer(app, port, host = 'localhost') {
         currentChoice: null,
         playerName,
         playerCardImage,
-      }
+      };
       if (!gameRooms[gameId].gameSettings.playerPowers[token]) {
         // add the player to the powers object, unless they are already there
         // const { playerPowers } = gameRooms[gameId].gameSettings
         gameRooms[gameId].gameSettings.playerPowers[token] = {
           powerLvl: gameRooms[gameId].gameSettings.defaultPlayerPower,
           playerName,
-        }
+        };
       }
       if (!gameRooms[gameId].gameSettings.playerPowers[token].playerName) {
         gameRooms[gameId].gameSettings.playerPowers[token].playerName =
-          playerName
+          playerName;
       }
 
       const body = JSON.stringify({
         event_type: 'playerJoinedGame',
         game: gameRooms[gameId],
-      })
-      broadcastToRoom(gameId, 'gameUpdated')
-      ws.send(body)
+      });
+      broadcastToRoom(gameId, 'gameUpdated');
+      ws.send(body);
     } else {
-      ws.send(JSON.stringify({ event_type: 'gameNotFound' }))
-      console.log('game room not found at socket join, aborting join')
+      ws.send(JSON.stringify({ event_type: 'gameNotFound' }));
+      console.log('game room not found at socket join, aborting join');
     }
 
     try {
-      ws.on('error', console.error)
+      ws.on('error', console.error);
 
       //! MESSAGES HANDLERS
       ws.on('message', async function message(data, isBinary) {
-        const dataBody = JSON.parse(data)
+        const dataBody = JSON.parse(data);
+        const { body, gameId, token } = dataBody || {};
+        const { reqType } = body || {};
+        const { type, timeStamp } = reqType || {};
 
-        const { body, gameId, token } = dataBody || {}
-        const { reqType } = body || {}
-        const { type, id } = reqType || {}
         if (!Object.keys(gameRooms[gameId].players).includes(token)) {
           return console.error(
             `player can't do things, they aren't in the game room.`
-          )
+          );
         }
 
         //spacer
         if (type === 'updatedCardChoice') {
+          // console.log('🚀 ~ message ~ dataBody:', dataBody);
           if (!gameRooms[gameId]) {
             return console.error(
               'game room not found (updatedCardChoice) function'
-            )
+            );
           }
           if (!gameRooms[gameId].players[token]) {
             return console.error(
               'player not found (updatedCardChoice) function'
-            )
+            );
           }
-          //! if (id <= gameRooms[gameId].players[token].lastChoiceId) {
-          //   return
-          // }
+
+          if (timeStamp <= gameRooms[gameId].players[token]?.lastChoiceTime) {
+            return;
+          }
+
           if (gameRooms[gameId].players[token].currentChoice === body.card) {
-            gameRooms[gameId].players[token].currentChoice = null
+            gameRooms[gameId].players[token].currentChoice = null;
           } else {
-            gameRooms[gameId].players[token].currentChoice = body.card
+            gameRooms[gameId].players[token].currentChoice = body.card;
           }
-          gameRooms[gameId].players[token].lastChoiceId = id
-          return broadcastToRoom(gameId, 'updatedCardChoice', dataBody)
+
+          gameRooms[gameId].players[token].lastChoiceTime = timeStamp;
+          return broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (playerLeaveGame) function'
-            )
-          delete gameRooms[gameId].players[token]
+            );
+          delete gameRooms[gameId].players[token];
           console.log(
             'gameRooms[gameId].players after leave: ',
             gameRooms[gameId].players
-          )
+          );
         }
         // spacer
         else if (type === 'updateGameState') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (updateGameState) function'
-            )
+            );
           if (body.gameState === 'voting') {
             Object.values(gameRooms[gameId].players).forEach((player) => {
-              player.currentChoice = null
-            })
-            gameRooms[gameId].gameSettings.currentIssueName = null
+              player.currentChoice = null;
+            });
+            gameRooms[gameId].gameSettings.currentIssueName = null;
           }
           if (body.gameState === 'reveal') {
             const votingObj = {
@@ -260,144 +266,148 @@ async function startSocketServer(app, port, host = 'localhost') {
               playerVotes: {},
               average: null,
               participation: '',
-            }
+            };
 
             // place each player's vote into the cardCounts object
             Object.values(gameRooms[gameId].players).forEach((player) => {
-              votingObj.playerVotes[player.playerName] = player.currentChoice
-            })
+              votingObj.playerVotes[player.playerName] = player.currentChoice;
+            });
 
             // calculate how many people had votes that are not null out of the total number of people in the voting
             const validVotes = Object.values(votingObj.playerVotes).filter(
               (vote) => vote
-            ).length
+            ).length;
             const possibleVotes = Object.values(
               gameRooms[gameId].players
-            ).length
-            votingObj.participation = `${validVotes}/${possibleVotes}`
+            ).length;
+            votingObj.participation = `${validVotes}/${possibleVotes}`;
 
             // calculate the average
             votingObj.average = averageNumericValues(
               Object.values(votingObj.playerVotes)
-            )
+            );
 
             // calculate the agreement, which is calculated by taking the highest number of equal votes, and dividing it by the total number of votes that are not falsy
-            const cardCounts = {}
+            const cardCounts = {};
             Object.values(votingObj.playerVotes).forEach((vote) => {
-              if (cardCounts[vote]) cardCounts[vote]++
-              else if (vote) cardCounts[vote] = 1
-            })
-            const highestCount = Math.max(...Object.values(cardCounts))
+              if (cardCounts[vote]) cardCounts[vote]++;
+              else if (vote) cardCounts[vote] = 1;
+            });
+            const highestCount = Math.max(...Object.values(cardCounts));
             const totalVotes = Object.values(votingObj.playerVotes).filter(
               (vote) => vote !== null
-            ).length
+            ).length;
             votingObj.agreement =
-              highestCount < 2 && totalVotes > 1 ? 0 : highestCount / totalVotes
+              highestCount < 2 && totalVotes > 1
+                ? 0
+                : highestCount / totalVotes;
 
             //push the voting object into the game vote history
-            gameRooms[gameId].voteHistory.push(votingObj)
+            gameRooms[gameId].voteHistory.push(votingObj);
           }
-          gameRooms[gameId].gameSettings.gameState = body.gameState
-          broadcastToRoom(gameId, 'gameUpdated')
+          gameRooms[gameId].gameSettings.gameState = body.gameState;
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'updatedDeck') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (updatedDeck) function')
-          gameRooms[gameId].gameSettings.deck = body.deck
-          broadcastToRoom(gameId, 'gameUpdated')
+            return console.error('game room not found (updatedDeck) function');
+          gameRooms[gameId].gameSettings.deck = body.deck;
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (updatedGameName) function'
-            )
-          gameRooms[gameId].gameSettings.gameRoomName = body.name
-          broadcastToRoom(gameId, 'gameUpdated')
+            );
+          gameRooms[gameId].gameSettings.gameRoomName = body.name;
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'updateProfile') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (updateProfile) function')
-          const { playerCardImage, name } = body
+            return console.error(
+              'game room not found (updateProfile) function'
+            );
+          const { playerCardImage, name } = body;
           if (playerCardImage || playerCardImage === '')
-            gameRooms[gameId].players[token].playerCardImage = playerCardImage
+            gameRooms[gameId].players[token].playerCardImage = playerCardImage;
           if (name) {
-            gameRooms[gameId].players[token].playerName = body.name
+            gameRooms[gameId].players[token].playerName = body.name;
             gameRooms[gameId].gameSettings.playerPowers[token].playerName =
-              body.name
+              body.name;
           }
-          broadcastToRoom(gameId, 'gameUpdated')
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'setIssueName') {
           if (!gameRooms[gameId])
             return console.loerrorg(
               'game room not found (setIssueName) function'
-            )
-          console.log('-----------------', body.issueName)
-          gameRooms[gameId].gameSettings.currentIssueName = body.issueName
-          broadcastToRoom(gameId, 'gameUpdated')
+            );
+          // console.log('-----------------', body.issueName);
+          gameRooms[gameId].gameSettings.currentIssueName = body.issueName;
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'updatedGameSettings') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (updatedGameSettings) function'
-            )
-          gameRooms[gameId].gameSettings = body.gameSettingsToSave
-          broadcastToRoom(gameId, 'gameUpdated')
+            );
+          gameRooms[gameId].gameSettings = body.gameSettingsToSave;
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'kickPlayer') {
           if (!gameRooms[gameId])
-            return console.error('game room not found (kickPlayer) function')
+            return console.error('game room not found (kickPlayer) function');
           body.playerTokens.forEach((token) => {
-            delete gameRooms[gameId].players[token]
-            broadCastToClient(token, 'kickedFromGame')
-          })
-          broadcastToRoom(gameId, 'gameUpdated')
+            delete gameRooms[gameId].players[token];
+            broadCastToClient(token, 'kickedFromGame');
+          });
+          broadcastToRoom(gameId, 'gameUpdated');
         }
         // spacer
         else if (type === 'newChatMessage') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (newChatMessage) function'
-            )
+            );
 
           body.chatNumber =
-            gameRooms[gameId].chatMessages[0]?.chatNumber + 1 || 1
+            gameRooms[gameId].chatMessages[0]?.chatNumber + 1 || 1;
           if (gameRooms[gameId].chatMessages.length >= 30) {
             // delete the oldest message if there are at least 30 messages
-            gameRooms[gameId].chatMessages.shift()
+            gameRooms[gameId].chatMessages.shift();
           }
           gameRooms[gameId].chatMessages = [
             body,
             ...gameRooms[gameId].chatMessages,
-          ]
-          broadcastToRoom(gameId, 'gameUpdated')
+          ];
+          broadcastToRoom(gameId, 'gameUpdated');
         }
-      })
+      });
       //! END MESSAGES HANLDERS
 
       ws.on('close', function () {
         // remove user from gameroom
-        const { token, playerName, currentGameId } = ws
-        console.log(`${playerName} DISCONNECTING`)
+        const { token, playerName, currentGameId } = ws;
+        console.log(`${playerName} DISCONNECTING`);
         if (gameRooms[currentGameId]?.players[token]) {
-          console.log(`removing ${playerName} from game room`)
-          delete gameRooms[currentGameId].players[token]
+          console.log(`removing ${playerName} from game room`);
+          delete gameRooms[currentGameId].players[token];
         } else {
-          console.log(`client ${playerName} not found in game room`)
+          console.log(`client ${playerName} not found in game room`);
         }
-        delete clientsList[token]
-        broadcastToRoom(currentGameId, 'gameUpdated')
-      })
+        delete clientsList[token];
+        broadcastToRoom(currentGameId, 'gameUpdated');
+      });
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  })
+  });
 }
 
 module.exports = {
@@ -407,31 +417,31 @@ module.exports = {
 
   extractToken: async (req, res, next) => {
     try {
-      const localToken = req.headers.authorization
+      const localToken = req.headers.authorization;
       if (!localToken)
-        return res.status(401).send('where is your access token bro?')
-      req.body.localUserToken = localToken
-      next()
+        return res.status(401).send('where is your access token bro?');
+      req.body.localUserToken = localToken;
+      next();
     } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
+      console.error(err);
+      res.status(500).send(err);
     }
   },
 
   createNewGame: async (req, res) => {
-    const { gameName, deck, gameHost } = req.body
+    const { gameName, deck, gameHost } = req.body;
     try {
       function getRandomWords() {
         // use the random-word-slugs package to generate a random game id, and make sure it doesnt already exist
-        let randomId = generateSlug()
+        let randomId = generateSlug();
         while (Object.keys(gameRooms).includes(randomId)) {
-          randomId = generateSlug()
+          randomId = generateSlug();
         }
-        return randomId
+        return randomId;
       }
-      const gameId = getRandomWords()
+      const gameId = getRandomWords();
       if (!gameName || !gameId)
-        return res.status(500).send('missing gameName or gameId')
+        return res.status(500).send('missing gameName or gameId');
       gameRooms[gameId] = {
         gameRoomId: gameId,
         gameSettings: {
@@ -455,16 +465,16 @@ module.exports = {
         chatMessages: [],
         players: {},
         tenorApi: TENOR_API_KEY,
-      }
-      res.send(gameRooms[gameId])
+      };
+      res.send(gameRooms[gameId]);
     } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
+      console.error(err);
+      res.status(500).send(err);
     }
   },
 
   uploadCloudinaryImage: async (req, res) => {
-    const { image, localUserToken } = req.body
+    const { image, localUserToken } = req.body;
 
     try {
       cloudinary.v2.uploader.upload(
@@ -472,44 +482,44 @@ module.exports = {
         { public_id: localUserToken, overwrite: true },
         function (error, result) {
           if (error) {
-            console.error(error)
-            res.status(500).send(error)
+            console.error(error);
+            res.status(500).send(error);
           } else {
-            res.send(result.url)
+            res.send(result.url);
           }
         }
-      )
+      );
     } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
+      console.error(err);
+      res.status(500).send(err);
     }
   },
 
   deleteCloudinaryImage: async (req, res) => {
-    const { localUserToken } = req.body
+    const { localUserToken } = req.body;
     try {
       cloudinary.v2.uploader.destroy(
         localUserToken,
         function (deleteError, deleteResult) {
           if (deleteError) {
-            console.error(deleteError)
-            res.status(500).send(deleteError)
+            console.error(deleteError);
+            res.status(500).send(deleteError);
           } else {
-            res.send(deleteResult)
+            res.send(deleteResult);
           }
         }
-      )
+      );
     } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
+      console.error(err);
+      res.status(500).send(err);
     }
   },
 
   emailDev: async (req, res) => {
-    const { name, contact, message, localUserToken } = req.body
+    const { name, contact, message, localUserToken } = req.body;
     try {
       SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey =
-        SEND_IN_BLUE_API_KEY
+        SEND_IN_BLUE_API_KEY;
 
       new SibApiV3Sdk.TransactionalEmailsApi()
         .sendTransacEmail({
@@ -538,16 +548,16 @@ module.exports = {
         })
         .then(
           function (data) {
-            return res.status(200).send(data)
+            return res.status(200).send(data);
           },
           function (error) {
-            console.error(error)
-            return res.status(500).send(error)
+            console.error(error);
+            return res.status(500).send(error);
           }
-        )
+        );
     } catch (err) {
-      console.error(err)
-      res.status(500).send(err)
+      console.error(err);
+      res.status(500).send(err);
     }
   },
-}
+};

@@ -1,44 +1,44 @@
-import React, { createContext, useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
-import spidermanCrying from '../assets/spiderman-crying.gif'
-import Swal from 'sweetalert2'
-import 'sweetalert2/dist/sweetalert2.css'
+import React, { createContext, useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import spidermanCrying from '../assets/spiderman-crying.gif';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.css';
 
-export const GameContext = createContext()
+export const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
   if (
     localStorage.getItem('playerName') &&
     localStorage.getItem('playerName').length > 9
   ) {
-    localStorage.removeItem('playerName')
+    localStorage.removeItem('playerName');
   }
   const [playerName, setPlayerName] = useState(
     localStorage.getItem('playerName')
-  )
-  const clientToken = localStorage.getItem('localUserToken')
-  const [appIsLoading, setAppIsLoading] = useState(false)
-  const [socket, setSocket] = useState(null)
-  const navigate = useNavigate()
-  let activeSocket = true
+  );
+  const clientToken = localStorage.getItem('localUserToken');
+  const [appIsLoading, setAppIsLoading] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const navigate = useNavigate();
+  let activeSocket = true;
   function toggleActiveSocket(state) {
-    activeSocket = state
+    activeSocket = state;
   }
-  const [gameData, setGameData] = useState({})
-  const [gameExists, setGameExists] = useState(false)
-  const [joinGameLoading, setJoinGameLoading] = useState(false)
-  const [iHaveBeenKicked, setIHaveBeenKicked] = useState(false)
-  const { game_id } = useParams()
-  let iAmKicked = false
+  const [gameData, setGameData] = useState({});
+  const [gameExists, setGameExists] = useState(false);
+  const [joinGameLoading, setJoinGameLoading] = useState(false);
+  const [iHaveBeenKicked, setIHaveBeenKicked] = useState(false);
+  const { game_id } = useParams();
+  let iAmKicked = false;
 
-  const kickedGames = JSON.parse(sessionStorage.getItem('kickedGames'))
-  if (kickedGames && kickedGames.includes(game_id)) iAmKicked = true
+  const kickedGames = JSON.parse(sessionStorage.getItem('kickedGames'));
+  if (kickedGames && kickedGames.includes(game_id)) iAmKicked = true;
 
   useEffect(() => {
     if (sessionStorage.getItem('kickedGames')) {
       if (kickedGames.includes(game_id)) {
-        setIHaveBeenKicked(true)
+        setIHaveBeenKicked(true);
         Swal.fire({
           title: 'You were kicked from that game',
           text: 'How rude!',
@@ -50,71 +50,77 @@ export const GameProvider = ({ children }) => {
           customClass: {
             popup: 'swal2-popup',
           },
-        })
-        navigate('/')
+        });
+        navigate('/');
       }
     } else {
-      sessionStorage.setItem('kickedGames', JSON.stringify([]))
+      sessionStorage.setItem('kickedGames', JSON.stringify([]));
     }
-  }, [])
+  }, []);
 
   console.success = function (message) {
-    console.log('%c✅ ' + message, 'color: #04A57D; font-weight: bold;')
-  }
+    console.log('%c✅ ' + message, 'color: #04A57D; font-weight: bold;');
+  };
   console.warning = function (message) {
-    console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;')
+    console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;');
+  };
+
+  function setLatestCardChoice(body = {}) {
+    const gameDataCopy = { ...gameData };
+    if (gameDataCopy.players[clientToken].currentChoice === body.card) {
+      gameDataCopy.players[clientToken].currentChoice = null;
+    } else {
+      gameDataCopy.players[clientToken].currentChoice = body.card;
+    }
+    setGameData(gameDataCopy);
   }
 
-  // function setLatestCardChoice(body = {}) {
-  //   const gameDataCopy = { ...gameData }
-  //   if (gameDataCopy.players[clientToken].currentChoice === body.card) {
-  //     gameDataCopy.players[clientToken].currentChoice = null
-  //   } else {
-  //     gameDataCopy.players[clientToken].currentChoice = body.card
-  //   }
-  //   setGameData(gameDataCopy)
-  // }
-
+  let shortDelay = useRef(false)
   // eslint-disable-next-line
   function sendMessage(type, body) {
     const reqType = {
       type,
-      id: Date.now(),
-      // client: clientToken,
-    }
+      timeStamp: Date.now(),
+    };
 
     if (type === 'updatedCardChoice') {
-      setLatestCardChoice(body)
+      setLatestCardChoice(body);
     }
 
-    latestReqTypes.current[type] = reqType.id
-
-    const bodyStr = JSON.stringify({
+    const bodyObj = JSON.stringify({
       body: { ...body, reqType },
       gameId: game_id,
       token: clientToken,
-    })
+    });
 
-    socket?.send(bodyStr)
+
+    // setTimeout(
+    //   () => {
+    //     socket?.send(bodyObj);
+    //     shortDelay.current = !shortDelay.current;
+    //   },
+    //   shortDelay.current ? 600 : 2000
+    // );
+    socket?.send(bodyObj);
   }
 
   function checkPowerLvl(powerCheck) {
-    const { playerPowers } = gameData.gameSettings
-    const localUserToken = localStorage.getItem('localUserToken')
-    const powerLvl = playerPowers[localUserToken].powerLvl
+    const { playerPowers } = gameData.gameSettings;
+    const localUserToken = localStorage.getItem('localUserToken');
+    const powerLvl = playerPowers[localUserToken].powerLvl;
     if (powerLvl === 'owner') {
-      return true
+      return true;
     } else if (powerCheck === 'low') {
       if (powerLvl === 'low' || powerLvl === 'high') {
-        return true
+        return true;
       } else {
-        return false
+        return false;
       }
     } else if (powerCheck === 'high') {
       if (powerLvl === 'high') {
-        return true
+        return true;
       } else {
-        return false
+        return false;
       }
     }
   }
@@ -131,15 +137,16 @@ export const GameProvider = ({ children }) => {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        toggleActiveSocket(false)
-        socket.close()
-        navigate('/')
+        toggleActiveSocket(false);
+        socket.close();
+        navigate('/');
+        window.location.reload();
       }
-    })
+    });
   }
 
-  let connectCounter = 0
-  let notFoundConnectCounter = 0
+  let connectCounter = 0;
+  let notFoundConnectCounter = 0;
 
   useEffect(() => {
     if (
@@ -149,22 +156,22 @@ export const GameProvider = ({ children }) => {
       iHaveBeenKicked ||
       iAmKicked
     ) {
-      return
+      return;
     }
     function connectClient() {
-      if (!game_id) return console.log('not in game room, aborting connection')
-      setJoinGameLoading(true)
-      let serverUrl
-      let scheme = 'ws'
-      const { protocol, hostname } = document.location
+      if (!game_id) return console.log('not in game room, aborting connection');
+      setJoinGameLoading(true);
+      let serverUrl;
+      let scheme = 'ws';
+      const { protocol, hostname } = document.location;
 
       if (protocol === 'https:') {
-        scheme += 's'
+        scheme += 's';
       }
 
-      serverUrl = scheme + '://' + hostname
+      serverUrl = scheme + '://' + hostname;
       if (process.env.NODE_ENV === 'development') {
-        serverUrl += ':8080'
+        serverUrl += ':8080';
       }
 
       const ws = new WebSocket(
@@ -173,65 +180,68 @@ export const GameProvider = ({ children }) => {
         )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem(
           'pokerCardImage'
         )}`
-      )
+      );
 
       ws.addEventListener('open', function () {
-        console.success('established socket connection')
-        if (connectCounter > 0) console.success('Reconnected to socket server')
-      })
+        console.success('established socket connection');
+        if (connectCounter > 0) console.success('Reconnected to socket server');
+      });
 
       ws.addEventListener('error', function (error) {
-        console.error('WebSocket Error: ', error)
-      })
+        console.error('WebSocket Error: ', error);
+      });
 
       ws.addEventListener('message', function (event) {
-        if (!event?.data) return
-        let messageData = JSON.parse(event.data)
+        if (!event?.data) return;
+        let messageData = JSON.parse(event.data);
+        // console.log('🚀 ~ messageData.game:', messageData.game);
 
         if (messageData.event_type === 'playerJoinedGame') {
-          setGameData(messageData.game)
-          setJoinGameLoading(false)
+          setGameData(messageData.game);
+          setJoinGameLoading(false);
         } else if (messageData.event_type === 'gameUpdated') {
-          setGameData(messageData.game)
-          setIHaveBeenKicked(false)
+          setGameData(messageData.game);
+          setIHaveBeenKicked(false);
         } else if (messageData.event_type === 'kickedFromGame') {
-          console.warning('I have been kicked from the game, and am now sad :(')
-          setIHaveBeenKicked(true)
+          console.warning(
+            'I have been kicked from the game, and am now sad :('
+          );
+          setIHaveBeenKicked(true);
           const kickedGames =
-            JSON.parse(sessionStorage.getItem('kickedGames')) || []
-          kickedGames.push(game_id)
-          sessionStorage.setItem('kickedGames', JSON.stringify(kickedGames))
+            JSON.parse(sessionStorage.getItem('kickedGames')) || [];
+          kickedGames.push(game_id);
+          sessionStorage.setItem('kickedGames', JSON.stringify(kickedGames));
         } else if (messageData.event_type === 'gameNotFound') {
-          console.warning('Game not found at join attempt')
-          notFoundConnectCounter++
+          console.warning('Game not found at join attempt');
+          notFoundConnectCounter++;
           if (notFoundConnectCounter < 10) {
             setTimeout(() => {
-              console.warning('Trying to rejoin game room...')
-              ws.close() // close the socket connection, which will trigger a reconnect
-            }, 500)
+              console.warning('Trying to rejoin game room...');
+              ws.close(); // close the socket connection, which will trigger a reconnect
+            }, 500);
           } else {
-            confirmFailJoin(ws)
+            confirmFailJoin(ws);
           }
         }
-      })
+      });
 
       ws.addEventListener('close', function () {
-        console.warning('Disconnected from socket server')
-        connectCounter++
+        console.warning('Disconnected from socket server');
+        connectCounter++;
         setTimeout(() => {
-          console.warning('Reconnecting...')
+          console.warning('Reconnecting...');
           if (!activeSocket || !game_id) {
-            return
+            return;
           } else {
-            connectClient() // try to reconnect after a delay
+            connectClient(); // try to reconnect after a delay
           }
-        }, 1000) // wait for 1 second before reconnecting
-      })
+        }, 1000); // wait for 1 second before reconnecting
+      });
 
-      setSocket(ws)
+      setSocket(ws);
     }
-    connectClient()
-  }, [playerName, game_id])
+    connectClient();
+  }, [playerName, game_id]);
 
   return (
     <GameContext.Provider
@@ -255,5 +265,5 @@ export const GameProvider = ({ children }) => {
     >
       {children}
     </GameContext.Provider>
-  )
-}
+  );
+};
