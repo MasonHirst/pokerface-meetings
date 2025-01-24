@@ -3,6 +3,7 @@ require('dotenv').config();
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 const cloudinary = require('cloudinary');
 const { generateSlug } = require('random-word-slugs');
+const somethingWentWrongMsg = 'Something went wrong, please try again. If it fails again, please contact the developer.';
 
 const {
   CLOUDINARY_SECRET,
@@ -105,11 +106,12 @@ function averageNumericValues(arr) {
 }
 
 async function startSocketServer(app, port, host = 'localhost') {
-  const server = app.listen(port, host);
-
+  const isProd = process.env.NODE_ENV === 'production';
+  const server = isProd ? app.listen(port) : app.listen(port, host);
   const wss = new WebSocketServer({ server });
+  
   wss.on('listening', () => {
-    console.log(`SERVER IS LISTENING ON ${host}:${port}`);
+    console.log(`SERVER IS LISTENING ON ${isProd ? 'PORT' : host}:${port}`);
     setInterval(() => {
       wss.clients.forEach((client) => {
         client.ping();
@@ -419,12 +421,12 @@ module.exports = {
     try {
       const localToken = req.headers.authorization;
       if (!localToken)
-        return res.status(401).send('where is your access token bro?');
+        return res.status(401).send('Where is your access token bro?');
       req.body.localUserToken = localToken;
       next();
     } catch (err) {
       console.error(err);
-      res.status(500).send(err);
+      res.status(500).send(somethingWentWrongMsg);
     }
   },
 
@@ -469,13 +471,12 @@ module.exports = {
       res.send(gameRooms[gameId]);
     } catch (err) {
       console.error(err);
-      res.status(500).send(err);
+      res.status(500).send(somethingWentWrongMsg);
     }
   },
 
   uploadCloudinaryImage: async (req, res) => {
     const { image, localUserToken } = req.body;
-
     try {
       cloudinary.v2.uploader.upload(
         image,
@@ -483,7 +484,7 @@ module.exports = {
         function (error, result) {
           if (error) {
             console.error(error);
-            res.status(500).send(error);
+            res.status(500).send(somethingWentWrongMsg);
           } else {
             res.send(result.url);
           }
@@ -491,7 +492,7 @@ module.exports = {
       );
     } catch (err) {
       console.error(err);
-      res.status(500).send(err);
+      res.status(500).send(somethingWentWrongMsg);
     }
   },
 
@@ -511,7 +512,7 @@ module.exports = {
       );
     } catch (err) {
       console.error(err);
-      res.status(500).send(err);
+      res.status(500).send(somethingWentWrongMsg);
     }
   },
 
@@ -552,12 +553,12 @@ module.exports = {
           },
           function (error) {
             console.error(error);
-            return res.status(500).send(error);
+            return res.status(500).send(somethingWentWrongMsg);
           }
         );
     } catch (err) {
       console.error(err);
-      res.status(500).send(err);
+      res.status(500).send(somethingWentWrongMsg);
     }
   },
 };

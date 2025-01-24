@@ -56,6 +56,7 @@ const App = ({ setSelectedGif, tenorApi }) => {
               alt='gif'
               style={{
                 maxWidth: '90%',
+                maxHeight: '80%'
               }}
             />
             <Box sx={{
