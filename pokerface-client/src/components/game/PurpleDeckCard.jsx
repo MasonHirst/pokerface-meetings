@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { useMediaQuery } from '@mui/material'
-import purpleAbstract from '../../assets/purple-abstract.jpg'
-import muiStyles from '../../style/muiStyles'
+import React, { useState, useRef, useEffect } from 'react';
+import { useMediaQuery } from '@mui/material';
+import purpleAbstract from '../../assets/purple-abstract.jpg';
+import muiStyles from '../../style/muiStyles';
 
-const { Box, Typography } = muiStyles
+const { Box, Typography } = muiStyles;
 
 const PurpleDeckCard = ({
   card = '',
@@ -23,55 +23,61 @@ const PurpleDeckCard = ({
   sizeMultiplier = 1,
   borderThickness = 2,
 }) => {
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const isXsScreen = useMediaQuery('(max-width: 400px)')
-  const [cardFontSize, setCardFontSize] = useState(23)
-  const cardTextRef = useRef()
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const isXsScreen = useMediaQuery('(max-width: 400px)');
+  const [cardFontSize, setCardFontSize] = useState(23);
+  const cardTextRef = useRef();
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str));
   }
 
   useEffect(() => {
     if (isNativeEmoji(card)) {
-      setCardFontSize(34 * fontSizeMultiplier)
-    } else setCardFontSize(23 * fontSizeMultiplier)
-  }, [card])
+      setCardFontSize(34 * fontSizeMultiplier);
+    } else setCardFontSize(23 * fontSizeMultiplier);
+  }, [card]);
 
-  let cardHeight = 98 * sizeMultiplier
-  let cardWidth = 62 * sizeMultiplier
+  let cardHeight = 98 * sizeMultiplier;
+  let cardWidth = 62 * sizeMultiplier;
 
   if (isXsScreen) {
-    cardHeight = cardHeight * 0.6
-    cardWidth = cardWidth * 0.6
+    cardHeight = cardHeight * 0.6;
+    cardWidth = cardWidth * 0.6;
   } else if (isSmallScreen) {
-    cardHeight = cardHeight * 0.7
-    cardWidth = cardWidth * 0.7
+    cardHeight = cardHeight * 0.7;
+    cardWidth = cardWidth * 0.7;
   }
 
   useEffect(() => {
     if (isSmallScreen) {
-      setCardFontSize(cardFontSize * 0.9)
+      setCardFontSize(cardFontSize * 0.9);
     } else {
-      setCardFontSize(isNativeEmoji(card) ? 34 : 23)
+      setCardFontSize(isNativeEmoji(card) ? 34 : 23);
     }
-  }, [isSmallScreen])
+  }, [isSmallScreen]);
 
   useEffect(() => {
-    if (!cardTextRef.current) return
-    const fontWidth = cardTextRef.current.clientWidth
-    if (fontWidth > cardWidth - 6) {
-      setCardFontSize(cardFontSize - 1)
+    if (!cardTextRef.current) {
+      return;
     }
-  }, [cardTextRef.current, card, cardFontSize, cardWidth, cardFontSize])
+    const fontWidth = cardTextRef.current.clientWidth;
+    if (fontWidth > cardWidth - 6) {
+      setCardFontSize(cardFontSize - 1);
+    }
+  }, [cardTextRef.current, card, cardFontSize, cardWidth, cardFontSize]);
 
   return (
     <Box
       onClick={() => {
-        if (!clickable) return
-        submitChoice(card)
+        if (!clickable) {
+          return;
+        }
+        submitChoice(card);
       }}
-      className={clickable ? 'cursor-pointer no-tap-highlight' : 'no-tap-highlight'}
+      className={
+        clickable ? 'cursor-pointer no-tap-highlight' : 'no-tap-highlight'
+      }
       // className="no-tap-highlight"
       sx={{
         display: 'flex',
@@ -105,7 +111,7 @@ const PurpleDeckCard = ({
         }}
       >
         <Typography
-          variant="h6"
+          variant='h6'
           sx={{
             fontSize: cardFontSize,
             whiteSpace: 'nowrap',
@@ -119,7 +125,7 @@ const PurpleDeckCard = ({
 
       {bottomMessage && (
         <Typography
-          variant="subtitle1"
+          variant='subtitle1'
           sx={{
             userSelect: 'none',
             whiteSpace: 'nowrap',
@@ -133,7 +139,7 @@ const PurpleDeckCard = ({
         </Typography>
       )}
     </Box>
-  )
-}
+  );
+};
 
-export default PurpleDeckCard
+export default PurpleDeckCard;

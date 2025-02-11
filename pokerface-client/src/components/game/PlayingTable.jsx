@@ -1,58 +1,74 @@
-import React, { useContext, useState, useEffect } from 'react'
-import { GameContext } from '../../context/GameContext'
-import { useMediaQuery } from '@mui/material'
-import muiStyles from '../../style/muiStyles'
-import { toast } from 'react-toastify'
-import tableTop from '../../assets/table-top.jpeg'
-const { Card, Typography, Button, blue } = muiStyles
+import React, { useContext, useState, useEffect, useMemo } from 'react';
+import { GameContext } from '../../context/GameContext';
+import { useMediaQuery } from '@mui/material';
+import muiStyles from '../../style/muiStyles';
+import { toast } from 'react-toastify';
+import tableTop from '../../assets/table-top.jpeg';
+const { Card, Typography, Button, blue } = muiStyles;
 
 const PlayingTable = ({ disableButton }) => {
-  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const isXsScreen = useMediaQuery('(max-width: 400px)')
-  const [playersData, setPlayersData] = useState([])
-  const [gameState, setGameState] = useState('')
+  const {
+    gameData,
+    sendMessage,
+    checkPowerLvl,
+    activePlayersAsArray,
+    gameState,
+  } = useContext(GameContext);
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const isXsScreen = useMediaQuery('(max-width: 400px)');
 
-  let tableMessage = 'Pick your cards!'
-  let choicesCount = 0
-  let tableClass = ''
-  let allVoted = false
+  const votesCast = useMemo(() => {
+    return activePlayersAsArray.filter((p) => p.hasVoted).length;
+  }, [activePlayersAsArray]);
 
-  useEffect(() => {
-    if (!gameData?.gameSettings?.gameRoomName) return
-    setPlayersData(Object.values(gameData.players))
-    setGameState(gameData.gameSettings.gameState)
-  }, [gameData])
-
-  playersData.forEach((player) => {
-    if (player.currentChoice) {
-      choicesCount++
+  const tableAttrs = useMemo(() => {
+    if (
+      activePlayersAsArray.length === votesCast &&
+      votesCast > 0 &&
+      gameState === 'voting'
+    ) {
+      return {
+        tableMessage: 'Reveal Cards',
+        tableClass: 'glowing-table',
+      };
+    } else if (
+      activePlayersAsArray.length > votesCast &&
+      votesCast > 0 &&
+      gameState === 'voting'
+    ) {
+      return {
+        tableMessage: 'Reveal Cards',
+        tableClass: '',
+      };
+    } else if (gameState === 'reveal') {
+      return {
+        tableMessage: 'New round',
+        tableClass: '',
+      };
+    } else {
+      return {
+        tableMessage: 'Pick your cards!',
+        tableClass: '',
+      };
     }
-  })
-  if (playersData.length === choicesCount && gameState === 'voting') {
-    tableMessage = 'Reveal Cards'
-    tableClass = 'glowing-table'
-    allVoted = true
-  } else if (
-    playersData.length > choicesCount &&
-    choicesCount > 0 &&
-    gameState === 'voting'
-  ) {
-    tableMessage = 'Reveal Cards'
-  } else if (gameState === 'reveal') {
-    tableMessage = 'New round'
-  }
+  }, [activePlayersAsArray]);
+
+  const allVoted = useMemo(() => {
+    return votesCast === activePlayersAsArray.length;
+  }, [activePlayersAsArray]);
 
   function updateGameState() {
-    if (!checkPowerLvl(gameData.gameSettings.revealPowerReq)) return toast.warning('You need more power to reveal cards')
+    if (!checkPowerLvl(gameData.gameSettings.revealPowerReq)) {
+      return toast.warning("You don't have enough power to press this button");
+    }
     sendMessage('updateGameState', {
       gameState: gameState === 'voting' ? 'reveal' : 'voting',
-    })
+    });
   }
 
   return (
     <Card
-      className={tableClass}
+      className={tableAttrs.tableClass}
       sx={{
         backgroundColor: blue[200],
         width: isXsScreen ? '140px' : { xs: '200px', sm: '380px' },
@@ -63,15 +79,22 @@ const PlayingTable = ({ disableButton }) => {
         margin: isSmallScreen ? '0 0 7px 0' : '10px 0 20px 0',
         justifyContent: 'center',
         alignItems: 'center',
-        border: gameData.gameSettings && gameData.gameSettings.woodTable && '1px solid rgba(0, 0, 0, 0.2)',
-        backgroundImage: gameData.gameSettings && gameData.gameSettings.woodTable && `url(${tableTop})`,
+        border:
+          gameData.gameSettings &&
+          gameData.gameSettings.woodTable &&
+          '1px solid rgba(0, 0, 0, 0.2)',
+        backgroundImage:
+          gameData.gameSettings &&
+          gameData.gameSettings.woodTable &&
+          `url(${tableTop})`,
       }}
     >
-      {tableMessage !== 'Pick your cards!' ? (
+      <h1>{allVoted}</h1>
+      {tableAttrs.tableMessage !== 'Pick your cards!' ? (
         <Button
           disabled={disableButton}
-          color="primary"
-          variant="contained"
+          color='primary'
+          variant='contained'
           disableElevation
           size={isSmallScreen ? (isXsScreen ? 'small' : 'medium') : 'large'}
           sx={{
@@ -82,18 +105,18 @@ const PlayingTable = ({ disableButton }) => {
           }}
           onClick={updateGameState}
         >
-          {tableMessage}
+          {tableAttrs.tableMessage}
         </Button>
       ) : (
         <Typography
-          variant="subtitle1"
+          variant='subtitle1'
           sx={{ fontSize: isSmallScreen ? 15 : 18, color: '#ffffff' }}
         >
-          {tableMessage}
+          {tableAttrs.tableMessage}
         </Typography>
       )}
     </Card>
-  )
-}
+  );
+};
 
-export default PlayingTable
+export default PlayingTable;

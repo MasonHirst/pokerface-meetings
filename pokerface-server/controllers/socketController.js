@@ -3,7 +3,13 @@ require('dotenv').config();
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 const cloudinary = require('cloudinary');
 const { generateSlug } = require('random-word-slugs');
-const somethingWentWrongMsg = 'Something went wrong, please try again. If it fails again, please contact the developer.';
+const somethingWentWrongMsg =
+  'Something went wrong, please try again. If it fails again, please contact the developer.';
+const cloneDeep = require('lodash/cloneDeep');
+const {
+  averageNumericValues,
+  isMoreThanTwoHoursAgo,
+} = require('./helperFunctions');
 
 const {
   CLOUDINARY_SECRET,
@@ -22,96 +28,98 @@ cloudinary.config({
 let gameRooms = {};
 let clientsList = {};
 
-// function getRandomNumber() {
-//   return Math.floor(Math.random() * (2000 - 500 + 1)) + 500
+function broadcastToRoom(gameRoomId, event_type, body = null) {
+  try {
+    //? arguments: target game room, event type, message
+    const gameRoomCopy = cloneDeep(gameRooms?.[gameRoomId]);
+    if (!gameRoomCopy) {
+      return console.log(`🚀🚀🚀 game room ${gameRoomId} not found`);
+    }
+    gameRooms[gameRoomId].lastAction = Date.now();
+
+    //? Loop through all clients in the game room and send the message
+    Object.values?.(gameRoomCopy.players)?.forEach(({ token }) => {
+      broadcastToPlayer(token, event_type, body || gameRoomCopy);
+    });
+
+    removeUnusedGameRooms();
+  } catch (err) {
+    console.error('🚀🚀🚀 Error broadcasting to room:', err);
+  }
+}
+
+function broadcastToPlayer(playerToken, event_type, body = null) {
+  try {
+    //? arguments: target player token, event type, message
+    const targetClient = clientsList?.[playerToken];
+    if (!targetClient) {
+      return console.log(`🚀🚀🚀 Player ${playerToken} not found`);
+    }
+
+    //? send the message
+    if (targetClient && targetClient.readyState === WebSocket.OPEN) {
+      const bodyObj = JSON.stringify({
+        event_type,
+        data: body,
+      });
+      targetClient.send(bodyObj);
+    }
+  } catch (err) {
+    console.error(`🚀🚀🚀 Error broadcasting to player ${playerToken}: `, err);
+  }
+}
+
+// function broadCastToClient(playerToken, event_type) {
+//   const client = clientsList[playerToken];
+//   if (client && client.readyState === WebSocket.OPEN) {
+//     const body = JSON.stringify({ event_type });
+//     client.send(body);
+//   }
 // }
 
-let shortDelay = false
+function removeUnusedGameRooms() {
+  console.log(
+    '🚀🚀🚀 NUMBER OF GAME ROOMS: ',
+    Object.keys?.(gameRooms)?.length
+  );
+  //? remove game room if it's empty and hasn't been used in two hours
+  console.log('🚀 ~ removeUnusedGameRooms ~ gameRooms:', gameRooms);
 
-function broadcastToRoom(gameRoomId, event_type, body = null) {
-  // console.log('game rooms status: ', gameRooms)
-  console.log('NUMBER OF GAME ROOMS: ', Object.keys(gameRooms).length);
-  // arguments: target game room, event type, message
-  const gameRoom = gameRooms[gameRoomId];
-  if (!gameRoom) return console.log(`game room ${gameRoomId} not found`);
-  gameRooms[gameRoomId].lastAction = Date.now();
-
-  // Loop through all clients in the game room and send the message
-  Object.values(gameRoom.players).forEach((playerObj) => {
-    const client = clientsList[playerObj.token];
-    if (client && client.readyState === WebSocket.OPEN) {
-      const bodyObj = JSON.stringify({ event_type, game: body || gameRoom });
-      // setTimeout(
-      //   () => {
-      //     client.send(bodyObj)
-      //     shortDelay = !shortDelay
-      //   },
-      //   shortDelay ? 600 : 2000
-      // )
-      client.send(bodyObj);
+  Object.values(gameRooms).forEach(({ gameRoomId, lastAction, players }) => {
+    const playersInRoom = Object.keys?.(players)?.length;
+    const isTwoHoursPast = isMoreThanTwoHoursAgo(lastAction);
+    if (lastAction && isTwoHoursPast && playersInRoom < 1) {
+      console.log('🚀🚀🚀 Removing unused game room:', gameRoomId);
+      delete gameRooms[gameRoomId];
     }
   });
 
-  removeUnusedGameRooms();
-}
-
-function broadCastToClient(PlayerToken, event_type) {
-  const client = clientsList[PlayerToken];
-  if (client && client.readyState === WebSocket.OPEN) {
-    const body = JSON.stringify({ event_type });
-    client.send(body);
-  }
-}
-
-function removeUnusedGameRooms() {
-  // remove game room if it's empty and hasn't been used in two hours
-  const filteredOldGames = Object.entries(gameRooms).filter(
-    ([gameId, { lastAction }]) => {
-      if (
-        Object.keys(gameRooms[gameId].players).length < 1 &&
-        gameRooms[gameId].lastAction &&
-        isMoreThanTwoHoursAgo(gameRooms[gameId].lastAction)
-      ) {
-        console.log('------------------------deleting game room: ', gameId);
-        return false;
-      } else {
-        return true;
-      }
-    }
-  );
-  gameRooms = Object.fromEntries(filteredOldGames);
-}
-
-function isMoreThanTwoHoursAgo(date) {
-  const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000; // two hours in milliseconds
-  const now = new Date();
-  const diffInMs = now - date;
-  return diffInMs > TWO_HOURS_IN_MS;
-}
-
-function averageNumericValues(arr) {
-  let sum = 0;
-  let count = 0;
-  for (let val of arr) {
-    if (!isNaN(Number(val)) && val) {
-      sum += +val;
-      count++;
-    }
-  }
-  if (count === 0) {
-    return null; // or whatever value you want to return if there are no numeric values
-  }
-  const average = sum / count;
-  return parseFloat(average.toFixed(1));
+  // const filteredOldGames = Object.entries(gameRooms).filter(
+  //   ([gameId, { lastAction }]) => {
+  //     if (
+  //       Object.keys(gameRooms[gameId].players).length < 1 &&
+  //       gameRooms[gameId].lastAction &&
+  //       isMoreThanTwoHoursAgo(gameRooms[gameId].lastAction)
+  //     ) {
+  //       console.log('------------------------deleting game room: ', gameId);
+  //       return false;
+  //     } else {
+  //       return true;
+  //     }
+  //   }
+  // );
+  // gameRooms = Object.fromEntries(filteredOldGames);
 }
 
 async function startSocketServer(app, port, host = 'localhost') {
   const isProd = process.env.NODE_ENV === 'production';
   const server = isProd ? app.listen(port) : app.listen(port, host);
   const wss = new WebSocketServer({ server });
-  
+
   wss.on('listening', () => {
-    console.log(`SERVER IS LISTENING ON ${isProd ? 'PORT' : host}:${port}`);
+    console.log(
+      `🚀🚀🚀 SERVER IS LISTENING ON ${isProd ? 'PORT' : host}:${port}`
+    );
     setInterval(() => {
       wss.clients.forEach((client) => {
         client.ping();
@@ -120,12 +128,12 @@ async function startSocketServer(app, port, host = 'localhost') {
   });
 
   wss.on('connection', function connection(ws, req) {
-    console.log('new client connected');
     // Extract token from query parameters
     let token = null;
     let playerName = null;
     let gameId = null;
     let playerCardImage = null;
+    let observerOnly = null;
 
     // Check if the URL contains a query parameter named 'token'
     if (req.url.includes('?')) {
@@ -134,63 +142,62 @@ async function startSocketServer(app, port, host = 'localhost') {
       token = urlParams.get('token');
       playerName = urlParams.get('player_name').trim();
       gameId = urlParams.get('game_id');
+      observerOnly = urlParams.get('observer_only') === 'true';
       playerCardImage =
         urlParams.get('player_card_image') === 'null'
           ? null
           : urlParams.get('player_card_image');
     }
 
-    // check if any players in the game room have the same name, and if they do, append a number to the end of the name
+    console.log('🚀🚀🚀 new client connected: ', playerName);
+
     if (gameRooms[gameId]) {
-      const playerNames = Object.values(gameRooms[gameId].players).map(
-        (player) => player.playerName
-      );
-      if (playerNames.includes(playerName)) {
-        let i = 1;
-        while (playerNames.includes(`${playerName}(${i})`)) {
-          i++;
-        }
-        playerName = `${playerName}(${i})`;
-      }
+      playerName = getPlayerNameForRoom({ token, playerName }, gameId);
     }
 
     // Attach the token to the WebSocket object
     ws.token = token;
     ws.playerName = playerName;
     ws.currentGameId = gameId;
+    ws.currentCardChoice = null;
+    ws.observerOnly = observerOnly;
     clientsList[token] = ws;
 
     if (gameRooms[gameId]) {
-      // console.log('gameRooms at player join.......: ', gameRooms[gameId].gameSettings.playerPowers)
+      // Add player to game room
       gameRooms[gameId].players[token] = {
         currentGameId: gameId,
         token,
-        currentChoice: null,
+        //! currentChoice: null,
+        hasVoted: false,
         playerName,
         playerCardImage,
+        observerOnly,
       };
       if (!gameRooms[gameId].gameSettings.playerPowers[token]) {
-        // add the player to the powers object, unless they are already there
+        //? add the player to the powers object, unless they are already there
         // const { playerPowers } = gameRooms[gameId].gameSettings
         gameRooms[gameId].gameSettings.playerPowers[token] = {
           powerLvl: gameRooms[gameId].gameSettings.defaultPlayerPower,
           playerName,
+          showCustomCardImg: true,
+          token,
         };
       }
-      if (!gameRooms[gameId].gameSettings.playerPowers[token].playerName) {
+      if (!gameRooms[gameId].gameSettings.playerPowers[token]?.playerName) {
         gameRooms[gameId].gameSettings.playerPowers[token].playerName =
           playerName;
       }
 
       const body = JSON.stringify({
         event_type: 'playerJoinedGame',
-        game: gameRooms[gameId],
+        data: gameRooms[gameId],
       });
       broadcastToRoom(gameId, 'gameUpdated');
       ws.send(body);
     } else {
       ws.send(JSON.stringify({ event_type: 'gameNotFound' }));
-      console.log('game room not found at socket join, aborting join');
+      console.log('🚀🚀🚀 game room not found at socket join, aborting join');
     }
 
     try {
@@ -203,15 +210,17 @@ async function startSocketServer(app, port, host = 'localhost') {
         const { reqType } = body || {};
         const { type, timeStamp } = reqType || {};
 
-        if (!Object.keys(gameRooms[gameId].players).includes(token)) {
+        if (
+          typeof gameRooms[gameId]?.players === 'object' &&
+          !Object.keys(gameRooms[gameId]?.players).includes(token)
+        ) {
           return console.error(
             `player can't do things, they aren't in the game room.`
           );
         }
 
-        //spacer
+        //^ spacer -----------------------------------
         if (type === 'updatedCardChoice') {
-          // console.log('🚀 ~ message ~ dataBody:', dataBody);
           if (!gameRooms[gameId]) {
             return console.error(
               'game room not found (updatedCardChoice) function'
@@ -227,16 +236,15 @@ async function startSocketServer(app, port, host = 'localhost') {
             return;
           }
 
-          if (gameRooms[gameId].players[token].currentChoice === body.card) {
-            gameRooms[gameId].players[token].currentChoice = null;
-          } else {
-            gameRooms[gameId].players[token].currentChoice = body.card;
-          }
-
+          clientsList[token].currentCardChoice = body.card;
+          gameRooms[gameId].players[token].hasVoted = body.card !== null;
           gameRooms[gameId].players[token].lastChoiceTime = timeStamp;
+          broadcastToPlayer(token, 'cardChoicePrivateResponse', {
+            card: clientsList?.[token]?.currentCardChoice,
+          });
           return broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'playerLeaveGame') {
           if (!gameRooms[gameId])
             return console.error(
@@ -244,80 +252,97 @@ async function startSocketServer(app, port, host = 'localhost') {
             );
           delete gameRooms[gameId].players[token];
           console.log(
-            'gameRooms[gameId].players after leave: ',
+            '🚀🚀🚀 gameRooms[gameId].players after leave: ',
             gameRooms[gameId].players
           );
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'updateGameState') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (updateGameState) function'
             );
           if (body.gameState === 'voting') {
-            Object.values(gameRooms[gameId].players).forEach((player) => {
-              player.currentChoice = null;
+            Object.values?.(gameRooms?.[gameId]?.players)?.forEach((player) => {
+              clientsList[player.token].currentCardChoice = null;
+              player.hasVoted = false;
             });
             gameRooms[gameId].gameSettings.currentIssueName = null;
-          }
-          if (body.gameState === 'reveal') {
+          } else if (body.gameState === 'reveal') {
             const votingObj = {
               issueName: gameRooms[gameId].gameSettings.currentIssueName,
               voteTime: Date.now(),
               agreement: null,
-              playerVotes: {},
+              votes: [],
+              isAnonymousVote:
+                !!gameRooms?.[gameId]?.gameSettings?.anonymousMode,
               average: null,
               participation: '',
             };
 
-            // place each player's vote into the cardCounts object
-            Object.values(gameRooms[gameId].players).forEach((player) => {
-              votingObj.playerVotes[player.playerName] = player.currentChoice;
+            //? place each player's vote into the cardCounts object
+            const activePlayers = Object.values?.(
+              gameRooms?.[gameId]?.players
+            ).filter((p) => !p.observerOnly);
+
+            activePlayers?.forEach((player) => {
+              const vote = {
+                card: clientsList[player.token].currentCardChoice,
+              };
+              if (!votingObj.isAnonymousVote) {
+                vote.playerName = player.playerName;
+              }
+              votingObj.votes.push(vote);
             });
 
-            // calculate how many people had votes that are not null out of the total number of people in the voting
-            const validVotes = Object.values(votingObj.playerVotes).filter(
-              (vote) => vote
+            //? calculate how many people had votes that are not null out of the total number of people in the voting
+            const validVotes = votingObj.votes.filter(
+              (vote) => vote.card
             ).length;
-            const possibleVotes = Object.values(
-              gameRooms[gameId].players
-            ).length;
+
+            const possibleVotes = activePlayers.length;
+
             votingObj.participation = `${validVotes}/${possibleVotes}`;
 
-            // calculate the average
-            votingObj.average = averageNumericValues(
-              Object.values(votingObj.playerVotes)
-            );
+            //? calculate the average
+            votingObj.average = averageNumericValues(votingObj.votes);
 
-            // calculate the agreement, which is calculated by taking the highest number of equal votes, and dividing it by the total number of votes that are not falsy
+            //? calculate the agreement, which is calculated by taking the highest number of equal votes, and dividing it by the total number of votes that are not falsy
             const cardCounts = {};
-            Object.values(votingObj.playerVotes).forEach((vote) => {
-              if (cardCounts[vote]) cardCounts[vote]++;
-              else if (vote) cardCounts[vote] = 1;
+            votingObj.votes.forEach(({ card }) => {
+              if (cardCounts[card]) {
+                cardCounts[card]++;
+              } else if (card) {
+                cardCounts[card] = 1;
+              }
             });
             const highestCount = Math.max(...Object.values(cardCounts));
-            const totalVotes = Object.values(votingObj.playerVotes).filter(
-              (vote) => vote !== null
+            const totalVotes = votingObj.votes.filter(
+              ({ card }) => card !== null
             ).length;
             votingObj.agreement =
               highestCount < 2 && totalVotes > 1
                 ? 0
                 : highestCount / totalVotes;
 
-            //push the voting object into the game vote history
+            //? push the voting object into the game vote history
             gameRooms[gameId].voteHistory.push(votingObj);
           }
           gameRooms[gameId].gameSettings.gameState = body.gameState;
           broadcastToRoom(gameId, 'gameUpdated');
+          broadcastToRoom(gameId, 'resetCardChoices', {
+            message: 'reset local card choice to null for new round',
+          });
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'updatedDeck') {
-          if (!gameRooms[gameId])
+          if (!gameRooms[gameId]) {
             return console.error('game room not found (updatedDeck) function');
+          }
           gameRooms[gameId].gameSettings.deck = body.deck;
           broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'updatedGameName') {
           if (!gameRooms[gameId])
             return console.error(
@@ -326,68 +351,80 @@ async function startSocketServer(app, port, host = 'localhost') {
           gameRooms[gameId].gameSettings.gameRoomName = body.name;
           broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'updateProfile') {
-          if (!gameRooms[gameId])
+          if (!gameRooms[gameId]) {
             return console.error(
               'game room not found (updateProfile) function'
             );
-          const { playerCardImage, name } = body;
-          if (playerCardImage || playerCardImage === '')
+          }
+          const { playerCardImage, playerName, observerOnly } = body;
+          if (playerCardImage || playerCardImage === '') {
             gameRooms[gameId].players[token].playerCardImage = playerCardImage;
-          if (name) {
-            gameRooms[gameId].players[token].playerName = body.name;
+          }
+          if (observerOnly) {
+            clientsList[token].currentCardChoice = null;
+            gameRooms[gameId].players[token].hasVoted = false;
+            broadcastToPlayer(token, 'cardChoicePrivateResponse', {
+              card: clientsList?.[token]?.currentCardChoice,
+            });
+          }
+          gameRooms[gameId].players[token].observerOnly = observerOnly;
+          if (
+            playerName !== gameRooms?.[gameId]?.players?.[token]?.playerName &&
+            playerName?.trim()?.length < 13
+          ) {
+            const newName = getPlayerNameForRoom(
+              {
+                playerName,
+                token,
+              },
+              gameId
+            );
+            gameRooms[gameId].players[token].playerName = newName;
             gameRooms[gameId].gameSettings.playerPowers[token].playerName =
-              body.name;
+              newName;
           }
           broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'setIssueName') {
           if (!gameRooms[gameId])
             return console.loerrorg(
               'game room not found (setIssueName) function'
             );
-          // console.log('-----------------', body.issueName);
           gameRooms[gameId].gameSettings.currentIssueName = body.issueName;
           broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'updatedGameSettings') {
           if (!gameRooms[gameId])
             return console.error(
               'game room not found (updatedGameSettings) function'
             );
           gameRooms[gameId].gameSettings = body.gameSettingsToSave;
+          addChatToList(gameId, { type: 'settingsUpdate', token, ...body });
           broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'kickPlayer') {
           if (!gameRooms[gameId])
             return console.error('game room not found (kickPlayer) function');
-          body.playerTokens.forEach((token) => {
-            delete gameRooms[gameId].players[token];
-            broadCastToClient(token, 'kickedFromGame');
+          body.playerTokens.forEach((playerToken) => {
+            delete gameRooms[gameId].players[playerToken];
+            broadcastToPlayer(playerToken, 'kickedFromGame');
           });
           broadcastToRoom(gameId, 'gameUpdated');
         }
-        // spacer
+        //^ spacer -----------------------------------
         else if (type === 'newChatMessage') {
-          if (!gameRooms[gameId])
+          if (!gameRooms[gameId]) {
             return console.error(
               'game room not found (newChatMessage) function'
             );
-
-          body.chatNumber =
-            gameRooms[gameId].chatMessages[0]?.chatNumber + 1 || 1;
-          if (gameRooms[gameId].chatMessages.length >= 30) {
-            // delete the oldest message if there are at least 30 messages
-            gameRooms[gameId].chatMessages.shift();
           }
-          gameRooms[gameId].chatMessages = [
-            body,
-            ...gameRooms[gameId].chatMessages,
-          ];
+
+          addChatToList(gameId, body);
           broadcastToRoom(gameId, 'gameUpdated');
         }
       });
@@ -396,12 +433,12 @@ async function startSocketServer(app, port, host = 'localhost') {
       ws.on('close', function () {
         // remove user from gameroom
         const { token, playerName, currentGameId } = ws;
-        console.log(`${playerName} DISCONNECTING`);
+        console.log(`🚀🚀🚀 ${playerName} DISCONNECTING`);
         if (gameRooms[currentGameId]?.players[token]) {
-          console.log(`removing ${playerName} from game room`);
+          console.log(`🚀🚀🚀 removing ${playerName} from game room`);
           delete gameRooms[currentGameId].players[token];
         } else {
-          console.log(`client ${playerName} not found in game room`);
+          console.log(`🚀🚀🚀 client ${playerName} not found in game room`);
         }
         delete clientsList[token];
         broadcastToRoom(currentGameId, 'gameUpdated');
@@ -412,6 +449,49 @@ async function startSocketServer(app, port, host = 'localhost') {
   });
 }
 
+function addChatToList(gameId, body) {
+  let bodyObj = {};
+  if (body?.type === 'settingsUpdate') {
+    bodyObj.sendTime = Date.now();
+    bodyObj.message = 'update';
+    bodyObj.senderName = gameRooms[gameId]?.players?.[body?.token]?.playerName;
+    bodyObj.senderPhoto = null;
+    bodyObj.type = body.type;
+    body = bodyObj;
+  }
+
+  if (!body.message || !body.type || !body.senderName || !body.sendTime) {
+    return console.error('Missing keys in chat object!');
+  }
+
+  body.chatNumber = gameRooms[gameId]?.chatMessages[0]?.chatNumber + 1 || 1;
+  if (gameRooms[gameId].chatMessages.length >= 50) {
+    //? delete the oldest message if there are at least 50 messages
+    gameRooms[gameId].chatMessages.shift();
+  }
+  gameRooms[gameId].chatMessages = [body, ...gameRooms[gameId].chatMessages];
+}
+
+function getPlayerNameForRoom(player, gameId) {
+  const { token, playerName } = player;
+  const players = Object.values(gameRooms[gameId].players);
+  const nameUnavailable = players.some(
+    (p) => p.playerName === playerName && p.token !== token
+  );
+
+  if (nameUnavailable) {
+    let i = 1;
+    let newName = `${playerName}(${i})`;
+    while (players.some((p) => p.playerName === newName && p.token !== token)) {
+      i++;
+      newName = `${playerName}(${i})`;
+    }
+    return newName;
+  } else {
+    return playerName;
+  }
+}
+
 module.exports = {
   broadcastToRoom,
   gameRooms,
@@ -420,8 +500,9 @@ module.exports = {
   extractToken: async (req, res, next) => {
     try {
       const localToken = req.headers.authorization;
-      if (!localToken)
+      if (!localToken) {
         return res.status(401).send('Where is your access token bro?');
+      }
       req.body.localUserToken = localToken;
       next();
     } catch (err) {
@@ -453,12 +534,18 @@ module.exports = {
           gameState: 'voting',
           showAgreement: true,
           showAverage: true,
+          anonymousMode: false,
           useWoodTable: false,
-          funMode: true,
+          funModeEnabled: false,
           defaultPlayerPower: 'low',
           revealPowerReq: 'low',
           playerPowers: {
-            [gameHost]: { powerLvl: 'owner', playerName: '' },
+            [gameHost]: {
+              powerLvl: 'owner',
+              playerName: '',
+              showCustomCardImg: true,
+              token: gameHost,
+            },
           },
         },
         currentIssueName: '',

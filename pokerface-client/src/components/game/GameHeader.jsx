@@ -1,17 +1,16 @@
-import React, { useEffect, useContext, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import pokerLogo from '../../assets/poker-logo.png'
-import useClipboard from 'react-use-clipboard'
-import { GameContext } from '../../context/GameContext'
-import dontGo from '../../assets/dont-go.gif'
-import { useMediaQuery } from '@mui/material'
-import GameSettings from '../dialog/GameSettings'
-import ProfileDialog from '../dialog/ProfileDialog'
-import VoteHistory from '../dialog/VoteHistory'
-import muiStyles from '../../style/muiStyles'
-import Swal from 'sweetalert2'
-import PurpleDeckCard from './PurpleDeckCard'
-import { toast } from 'react-toastify'
+import React, { useEffect, useContext, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import pokerLogo from '../../assets/poker-logo.png';
+import useClipboard from 'react-use-clipboard';
+import { GameContext } from '../../context/GameContext';
+import dontGo from '../../assets/dont-go.gif';
+import { useMediaQuery } from '@mui/material';
+import GameSettings from '../dialog/GameSettings';
+import ProfileDialog from '../dialog/ProfileDialog';
+import VoteHistory from '../dialog/VoteHistory';
+import muiStyles from '../../style/muiStyles';
+import Swal from 'sweetalert2';
+import PurpleDeckCard from './PurpleDeckCard';
 
 const {
   Typography,
@@ -35,7 +34,7 @@ const {
   LinkIcon,
   ChatOutlinedIcon,
   Badge,
-} = muiStyles
+} = muiStyles;
 
 const GameHeader = ({
   setComponentHeight,
@@ -43,65 +42,71 @@ const GameHeader = ({
   setChatDrawerOpen,
   chatDrawerOpen,
 }) => {
-  const navigate = useNavigate()
-  const footerRef = useRef()
-  const isMedScreen = useMediaQuery('(max-width: 900px)')
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const isXsScreen = useMediaQuery('(max-width: 400px)')
-  const { gameData } = useContext(GameContext)
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [showProfileDialog, setShowProfileDialog] = useState(false)
-  const open = Boolean(anchorEl)
-  const [roomName, setRoomName] = useState('')
-  const [showInviteDialog, setShowInviteDialog] = useState(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const inviteLinkInputRef = useRef()
-  const [hideChatsNotifications, setHideChatsNotifications] = useState(true)
+  const navigate = useNavigate();
+  const footerRef = useRef();
+  const isMedScreen = useMediaQuery('(max-width: 900px)');
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const isXsScreen = useMediaQuery('(max-width: 400px)');
+  const { gameData, myPowerLvl } = useContext(GameContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const open = Boolean(anchorEl);
+  const [roomName, setRoomName] = useState('');
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const inviteLinkInputRef = useRef();
+  const [hideChatsNotifications, setHideChatsNotifications] = useState(true);
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
-  })
-  const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
-  const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+  });
+  const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const clientToken = localStorage.getItem('PokerfaceLocalUserToken');
 
   useEffect(() => {
     if (!gameData?.chatMessages) {
-      return
+      return;
     }
+
     if (gameData.chatMessages.length < 1) {
-      sessionStorage.setItem('pokerfaceChatNumber', 0)
-      return
+      sessionStorage.setItem('PokerfaceChatNumber', 0);
+      return;
     }
     // if the chatDrawer is open, set the session storage number to the last message in the chat.
     if (chatDrawerOpen) {
       sessionStorage.setItem(
-        'pokerfaceChatNumber',
+        'PokerfaceChatNumber',
         gameData.chatMessages[0].chatNumber
-      )
-      setHideChatsNotifications(true)
+      );
+      setHideChatsNotifications(true);
     } else {
       // if the chat drawer is closed when a new message comes in, set the notification to true
       if (
         gameData.chatMessages[0].chatNumber >
-        +sessionStorage.getItem('pokerfaceChatNumber')
+        +sessionStorage.getItem('PokerfaceChatNumber')
       ) {
-        setHideChatsNotifications(false)
+        setHideChatsNotifications(false);
       }
     }
-  }, [gameData?.chatMessages])
+  }, [gameData?.chatMessages]);
 
   useEffect(() => {
-    if (!gameData?.gameSettings?.gameRoomName) return
-    setRoomName(gameData.gameSettings.gameRoomName)
-  }, [gameData])
+    if (!gameData?.gameSettings?.gameRoomName) {
+      return;
+    }
+    setRoomName(gameData.gameSettings.gameRoomName);
+  }, [gameData]);
 
   useEffect(() => {
-    if (!footerRef.current) return
-    setComponentHeight(footerRef.current.offsetHeight)
-  }, [footerRef.current?.offsetHeight])
+    if (!footerRef.current) {
+      return;
+    }
+    setComponentHeight(footerRef.current.offsetHeight);
+  }, [footerRef.current?.offsetHeight]);
 
   function handleLeaveGame() {
-    handleCloseGameSettings()
+    handleCloseGameSettings();
     Swal.fire({
       title: 'Are you sure?',
       text: 'You will be removed from the game',
@@ -112,39 +117,46 @@ const GameHeader = ({
       showCancelButton: true,
       cancelButtonText: 'Stay',
       customClass: {
-        popup: 'swal2-popup', // Add the custom CSS class to the 'popup' element
+        popup: 'swal2-popup',
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate('/home')
-        window.location.reload()
+        navigate('/home');
+        window.location.reload();
       }
-    })
+    });
   }
 
   function handleOpenGameSettings(event) {
-    setAnchorEl(event.currentTarget)
+    setAnchorEl(event.currentTarget);
   }
   function handleCloseGameSettings() {
-    setAnchorEl(null)
+    setAnchorEl(null);
   }
 
   function getBadgeCount() {
-    if (!gameData.chatMessages) return 0
-    if (gameData.chatMessages.length < 1) return 0
-    return (
-      gameData.chatMessages[0].chatNumber -
-      +sessionStorage.getItem('pokerfaceChatNumber')
-    )
+    if (!gameData?.chatMessages || gameData?.chatMessages?.length < 1) {
+      return 0;
+    }
+
+    const lastStoredChatNumber =
+      +sessionStorage.getItem('PokerfaceChatNumber') || 0;
+
+    const unreadMessages = gameData.chatMessages.filter(
+      (msg) =>
+        msg.type !== 'settingsUpdate' && msg.chatNumber > lastStoredChatNumber
+    );
+
+    return unreadMessages.length;
   }
 
   useEffect(() => {
     setTimeout(() => {
       if (inviteLinkInputRef.current) {
-        inviteLinkInputRef.current.select()
+        inviteLinkInputRef.current.select();
       }
-    }, 200)
-  }, [showInviteDialog, inviteLinkInputRef])
+    }, 200);
+  }, [showInviteDialog, inviteLinkInputRef]);
 
   return (
     <Box
@@ -153,7 +165,7 @@ const GameHeader = ({
       sx={{
         boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
-        height: { xs: '70px', sm: '95px' },
+        height: { xs: '70px', sm: '80px' },
         backgroundColor: '#9c4fd7',
         display: 'flex',
         justifyContent: 'center',
@@ -184,7 +196,7 @@ const GameHeader = ({
             src={pokerLogo}
             alt='logo'
             style={{
-              height: isSmallScreen ? '46px' : '70px',
+              height: isSmallScreen ? '46px' : '65px',
               display: isXsScreen && 'none',
             }}
           />
@@ -208,8 +220,8 @@ const GameHeader = ({
         <Menu open={open} anchorEl={anchorEl} onClose={handleCloseGameSettings}>
           <MenuItem
             onClick={() => {
-              handleCloseGameSettings()
-              setShowGameSettingsDialog(!showGameSettingsDialog)
+              handleCloseGameSettings();
+              setShowGameSettingsDialog(!showGameSettingsDialog);
             }}
           >
             <ListItemIcon>
@@ -220,8 +232,8 @@ const GameHeader = ({
 
           <MenuItem
             onClick={() => {
-              handleCloseGameSettings()
-              setShowHistoryDialog(!showHistoryDialog)
+              handleCloseGameSettings();
+              setShowHistoryDialog(!showHistoryDialog);
             }}
           >
             <ListItemIcon>
@@ -232,8 +244,8 @@ const GameHeader = ({
 
           <MenuItem
             onClick={() => {
-              handleCloseGameSettings()
-              setShowInviteDialog(!showInviteDialog)
+              handleCloseGameSettings();
+              setShowInviteDialog(!showInviteDialog);
             }}
           >
             <ListItemIcon>
@@ -293,7 +305,7 @@ const GameHeader = ({
                 borderColor='white'
                 borderThickness={1}
                 sizeMultiplier={0.6}
-                cardImage={localStorage.getItem('pokerCardImage')}
+                cardImage={localStorage.getItem('PokerfaceCardImage')}
               />
               <Typography
                 sx={{
@@ -301,7 +313,7 @@ const GameHeader = ({
                   fontSize: { xs: '18px', sm: '21px' },
                 }}
               >
-                {localStorage.getItem('playerName')}
+                {localStorage.getItem('PokerfacePlayerName')}
               </Typography>
             </Button>
           ) : (
@@ -320,15 +332,15 @@ const GameHeader = ({
               if (!chatDrawerOpen) {
                 if (gameData.chatMessages.length > 0) {
                   sessionStorage.setItem(
-                    'pokerfaceChatNumber',
+                    'PokerfaceChatNumber',
                     gameData.chatMessages[0].chatNumber
-                  )
+                  );
                 } else {
-                  sessionStorage.setItem('pokerfaceChatNumber', 0)
+                  sessionStorage.setItem('PokerfaceChatNumber', 0);
                 }
-                setHideChatsNotifications(true)
+                setHideChatsNotifications(true);
               }
-              setChatDrawerOpen(!chatDrawerOpen)
+              setChatDrawerOpen(!chatDrawerOpen);
             }}
           >
             <Badge
@@ -397,8 +409,8 @@ const GameHeader = ({
               <MenuItem
                 sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                 onClick={() => {
-                  setShowProfileDialog(!showProfileDialog)
-                  setDrawerOpen(!drawerOpen)
+                  setShowProfileDialog(!showProfileDialog);
+                  setDrawerOpen(!drawerOpen);
                 }}
               >
                 <PurpleDeckCard
@@ -407,14 +419,37 @@ const GameHeader = ({
                   borderColor={'#902bf5'}
                   borderThickness={1.5}
                   sizeMultiplier={0.8}
-                  cardImage={localStorage.getItem('pokerCardImage')}
+                  cardImage={localStorage.getItem('PokerfaceCardImage')}
                 />
                 <Typography variant='h6'>
-                  {localStorage.getItem('playerName')}
+                  {localStorage.getItem('PokerfacePlayerName')}
                 </Typography>
                 <EditIcon />
               </MenuItem>
             </Tooltip>
+
+            <Typography
+              variant='subtitle1'
+              sx={{
+                marginLeft: '.8rem',
+              }}
+            >
+              <span style={{ opacity: 0.7 }}>Power level: </span>
+              <span style={{ fontWeight: 'bold' }}>{myPowerLvl}</span>
+            </Typography>
+
+            <Typography
+              variant='subtitle1'
+              sx={{
+                marginLeft: '.8rem',
+                paddingRight: '.5rem',
+              }}
+            >
+              <span style={{ opacity: 0.7 }}>Name in room: </span>
+              <span style={{ fontWeight: 'bold' }}>
+                {gameData.players?.[clientToken]?.playerName}
+              </span>
+            </Typography>
 
             <Button
               href={`${document.location.origin}/contact`}
@@ -478,10 +513,10 @@ const GameHeader = ({
             fullWidth
             sx={{ textTransform: 'none', fontSize: '18px', fontWeight: 'bold' }}
             onClick={(e) => {
-              setCopied(e)
+              setCopied(e);
               setTimeout(() => {
-                setShowInviteDialog(!showInviteDialog)
-              }, 700)
+                setShowInviteDialog(!showInviteDialog);
+              }, 700);
             }}
           >
             {isCopied ? 'Copied!' : 'Copy invite link'}
@@ -512,7 +547,7 @@ const GameHeader = ({
         />
       )}
     </Box>
-  )
-}
+  );
+};
 
-export default GameHeader
+export default GameHeader;

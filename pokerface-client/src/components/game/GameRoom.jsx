@@ -1,13 +1,14 @@
-import React, { useEffect, useState, useRef, useContext } from 'react'
-import GameHeader from './GameHeader'
-import { useMediaQuery } from '@mui/material'
-import GameBody from './GameBody'
-import GameFooter from './GameFooter'
-import { GameContext } from '../../context/GameContext'
-import { ToastContainer, Slide } from 'react-toastify'
-import ChatDrawer from './ChatDrawer'
-import muiStyles from '../../style/muiStyles'
-const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
+import React, { useEffect, useState, useRef, useContext } from 'react';
+import GameHeader from './GameHeader';
+import { useMediaQuery } from '@mui/material';
+import GameBody from './GameBody';
+import GameFooter from './GameFooter';
+import { GameContext } from '../../context/GameContext';
+import { ToastContainer, Slide } from 'react-toastify';
+import ChatDrawer from './ChatDrawer';
+import muiStyles from '../../style/muiStyles';
+const { Box, Dialog, TextField, Button, Typography, LinearProgress } =
+  muiStyles;
 
 const GameRoom = () => {
   const {
@@ -17,78 +18,82 @@ const GameRoom = () => {
     gameData,
     joinGameLoading,
     toggleActiveSocket,
-  } = useContext(GameContext)
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const is750Screen = useMediaQuery('(max-width: 750px)')
-  const isMedScreen = useMediaQuery('(max-width: 900px)')
-  const [nameError, setNameError] = useState('')
-  const [nameInput, setNameInput] = useState('')
-  const [footerHeight, setFooterHeight] = useState(0)
-  const [headerHeight, setHeaderHeight] = useState(0)
-  const [availableBodyHeight, setAvailableBodyHeight] = useState(0)
-  const [bodyIsScrolling, setBodyIsScrolling] = useState(false)
-  const [chatDrawerOpen, setChatDrawerOpen] = useState(false)
-  const [drawerWidth, setDrawerWidth] = useState(300)
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
-  const bodyRef = useRef()
+  } = useContext(GameContext);
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const is750Screen = useMediaQuery('(max-width: 750px)');
+  const isMedScreen = useMediaQuery('(max-width: 900px)');
+  const [nameError, setNameError] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [footerHeight, setFooterHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [availableBodyHeight, setAvailableBodyHeight] = useState(0);
+  const [bodyIsScrolling, setBodyIsScrolling] = useState(false);
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
+  const [drawerWidth, setDrawerWidth] = useState(300);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const bodyRef = useRef();
 
   function updateName(e) {
-    e.preventDefault()
-    const trimmedName = nameInput.trim()
-    if (!trimmedName) return setNameError('Please enter a name')
-    localStorage.setItem('playerName', trimmedName)
-    setPlayerName(trimmedName)
+    e.preventDefault();
+    const trimmedName = nameInput.trim();
+    if (!trimmedName) {
+      return setNameError('Please enter a name');
+    }
+    localStorage.setItem('PokerfacePlayerName', trimmedName);
+    setPlayerName(trimmedName);
   }
 
   useEffect(() => {
     if (isMedScreen) {
-      setDrawerWidth(220)
-    } else setDrawerWidth(300)
-  }, [isMedScreen])
+      setDrawerWidth(220);
+    } else setDrawerWidth(300);
+  }, [isMedScreen]);
 
   function toggleChatDrawer() {
-    setChatDrawerOpen(!chatDrawerOpen)
+    setChatDrawerOpen(!chatDrawerOpen);
   }
 
   useEffect(() => {
     const handleResize = () => {
-      setViewportHeight(window.innerHeight)
-      setViewportWidth(window.innerWidth)
-    }
+      setViewportHeight(window.innerHeight);
+      setViewportWidth(window.innerWidth);
+    };
 
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (gameData?.gameRoomName) {
-      document.title = `Pokerface - ${gameData.gameRoomName}`
-    }
-  }, [gameData?.gameRoomName])
-
-  useEffect(() => {
-    toggleActiveSocket(true)
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      sendMessage('playerLeaveGame', {})
-    }
-  }, [])
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
-    if (!footerHeight || !headerHeight) return
-    const availableHeight = window.innerHeight - footerHeight - headerHeight
-    setAvailableBodyHeight(availableHeight - 1)
+    if (gameData?.gameSettings?.gameRoomName) {
+      document.title = `Pokerface - ${gameData?.gameSettings?.gameRoomName}`;
+    }
+  }, [gameData?.gameSettings?.gameRoomName]);
+
+  useEffect(() => {
+    toggleActiveSocket(true);
+
+    return () => {
+      sendMessage('playerLeaveGame', {});
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!footerHeight || !headerHeight) {
+      return;
+    }
+    const availableHeight = window.innerHeight - footerHeight - headerHeight;
+    setAvailableBodyHeight(availableHeight - 1);
   }, [
     footerHeight,
     headerHeight,
     viewportHeight,
     viewportWidth,
     chatDrawerOpen,
-  ])
+  ]);
 
   return (
     <>
@@ -213,7 +218,7 @@ const GameRoom = () => {
         </form>
       </Dialog>
     </>
-  )
-}
+  );
+};
 
-export default GameRoom
+export default GameRoom;

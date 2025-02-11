@@ -1,23 +1,25 @@
-import React, { createContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import spidermanCrying from '../assets/spiderman-crying.gif';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.css';
+import { toast } from 'react-toastify';
+import { eventBus } from '../utils/eventBus';
 
 export const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
   if (
-    localStorage.getItem('playerName') &&
-    localStorage.getItem('playerName').length > 9
+    localStorage.getItem('PokerfacePlayerName') &&
+    localStorage.getItem('PokerfacePlayerName').length > 12
   ) {
-    localStorage.removeItem('playerName');
+    localStorage.removeItem('PokerfacePlayerName');
   }
   const [playerName, setPlayerName] = useState(
-    localStorage.getItem('playerName')
+    localStorage.getItem('PokerfacePlayerName')
   );
-  const clientToken = localStorage.getItem('localUserToken');
+  const clientToken = localStorage.getItem('PokerfaceLocalUserToken');
   const [appIsLoading, setAppIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
@@ -31,9 +33,44 @@ export const GameProvider = ({ children }) => {
   const [iHaveBeenKicked, setIHaveBeenKicked] = useState(false);
   const { game_id } = useParams();
   let iAmKicked = false;
+  const [myPowerLvl, setMyPowerLvl] = useState('');
+  const [currentCardChoice, setCurrentCardChoice] = useState(null);
 
   const kickedGames = JSON.parse(sessionStorage.getItem('kickedGames'));
-  if (kickedGames && kickedGames.includes(game_id)) iAmKicked = true;
+  if (kickedGames && kickedGames.includes(game_id)) {
+    iAmKicked = true;
+  }
+
+  const allPlayersAsArray = useMemo(() => {
+    if (!gameData?.players) {
+      return [];
+    }
+    return Object.values(gameData?.players);
+  }, [gameData?.players]);
+
+  const activePlayersAsArray = useMemo(() => {
+    return allPlayersAsArray.filter((player) => !player.observerOnly);
+  }, [gameData?.players]);
+
+  const observerPlayersAsArray = useMemo(() => {
+    return allPlayersAsArray.filter((player) => player.observerOnly);
+  }, [gameData?.players]);
+
+  const isAnonymousMode = useMemo(() => {
+    return !!gameData?.gameSettings?.anonymousMode;
+  }, [gameData?.gameSettings?.anonymousMode]);
+
+  const myPowerSettings = useMemo(() => {
+    return gameData?.gameSettings?.playerPowers?.[clientToken] || {};
+  }, [gameData?.gameSettings?.playerPowers]);
+
+  const gameState = useMemo(() => {
+    return gameData?.gameSettings?.gameState;
+  }, [gameData?.gameSettings?.gameState]);
+
+  const iAmObserver = useMemo(() => {
+    return gameData?.players?.[clientToken]?.observerOnly;
+  }, [gameData?.players])
 
   useEffect(() => {
     if (sessionStorage.getItem('kickedGames')) {
@@ -65,17 +102,6 @@ export const GameProvider = ({ children }) => {
     console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;');
   };
 
-  function setLatestCardChoice(body = {}) {
-    const gameDataCopy = { ...gameData };
-    if (gameDataCopy.players[clientToken].currentChoice === body.card) {
-      gameDataCopy.players[clientToken].currentChoice = null;
-    } else {
-      gameDataCopy.players[clientToken].currentChoice = body.card;
-    }
-    setGameData(gameDataCopy);
-  }
-
-  let shortDelay = useRef(false)
   // eslint-disable-next-line
   function sendMessage(type, body) {
     const reqType = {
@@ -84,7 +110,7 @@ export const GameProvider = ({ children }) => {
     };
 
     if (type === 'updatedCardChoice') {
-      setLatestCardChoice(body);
+      setCurrentCardChoice(body.card);
     }
 
     const bodyObj = JSON.stringify({
@@ -93,21 +119,13 @@ export const GameProvider = ({ children }) => {
       token: clientToken,
     });
 
-
-    // setTimeout(
-    //   () => {
-    //     socket?.send(bodyObj);
-    //     shortDelay.current = !shortDelay.current;
-    //   },
-    //   shortDelay.current ? 600 : 2000
-    // );
     socket?.send(bodyObj);
   }
 
   function checkPowerLvl(powerCheck) {
+    //? Check to see if the player has power at least as high as the powerCheck
     const { playerPowers } = gameData.gameSettings;
-    const localUserToken = localStorage.getItem('localUserToken');
-    const powerLvl = playerPowers[localUserToken].powerLvl;
+    const powerLvl = playerPowers[clientToken].powerLvl;
     if (powerLvl === 'owner') {
       return true;
     } else if (powerCheck === 'low') {
@@ -159,7 +177,9 @@ export const GameProvider = ({ children }) => {
       return;
     }
     function connectClient() {
-      if (!game_id) return console.log('not in game room, aborting connection');
+      if (!game_id) {
+        return console.log('not in game room, aborting connection');
+      }
       setJoinGameLoading(true);
       let serverUrl;
       let scheme = 'ws';
@@ -176,10 +196,10 @@ export const GameProvider = ({ children }) => {
 
       const ws = new WebSocket(
         `${serverUrl}?token=${localStorage.getItem(
-          'localUserToken'
+          'PokerfaceLocalUserToken'
         )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem(
-          'pokerCardImage'
-        )}`
+          'PokerfaceCardImage'
+        )}&observer_only=${sessionStorage.getItem('PokerfaceObserverOnly')}`
       );
 
       ws.addEventListener('open', function () {
@@ -192,16 +212,21 @@ export const GameProvider = ({ children }) => {
       });
 
       ws.addEventListener('message', function (event) {
-        if (!event?.data) return;
+        if (!event?.data) {
+          return;
+        }
         let messageData = JSON.parse(event.data);
-        // console.log('🚀 ~ messageData.game:', messageData.game);
 
         if (messageData.event_type === 'playerJoinedGame') {
-          setGameData(messageData.game);
+          setGameData(messageData.data);
           setJoinGameLoading(false);
         } else if (messageData.event_type === 'gameUpdated') {
-          setGameData(messageData.game);
+          setGameData(messageData.data);
           setIHaveBeenKicked(false);
+        } else if (messageData.event_type === 'cardChoicePrivateResponse') {
+          setCurrentCardChoice(messageData.data.card);
+        } else if (messageData.event_type === 'resetCardChoices') {
+          setCurrentCardChoice(null);
         } else if (messageData.event_type === 'kickedFromGame') {
           console.warning(
             'I have been kicked from the game, and am now sad :('
@@ -243,6 +268,21 @@ export const GameProvider = ({ children }) => {
     connectClient();
   }, [playerName, game_id]);
 
+  useEffect(() => {
+    if (!gameData?.gameSettings?.playerPowers) {
+      return;
+    }
+
+    const newPowerLvl =
+      gameData?.gameSettings?.playerPowers?.[clientToken]?.powerLvl;
+
+    if (myPowerLvl && newPowerLvl && myPowerLvl !== newPowerLvl) {
+      toast.warning(`Your power level has changed to ${newPowerLvl}`);
+      eventBus.emit('myPowerLevelChanged');
+    }
+    setMyPowerLvl(newPowerLvl);
+  }, [gameData?.gameSettings?.playerPowers]);
+
   return (
     <GameContext.Provider
       value={{
@@ -261,6 +301,16 @@ export const GameProvider = ({ children }) => {
         toggleActiveSocket,
         checkPowerLvl,
         iHaveBeenKicked,
+        myPowerLvl,
+        allPlayersAsArray,
+        activePlayersAsArray,
+        isAnonymousMode,
+        myPowerSettings,
+        gameState,
+        currentCardChoice,
+        setCurrentCardChoice,
+        iAmObserver,
+        observerPlayersAsArray,
       }}
     >
       {children}

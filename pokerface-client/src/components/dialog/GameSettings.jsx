@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react'
-import { useMediaQuery } from '@mui/material'
-import muiStyles from '../../style/muiStyles'
-import ChooseDeck from './ChooseDeck'
-import { GameContext } from '../../context/GameContext'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import React, { useState, useEffect, useContext, useMemo } from 'react';
+import { Checkbox, FormControl, FormGroup, useMediaQuery } from '@mui/material';
+import muiStyles from '../../style/muiStyles';
+import ChooseDeck from './ChooseDeck';
+import { GameContext } from '../../context/GameContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { eventBus } from '../../utils/eventBus';
 
 const {
   Box,
@@ -25,176 +26,194 @@ const {
   MenuItem,
   Select,
   HelpOutlineIcon,
-} = muiStyles
+} = muiStyles;
 
 const GameSettings = ({ showDialog, setShowDialog }) => {
-  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext)
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const [showPowersExpansion, setShowPowersExpansion] = useState(false)
-  const [showKickPlayersCollapse, setShowKickPlayersCollapse] = useState(false)
-  const [showPowerLvlCollapse, setShowPowerLvlCollapse] = useState(false)
-  const [powerWarningMessage, setPowerWarningMessage] = useState('')
+  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext);
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const [showPowersExpansion, setShowPowersExpansion] = useState(false);
+  const [showKickPlayersCollapse, setShowKickPlayersCollapse] = useState(false);
+  const [showPowerLvlCollapse, setShowPowerLvlCollapse] = useState(false);
+  const [powerWarningMessage, setPowerWarningMessage] = useState('');
   const [showDefaultPowerCollapse, setShowDefaultPowerCollapse] =
-    useState(false)
-  const [newName, setNewName] = useState(gameData.gameSettings.gameRoomName)
-  const [showDeckDialog, setShowDeckDialog] = useState(false)
-  const [updatedDeck, setUpdatedDeck] = useState('')
+    useState(false);
+  const [newName, setNewName] = useState(gameData.gameSettings.gameRoomName);
+  const [showDeckDialog, setShowDeckDialog] = useState(false);
+  const [updatedDeck, setUpdatedDeck] = useState('');
   const [gameSettingsToSave, setGameSettingsToSave] = useState(
     gameData.gameSettings
-  )
-  const [playersToKickOnSave, setPlayersToKickOnSave] = useState([])
-  const [kickSelfWarning, setKickSelfWarning] = useState('')
-  const localUserToken = localStorage.getItem('localUserToken')
+  );
+  const [playersToKickOnSave, setPlayersToKickOnSave] = useState([]);
+  const [kickSelfWarning, setKickSelfWarning] = useState('');
+  const [showCustomImgExpansion, setShowCustomImgExpansion] = useState(false);
+  const localUserToken = localStorage.getItem('PokerfaceLocalUserToken');
+
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      setShowDialog(false);
+    };
+
+    eventBus.on('myPowerLevelChanged', handleSettingsUpdate);
+
+    return () => {
+      eventBus.off('myPowerLevelChanged', handleSettingsUpdate);
+    };
+  }, []);
 
   function saveGameSettings() {
-    let ownerCount = 0
+    let ownerCount = 0;
     Object.values(gameSettingsToSave.playerPowers).forEach((player) => {
-      if (player.powerLvl === 'owner') ownerCount++
-    })
-    if (ownerCount !== 1)
-      return toast.warning('There must be exactly one owner')
+      if (player.powerLvl === 'owner') {
+        ownerCount++;
+      }
+    });
+    if (ownerCount !== 1) {
+      return toast.warning('There must be exactly one owner');
+    }
 
     if (
       JSON.stringify(gameSettingsToSave) ===
       JSON.stringify(gameData.gameSettings)
     ) {
-      if (playersToKickOnSave.length > 0)
+      if (playersToKickOnSave.length > 0) {
         toast(
           `Kicked ${playersToKickOnSave.length} player${
             playersToKickOnSave.length > 1 ? 's' : ''
           }`
-        )
-      else toast('No changes were made')
+        );
+      } else {
+        toast('No changes were made');
+      }
     } else {
-      sendMessage('updatedGameSettings', { gameSettingsToSave })
-      toast.success('Game settings saved')
+      sendMessage('updatedGameSettings', { gameSettingsToSave });
+      toast.success('Game settings saved');
     }
     if (playersToKickOnSave.length > 0) {
-      sendMessage('kickPlayer', { playerTokens: playersToKickOnSave })
-      setPlayersToKickOnSave([])
+      sendMessage('kickPlayer', { playerTokens: playersToKickOnSave });
+      setPlayersToKickOnSave([]);
     }
-    setShowDialog(!showDialog)
+    setShowDialog(!showDialog);
   }
 
   function handleAddPlayerToKick(playerToken) {
-    const kickedPlayerPowerLvl =
-      gameData.gameSettings.playerPowers[playerToken].powerLvl
-    if (kickedPlayerPowerLvl === 'owner')
-      return toast.warning('You cannot kick the game owner')
-    if (kickedPlayerPowerLvl === 'high' && !checkPowerLvl())
-      return toast.warning('Only the game owner can do this')
-    if (kickedPlayerPowerLvl === 'low' && !checkPowerLvl('high'))
-      return toast.warning('You need high power to do this')
-    if (kickedPlayerPowerLvl === 'none' && !checkPowerLvl('high'))
-      return toast.warning('You need high power to do this')
+    const kickedPlayerPowerLvl = getPlayerSettings(playerToken)?.powerLvl;
+    if (kickedPlayerPowerLvl === 'owner') {
+      return toast.warning('You cannot kick the game owner');
+    }
+    if (kickedPlayerPowerLvl === 'high' && !checkPowerLvl()) {
+      return toast.warning('Only the game owner can do this');
+    }
+    if (kickedPlayerPowerLvl === 'low' && !checkPowerLvl('high')) {
+      return toast.warning('You need high power to do this');
+    }
+    if (kickedPlayerPowerLvl === 'none' && !checkPowerLvl('high')) {
+      return toast.warning('You need high power to do this');
+    }
 
     if (playersToKickOnSave.includes(playerToken)) {
       const newPlayersToKick = playersToKickOnSave.filter(
         (token) => token !== playerToken
-      )
-      setPlayersToKickOnSave(newPlayersToKick)
-    } else setPlayersToKickOnSave([...playersToKickOnSave, playerToken])
+      );
+      setPlayersToKickOnSave(newPlayersToKick);
+    } else setPlayersToKickOnSave([...playersToKickOnSave, playerToken]);
   }
 
   useEffect(() => {
-    if (!updatedDeck) return
-    if (checkPowerLvl('low')) {
-      setGameSettingsToSave({ ...gameSettingsToSave, deck: updatedDeck })
-    } else {
-      toast.warning('You need low power to do this')
+    if (!updatedDeck) {
+      return;
     }
-  }, [updatedDeck])
+    if (checkPowerLvl('low')) {
+      setGameSettingsToSave({ ...gameSettingsToSave, deck: updatedDeck });
+    } else {
+      toast.warning('You need low power to do this');
+    }
+  }, [updatedDeck]);
 
   useEffect(() => {
-    // if the powers in gameData change, update the settings UI
-    if (!gameData?.gameSettings?.playerPowers) return
+    if (!gameData?.gameSettings?.playerPowers) {
+      return;
+    }
+
+    //? Check to see if the reveal power requirement has changed. If so, issue a warning toast and close the settings dialog
+    if (
+      gameData.gameSettings?.revealPowerReq !==
+      gameSettingsToSave?.revealPowerReq
+    ) {
+      setShowDialog(false);
+      toast.warning('Player permissions have been changed');
+    }
+
+    //? Update the settings UI if other settings have been changed by another player
     setGameSettingsToSave({
       ...gameSettingsToSave,
       playerPowers: gameData.gameSettings.playerPowers,
-    })
-  }, [gameData.playerPowers])
+    });
+  }, [gameData.gameSettings]);
 
   useEffect(() => {
-    if (!newName) return
+    if (!newName) {
+      return;
+    }
     setGameSettingsToSave({
       ...gameSettingsToSave,
       gameRoomName: newName.trim(),
-    })
-  }, [newName])
+    });
+  }, [newName]);
 
   useEffect(() => {
-    if (!gameData.gameSettings.gameRoomName) return
-    setNewName(gameData.gameSettings.gameRoomName)
-  }, [gameData.gameSettings.gameRoomName])
+    if (!gameData.gameSettings.gameRoomName) {
+      return;
+    }
+    setNewName(gameData.gameSettings.gameRoomName);
+  }, [gameData.gameSettings.gameRoomName]);
 
   function getCurrentGameOwner() {
-    // filter through playerPowers and find the player with powerLvl of 'owner'. add the token to the object, which is the key of the playerPowers object
-    let ownerObj
-    Object.entries(gameData.gameSettings.playerPowers).forEach(
-      ([token, player]) => {
-        if (player.powerLvl === 'owner') {
-          const { playerName, powerLvl } = player
-          ownerObj = {
-            token,
-            playerName,
-            powerLvl,
-          }
-        }
-      }
-    )
-    return ownerObj
+    //? filter through playerPowers and find the player with powerLvl of 'owner'.
+    return Object.values(gameData.gameSettings?.playerPowers).find(
+      ({ powerLvl }) => powerLvl === 'owner'
+    );
   }
 
-  function getNewGameOwner() {
-    // filter through gameSettingsToSave.playerPowers and find the player with powerLvl of 'owner'. add the token to the object, which is the key of the playerPowers object
-    let ownerObj
-    Object.entries(gameSettingsToSave.playerPowers).forEach(
-      ([token, player]) => {
-        if (player.powerLvl === 'owner') {
-          const { playerName, powerLvl } = player
-          ownerObj = {
-            token,
-            playerName,
-            powerLvl,
-          }
-        }
-      }
-    )
-    return ownerObj
-  }
+  const newGameOwner = useMemo(() => {
+    // filter through gameSettingsToSave.playerPowers and find the player with powerLvl of 'owner'
+    return Object.values(gameSettingsToSave.playerPowers).find(
+      ({ powerLvl }) => powerLvl === 'owner'
+    );
+  }, [gameSettingsToSave]);
 
-  function getPlayerPower(token, current) {
+  function getPlayerSettings(token, current = true) {
     if (current) {
-      return gameData.gameSettings.playerPowers[token]
+      return gameData.gameSettings.playerPowers[token];
     } else {
-      return gameSettingsToSave.playerPowers[token]
+      return gameSettingsToSave.playerPowers[token];
     }
   }
 
   function orderByPowerLvl(token) {
-    const powerLvl = getPlayerPower(token, true).powerLvl
+    const powerLvl = getPlayerSettings(token).powerLvl;
 
     if (powerLvl === 'owner') {
-      return 1 // Place gameOwner player first
+      return 1;
     } else if (powerLvl === 'high') {
-      return 2 // Place highAccess players next
+      return 2;
     } else if (powerLvl === 'low') {
-      return 3 // Place lowAccess players next
+      return 3;
     } else {
-      return 4 // Place other players last
+      return 4;
     }
   }
 
   function handleOwnerChange(newOwner) {
-    if (!checkPowerLvl())
-      return toast.warning('Only the game owner can do this')
-    // set new owner's powerLvl to 'owner', and set old owner's powerLvl to 'high'
+    if (!checkPowerLvl()) {
+      return toast.warning('Only the game owner can do this');
+    }
+    // set new owner's powerLvl to 'owner', and set old owner's powerLvl to the default.
     setGameSettingsToSave({
       ...gameSettingsToSave,
       playerPowers: {
         ...gameSettingsToSave.playerPowers,
-        [getNewGameOwner().token]: {
-          ...gameSettingsToSave.playerPowers[getNewGameOwner().token],
+        [newGameOwner.token]: {
+          ...gameSettingsToSave.playerPowers[newGameOwner.token],
           powerLvl: gameSettingsToSave.defaultPlayerPower,
         },
         [newOwner]: {
@@ -202,7 +221,11 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           powerLvl: 'owner',
         },
       },
-    })
+    });
+  }
+
+  function tokenIsMe(token) {
+    return token === localUserToken;
   }
 
   function handleDefaultPowerChange(e) {
@@ -210,41 +233,51 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
       setGameSettingsToSave({
         ...gameSettingsToSave,
         defaultPlayerPower: e.target.value,
-      })
+      });
     } else {
-      toast.warning('Only the game owner can do this')
+      toast.warning('Only the game owner can do this');
     }
   }
 
   useEffect(() => {
-    if (!gameData?.gameSettings?.playerPowers) return
-    if (!gameSettingsToSave?.playerPowers) return
-    if (getCurrentGameOwner().token !== getNewGameOwner().token) {
+    if (!gameData?.gameSettings?.playerPowers) {
+      return;
+    }
+    if (!gameSettingsToSave?.playerPowers) {
+      return;
+    }
+    if (getCurrentGameOwner()?.token !== newGameOwner?.token) {
       setPowerWarningMessage(
         'You are passing game ownership! Be sure to check your new power level before saving.'
-      )
-    } else setPowerWarningMessage('')
-  }, [gameSettingsToSave.playerPowers])
+      );
+    } else {
+      setPowerWarningMessage('');
+    }
+  }, [gameSettingsToSave.playerPowers]);
 
   useEffect(() => {
     if (playersToKickOnSave.includes(localUserToken)) {
-      setKickSelfWarning('You are kicking yourself from the game!')
+      setKickSelfWarning('You are kicking yourself from the game!');
     }
-  }, [playersToKickOnSave])
+  }, [playersToKickOnSave]);
 
-  function handlePlayerPowerChange(e, token) {
-    const newPowerLvl = e.target.value
+  function handlePlayerPowerChange(newPowerLvl, token) {
     if (
       token === localUserToken &&
-      gameData.gameSettings.playerPowers[token].powerLvl === 'owner'
-    )
-      return toast.warning('You must assign another owner first')
-    if (newPowerLvl === 'owner' && !checkPowerLvl())
-      return toast.warning('Only the game owner can do this')
-    if (newPowerLvl === 'high' && !checkPowerLvl())
-      return toast.warning('Only the game owner can do this')
-    if (newPowerLvl === 'low' && !checkPowerLvl('high'))
-      return toast.warning('You need high power to do this')
+      getPlayerSettings(token)?.powerLvl === 'owner' &&
+      newGameOwner?.token === localUserToken
+    ) {
+      return toast.warning('You must assign another owner first');
+    }
+    if (newPowerLvl === 'owner' && !checkPowerLvl()) {
+      return toast.warning('Only the game owner can do this');
+    }
+    if (newPowerLvl === 'high' && !checkPowerLvl()) {
+      return toast.warning('Only the game owner can do this');
+    }
+    if (newPowerLvl === 'low' && !checkPowerLvl('low')) {
+      return toast.warning('You need high power to do this');
+    }
     setGameSettingsToSave({
       ...gameSettingsToSave,
       playerPowers: {
@@ -254,68 +287,114 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           powerLvl: newPowerLvl,
         },
       },
-    })
+    });
   }
 
-  function handleChangeAllPower(newPowerLvl) {
-    if (newPowerLvl === 'high' && !checkPowerLvl())
-      return toast.warning('Only the game owner can do this')
-    if (newPowerLvl === 'low' && !checkPowerLvl('high'))
-      return toast.warning('You need high power to do this')
-    if (newPowerLvl === 'none' && !checkPowerLvl('high'))
-      return toast.warning('You need high power to do this')
+  const playersSortedByPower = useMemo(() => {
+    if (!gameSettingsToSave?.playerPowers) {
+      return [];
+    }
 
-    const newPlayerPowers = { ...gameSettingsToSave.playerPowers }
-    Object.entries(gameSettingsToSave.playerPowers).forEach(
-      ([token, player]) => {
-        if (player.powerLvl === 'owner' || player.token === localUserToken)
-          return
-        newPlayerPowers[token] = {
-          ...gameSettingsToSave.playerPowers[token],
-          powerLvl: newPowerLvl,
-        }
-      }
-    )
+    return Object.values(gameSettingsToSave?.playerPowers).sort((a, b) => {
+      return orderByPowerLvl(a.token) - orderByPowerLvl(b.token);
+    });
+  }, [gameSettingsToSave?.playerPowers]);
+
+  const playerPowersAsArray = useMemo(() => {
+    if (!gameSettingsToSave?.playerPowers) {
+      return [];
+    }
+    return Object.values(gameSettingsToSave?.playerPowers);
+  }, [gameSettingsToSave]);
+
+  function handleUpdateShowCustomCardImg(playerToken) {
+    if (!checkPowerLvl('high')) {
+      return toast.warning('You need high power to do this');
+    }
+    const currentValue =
+      gameSettingsToSave.playerPowers[playerToken].showCustomCardImg;
+
     setGameSettingsToSave({
       ...gameSettingsToSave,
-      playerPowers: newPlayerPowers,
-    })
+      playerPowers: {
+        ...gameSettingsToSave.playerPowers,
+        [playerToken]: {
+          ...gameSettingsToSave.playerPowers[playerToken],
+          showCustomCardImg: !currentValue,
+        },
+      },
+    });
+  }
+
+  function handlePlayerPowerSelectChange(newVal, playerObj) {
+    const { token, powerLvl } = playerObj;
+    {
+      if (token === localUserToken && powerLvl === 'owner') {
+        return toast.warning(
+          'You must assign a new owner before changing your power level'
+        );
+      }
+
+      if (newVal === 'owner') {
+        handleOwnerChange(token);
+      } else if (
+        getPlayerSettings(token)?.powerLvl === 'owner' &&
+        localUserToken !== token
+      ) {
+        toast.warning('Only the game owner can do this');
+      } else {
+        handlePlayerPowerChange(newVal, token);
+      }
+    }
+  }
+
+  function handleCloseDialog() {
+    setShowDialog(!showDialog);
+    setShowPowersExpansion(false);
+    setShowPowerLvlCollapse(false);
+    setShowKickPlayersCollapse(false);
   }
 
   return (
     <>
       <Dialog
-        onClose={() => {
-          setShowDialog(!showDialog)
-          setShowPowersExpansion(false)
-          setShowPowerLvlCollapse(false)
-          setShowKickPlayersCollapse(false)
-        }}
+        onClose={handleCloseDialog}
         fullScreen={isSmallScreen}
         PaperProps={{
           style: {
-            borderRadius: !isSmallScreen && 15,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: isSmallScreen ? 'flex-start' : 'center',
-            gap: 20,
+            gap: '1rem',
+            borderRadius: !isSmallScreen && 15,
+            maxHeight: !isSmallScreen && 'min(85vh, calc(100vh - 30px))',
             minWidth: isSmallScreen
               ? '100vw'
-              : 'min(850px, calc(100vw - 16px))',
-            padding: isSmallScreen ? '50px 10px' : '60px 60px',
+              : 'min(750px, calc(100vw - 16px))',
+            padding: isSmallScreen ? '15px' : '25px',
           },
         }}
         open={showDialog}
       >
-        <IconButton
-          sx={{ position: 'absolute', top: 7, right: 5 }}
-          aria-label='close'
-          onClick={() => {
-            setShowDialog(!showDialog)
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '.5rem',
           }}
         >
-          <CloseIcon />
-        </IconButton>
+          <Typography variant='h5'>Settings</Typography>
+
+          <IconButton
+            sx={{ width: '3rem', height: '3rem' }}
+            aria-label='close'
+            onClick={() => {
+              setShowDialog(!showDialog);
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
 
         <LightTooltip
           title={
@@ -348,7 +427,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             }}
             value={`${gameSettingsToSave.deck.name} (${gameSettingsToSave.deck.values})`}
             onMouseDown={() => {
-              setShowDeckDialog(!showDeckDialog)
+              setShowDeckDialog(!showDeckDialog);
             }}
           />
         )}
@@ -364,6 +443,26 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           <FormControlLabel
             control={
               <Switch
+                checked={!!gameSettingsToSave?.anonymousMode}
+                color='success'
+                onChange={(e) => {
+                  if (checkPowerLvl('high')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      anonymousMode: e.target.checked,
+                    });
+                  } else {
+                    toast.warning('You need high power to do this');
+                  }
+                }}
+              />
+            }
+            label='Anonymous mode'
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
                 checked={gameSettingsToSave.showAgreement}
                 color='success'
                 onChange={(e) => {
@@ -371,14 +470,14 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                     setGameSettingsToSave({
                       ...gameSettingsToSave,
                       showAgreement: e.target.checked,
-                    })
+                    });
                   } else {
-                    toast.warning('You need low power to do this')
+                    toast.warning('You need low power to do this');
                   }
                 }}
               />
             }
-            label='Show Agreement'
+            label='Show agreement'
           />
 
           <FormControlLabel
@@ -390,15 +489,15 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                     setGameSettingsToSave({
                       ...gameSettingsToSave,
                       showAverage: e.target.checked,
-                    })
+                    });
                   } else {
-                    toast.warning('You need low power to do this')
+                    toast.warning('You need low power to do this');
                   }
                 }}
                 color='success'
               />
             }
-            label='Show Average'
+            label='Show average'
           />
 
           <FormControlLabel
@@ -411,14 +510,14 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                     setGameSettingsToSave({
                       ...gameSettingsToSave,
                       woodTable: e.target.checked,
-                    })
+                    });
                   } else {
-                    toast.warning('You need low power to do this')
+                    toast.warning('You need low power to do this');
                   }
                 }}
               />
             }
-            label='Wood Table'
+            label='Wood table'
           />
 
           <FormControlLabel
@@ -427,15 +526,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 // checked={gameSettingsToSave.funMode}
                 checked={false}
                 onChange={(e) => {
-                  return toast('This feature is not available yet')
-                  // if (checkPowerLvl('low')) {
-                  //   setGameSettingsToSave({
-                  //     ...gameSettingsToSave,
-                  //     funMode: e.target.checked,
-                  //   })
-                  // } else {
-                  //   toast.warning('You need low power to do this')
-                  // }
+                  return toast('This feature is not available yet');
                 }}
                 color='success'
               />
@@ -444,10 +535,10 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           />
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Box
             onClick={() => {
-              setShowPowersExpansion(!showPowersExpansion)
+              setShowPowersExpansion(!showPowersExpansion);
             }}
             className='cursor-pointer'
             sx={{
@@ -464,8 +555,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             <Typography sx={{ fontSize: '18px', fontWeight: 'bold' }}>
               Powers
               <span style={{ opacity: 0.6, marginLeft: '20px' }}>
-                my power level:{' '}
-                {gameData.gameSettings.playerPowers[localUserToken].powerLvl}
+                my power level: {getPlayerSettings(localUserToken).powerLvl}
               </span>
             </Typography>
           </Box>
@@ -480,7 +570,12 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           >
             <Typography
               color='primary'
-              sx={{ fontSize: '16px', marginTop: '-2px', marginBottom: '10px' }}
+              sx={{
+                fontSize: '16px',
+                marginTop: '-2px',
+                marginBottom: '10px',
+                marginTop: '.5rem',
+              }}
             >
               <HelpOutlineIcon
                 sx={{
@@ -550,83 +645,52 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                   marginBottom: '10px',
                 }}
               >
-                {/* <Button
-                  sx={{
-                    textTransform: 'none',
-                    marginTop: '10px',
-                    fontWeight: 'bold',
-                    fontSize: '17px',
-                  }}
-                  onClick={() => handleChangeAllPower('low')}
-                >
-                  Change all power levels
-                </Button> */}
-                {Object.entries(gameData.players)
-                  .sort((a, b) => {
-                    return orderByPowerLvl(a[0]) - orderByPowerLvl(b[0])
-                  })
-                  .map(([token, player], index) => {
-                    const powerLvl = getPlayerPower(token, false).powerLvl
-                    return (
-                      <Box
-                        key={index}
+                {playersSortedByPower.map((player, index) => {
+                  const { token, playerName } = player;
+                  const powerLvl = getPlayerSettings(token, false)?.powerLvl;
+                  return (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Typography
+                        color={tokenIsMe(token) && 'primary'}
                         sx={{
-                          display: 'flex',
-                          gap: '10px',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
+                          fontWeight: tokenIsMe(token) && 'bold',
                         }}
                       >
-                        <Typography
-                          color={token === localUserToken && 'primary'}
-                          sx={{ fontSize: '16px', fontWeight: 'bold' }}
-                        >
-                          {player.playerName}
-                        </Typography>
-                        <Select
-                          size='small'
-                          sx={{
-                            m: 1,
-                            minWidth: 120,
-                            maxHeight: '34px',
-                            margin: '5px',
-                          }}
-                          labelId='demo-select-small-label'
-                          id='demo-select-small'
-                          value={powerLvl}
-                          onChange={(e) => {
-                            if (
-                              token === localUserToken &&
-                              player.powerLvl === 'owner'
-                            ) {
-                              return toast.warning(
-                                'You must assign a new owner before changing your power level'
-                              )
-                            }
-
-                            if (e.target.value === 'owner') {
-                              handleOwnerChange(token)
-                            } else if (
-                              gameData.gameSettings.playerPowers[token]
-                                .powerLvl === 'owner' &&
-                              localUserToken !== token
-                            ) {
-                              toast.warning('Only the game owner can do this')
-                            } else {
-                              handlePlayerPowerChange(e, token)
-                            }
-                          }}
-                        >
-                          <MenuItem value='none'>
-                            <em>None</em>
-                          </MenuItem>
-                          <MenuItem value='low'>Low</MenuItem>
-                          <MenuItem value='high'>High</MenuItem>
-                          <MenuItem value='owner'>Owner</MenuItem>
-                        </Select>
-                      </Box>
-                    )
-                  })}
+                        {playerName}
+                      </Typography>
+                      <Select
+                        size='small'
+                        sx={{
+                          m: 1,
+                          minWidth: 120,
+                          maxHeight: '34px',
+                          margin: '5px',
+                        }}
+                        labelId='player-power-select-small-label'
+                        id='player-power-select-small'
+                        value={powerLvl}
+                        onChange={(e) =>
+                          handlePlayerPowerSelectChange(e.target.value, player)
+                        }
+                      >
+                        <MenuItem value='none'>
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value='low'>Low</MenuItem>
+                        <MenuItem value='high'>High</MenuItem>
+                        <MenuItem value='owner'>Owner</MenuItem>
+                      </Select>
+                    </Box>
+                  );
+                })}
               </Box>
             </Collapse>
 
@@ -679,7 +743,15 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                   <FormControlLabel
                     key={index}
                     sx={{ maxHeight: '34px' }}
-                    control={<Radio sx={{ maxHeight: '34px' }} />}
+                    control={
+                      <Radio
+                        sx={{
+                          '&.Mui-checked': {
+                            color: 'green',
+                          },
+                        }}
+                      />
+                    }
                     value={power.value}
                     label={power.label}
                   />
@@ -708,7 +780,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               <Box sx={{ maxWidth: 'fit-content' }}>
                 {Object.entries(gameData.players)
                   .sort((a, b) => {
-                    return orderByPowerLvl(a[0]) - orderByPowerLvl(b[0])
+                    return orderByPowerLvl(a[0]) - orderByPowerLvl(b[0]);
                   })
                   .map(([token, player], index) => (
                     <Box
@@ -722,7 +794,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                       }}
                     >
                       <Typography
-                        color={player.token === localUserToken && 'primary'}
+                        color={player?.token === localUserToken && 'primary'}
                         sx={{
                           fontSize: '16px',
                           fontWeight: 'bold',
@@ -737,8 +809,8 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                         color='error'
                         size='small'
                         disabled={
-                          getCurrentGameOwner().token === token ||
-                          getNewGameOwner().token === token
+                          getCurrentGameOwner()?.token === token ||
+                          newGameOwner?.token === token
                         }
                         sx={{
                           maxHeight: '34px',
@@ -758,11 +830,13 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             </Collapse>
 
             {/* Power needed to change game state */}
-            <Box sx={{
-              marginLeft: '7px',
-            }}>
-            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
-                Power needed to change reveal cards
+            <Box
+              sx={{
+                marginLeft: '7px',
+              }}
+            >
+              <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                Power needed to reveal cards
               </Typography>
               <Select
                 size='small'
@@ -776,11 +850,13 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 id='demo-select-small'
                 value={gameSettingsToSave.revealPowerReq}
                 onChange={(e) => {
-                  if (!checkPowerLvl('high')) return toast.warning('You need high power to do this')
+                  if (!checkPowerLvl('high')) {
+                    return toast.warning('You need high power to do this');
+                  }
                   setGameSettingsToSave({
                     ...gameSettingsToSave,
                     revealPowerReq: e.target.value,
-                  })
+                  });
                 }}
               >
                 <MenuItem value='none'>
@@ -790,6 +866,92 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 <MenuItem value='high'>High</MenuItem>
                 <MenuItem value='owner'>Owner</MenuItem>
               </Select>
+            </Box>
+          </Collapse>
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box
+            onClick={() => {
+              setShowCustomImgExpansion(!showCustomImgExpansion);
+            }}
+            className='cursor-pointer'
+            sx={{
+              display: 'flex',
+              gap: '10px',
+              width: '100%',
+            }}
+          >
+            {showCustomImgExpansion ? (
+              <KeyboardArrowDownIcon />
+            ) : (
+              <KeyboardArrowRightIcon />
+            )}
+            <Typography sx={{ fontSize: '18px', fontWeight: 'bold' }}>
+              Custom card images
+            </Typography>
+          </Box>
+
+          {/* Players allowed to have custom picture collapse */}
+          <Collapse
+            sx={{
+              overflowY: 'auto',
+              paddingLeft: '30px',
+            }}
+            in={showCustomImgExpansion}
+          >
+            <Box
+              sx={{
+                marginLeft: '.45rem',
+                marginTop: '.5rem',
+              }}
+            >
+              <FormControl component='fieldset'>
+                <Typography
+                  sx={{
+                    fontSize: '.9rempx',
+                    fontStyle: 'italic',
+                    opacity: 0.7,
+                  }}
+                >
+                  Players who can display a custom card image to others.
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '.9rempx',
+                    fontStyle: 'italic',
+                    opacity: 0.7,
+                  }}
+                >
+                  High power is needed to change this.
+                </Typography>
+                <FormGroup>
+                  {playerPowersAsArray.map(({ token, playerName }) => (
+                    <FormControlLabel
+                      key={token}
+                      control={
+                        <Checkbox
+                          color='success'
+                          checked={
+                            getPlayerSettings(token, false)?.showCustomCardImg
+                          }
+                          onChange={() => handleUpdateShowCustomCardImg(token)}
+                        />
+                      }
+                      label={
+                        <Typography
+                          color={tokenIsMe(token) && 'primary'}
+                          sx={{
+                            fontWeight: tokenIsMe(token) && 'bold',
+                          }}
+                        >
+                          {playerName}
+                        </Typography>
+                      }
+                    />
+                  ))}
+                </FormGroup>
+              </FormControl>
             </Box>
           </Collapse>
         </Box>
@@ -805,8 +967,21 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
             disableElevation
             fullWidth
             disableRipple
+            onClick={() => handleCloseDialog()}
+            sx={{
+              textTransform: 'none',
+              marginTop: '10px',
+              fontWeight: 'bold',
+              fontSize: '17px',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            disableElevation
+            fullWidth
+            disableRipple
             variant='contained'
-            color='primary'
             onClick={saveGameSettings}
             sx={{
               textTransform: 'none',
@@ -826,7 +1001,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
         setDeckProp={setUpdatedDeck}
       />
     </>
-  )
-}
+  );
+};
 
-export default GameSettings
+export default GameSettings;
