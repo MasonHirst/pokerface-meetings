@@ -69,21 +69,13 @@ function broadcastToPlayer(playerToken, event_type, body = null) {
   }
 }
 
-// function broadCastToClient(playerToken, event_type) {
-//   const client = clientsList[playerToken];
-//   if (client && client.readyState === WebSocket.OPEN) {
-//     const body = JSON.stringify({ event_type });
-//     client.send(body);
-//   }
-// }
-
 function removeUnusedGameRooms() {
   console.log(
     '🚀🚀🚀 NUMBER OF GAME ROOMS: ',
     Object.keys?.(gameRooms)?.length
   );
   //? remove game room if it's empty and hasn't been used in two hours
-  console.log('🚀 ~ removeUnusedGameRooms ~ gameRooms:', gameRooms);
+  // console.log('🚀 ~ removeUnusedGameRooms ~ gameRooms:', gameRooms);
 
   Object.values(gameRooms).forEach(({ gameRoomId, lastAction, players }) => {
     const playersInRoom = Object.keys?.(players)?.length;
@@ -93,22 +85,6 @@ function removeUnusedGameRooms() {
       delete gameRooms[gameRoomId];
     }
   });
-
-  // const filteredOldGames = Object.entries(gameRooms).filter(
-  //   ([gameId, { lastAction }]) => {
-  //     if (
-  //       Object.keys(gameRooms[gameId].players).length < 1 &&
-  //       gameRooms[gameId].lastAction &&
-  //       isMoreThanTwoHoursAgo(gameRooms[gameId].lastAction)
-  //     ) {
-  //       console.log('------------------------deleting game room: ', gameId);
-  //       return false;
-  //     } else {
-  //       return true;
-  //     }
-  //   }
-  // );
-  // gameRooms = Object.fromEntries(filteredOldGames);
 }
 
 async function startSocketServer(app, port, host = 'localhost') {
@@ -214,218 +190,247 @@ async function startSocketServer(app, port, host = 'localhost') {
           typeof gameRooms[gameId]?.players === 'object' &&
           !Object.keys(gameRooms[gameId]?.players).includes(token)
         ) {
+          broadcastToPlayer(token, 'notInGameRoom');
           return console.error(
             `player can't do things, they aren't in the game room.`
           );
         }
 
         //^ spacer -----------------------------------
-        if (type === 'updatedCardChoice') {
-          if (!gameRooms[gameId]) {
-            return console.error(
-              'game room not found (updatedCardChoice) function'
-            );
-          }
-          if (!gameRooms[gameId].players[token]) {
-            return console.error(
-              'player not found (updatedCardChoice) function'
-            );
-          }
+        try {
+          if (type === 'updatedCardChoice') {
+            if (!gameRooms[gameId]) {
+              return console.error(
+                'game room not found (updatedCardChoice) function'
+              );
+            }
+            if (!gameRooms[gameId].players[token]) {
+              return console.error(
+                'player not found (updatedCardChoice) function'
+              );
+            }
 
-          if (timeStamp <= gameRooms[gameId].players[token]?.lastChoiceTime) {
-            return;
-          }
+            if (timeStamp <= gameRooms[gameId].players[token]?.lastChoiceTime) {
+              return;
+            }
 
-          clientsList[token].currentCardChoice = body.card;
-          gameRooms[gameId].players[token].hasVoted = body.card !== null;
-          gameRooms[gameId].players[token].lastChoiceTime = timeStamp;
-          broadcastToPlayer(token, 'cardChoicePrivateResponse', {
-            card: clientsList?.[token]?.currentCardChoice,
-          });
-          return broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'playerLeaveGame') {
-          if (!gameRooms[gameId])
-            return console.error(
-              'game room not found (playerLeaveGame) function'
-            );
-          delete gameRooms[gameId].players[token];
-          console.log(
-            '🚀🚀🚀 gameRooms[gameId].players after leave: ',
-            gameRooms[gameId].players
-          );
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'updateGameState') {
-          if (!gameRooms[gameId])
-            return console.error(
-              'game room not found (updateGameState) function'
-            );
-          if (body.gameState === 'voting') {
-            Object.values?.(gameRooms?.[gameId]?.players)?.forEach((player) => {
-              clientsList[player.token].currentCardChoice = null;
-              player.hasVoted = false;
-            });
-            gameRooms[gameId].gameSettings.currentIssueName = null;
-          } else if (body.gameState === 'reveal') {
-            const votingObj = {
-              issueName: gameRooms[gameId].gameSettings.currentIssueName,
-              voteTime: Date.now(),
-              agreement: null,
-              votes: [],
-              isAnonymousVote:
-                !!gameRooms?.[gameId]?.gameSettings?.anonymousMode,
-              average: null,
-              participation: '',
-            };
-
-            //? place each player's vote into the cardCounts object
-            const activePlayers = Object.values?.(
-              gameRooms?.[gameId]?.players
-            ).filter((p) => !p.observerOnly);
-
-            activePlayers?.forEach((player) => {
-              const vote = {
-                card: clientsList[player.token].currentCardChoice,
-              };
-              if (!votingObj.isAnonymousVote) {
-                vote.playerName = player.playerName;
-              }
-              votingObj.votes.push(vote);
-            });
-
-            //? calculate how many people had votes that are not null out of the total number of people in the voting
-            const validVotes = votingObj.votes.filter(
-              (vote) => vote.card
-            ).length;
-
-            const possibleVotes = activePlayers.length;
-
-            votingObj.participation = `${validVotes}/${possibleVotes}`;
-
-            //? calculate the average
-            votingObj.average = averageNumericValues(votingObj.votes);
-
-            //? calculate the agreement, which is calculated by taking the highest number of equal votes, and dividing it by the total number of votes that are not falsy
-            const cardCounts = {};
-            votingObj.votes.forEach(({ card }) => {
-              if (cardCounts[card]) {
-                cardCounts[card]++;
-              } else if (card) {
-                cardCounts[card] = 1;
-              }
-            });
-            const highestCount = Math.max(...Object.values(cardCounts));
-            const totalVotes = votingObj.votes.filter(
-              ({ card }) => card !== null
-            ).length;
-            votingObj.agreement =
-              highestCount < 2 && totalVotes > 1
-                ? 0
-                : highestCount / totalVotes;
-
-            //? push the voting object into the game vote history
-            gameRooms[gameId].voteHistory.push(votingObj);
-          }
-          gameRooms[gameId].gameSettings.gameState = body.gameState;
-          broadcastToRoom(gameId, 'gameUpdated');
-          broadcastToRoom(gameId, 'resetCardChoices', {
-            message: 'reset local card choice to null for new round',
-          });
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'updatedDeck') {
-          if (!gameRooms[gameId]) {
-            return console.error('game room not found (updatedDeck) function');
-          }
-          gameRooms[gameId].gameSettings.deck = body.deck;
-          broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'updatedGameName') {
-          if (!gameRooms[gameId])
-            return console.error(
-              'game room not found (updatedGameName) function'
-            );
-          gameRooms[gameId].gameSettings.gameRoomName = body.name;
-          broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'updateProfile') {
-          if (!gameRooms[gameId]) {
-            return console.error(
-              'game room not found (updateProfile) function'
-            );
-          }
-          const { playerCardImage, playerName, observerOnly } = body;
-          if (playerCardImage || playerCardImage === '') {
-            gameRooms[gameId].players[token].playerCardImage = playerCardImage;
-          }
-          if (observerOnly) {
-            clientsList[token].currentCardChoice = null;
-            gameRooms[gameId].players[token].hasVoted = false;
+            clientsList[token].currentCardChoice = body.card;
+            gameRooms[gameId].players[token].hasVoted = body.card !== null;
+            gameRooms[gameId].players[token].lastChoiceTime = timeStamp;
             broadcastToPlayer(token, 'cardChoicePrivateResponse', {
               card: clientsList?.[token]?.currentCardChoice,
             });
+            return broadcastToRoom(gameId, 'gameUpdated');
           }
-          gameRooms[gameId].players[token].observerOnly = observerOnly;
-          if (
-            playerName !== gameRooms?.[gameId]?.players?.[token]?.playerName &&
-            playerName?.trim()?.length < 13
-          ) {
-            const newName = getPlayerNameForRoom(
-              {
-                playerName,
-                token,
-              },
-              gameId
-            );
-            gameRooms[gameId].players[token].playerName = newName;
-            gameRooms[gameId].gameSettings.playerPowers[token].playerName =
-              newName;
-          }
-          broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'setIssueName') {
-          if (!gameRooms[gameId])
-            return console.loerrorg(
-              'game room not found (setIssueName) function'
-            );
-          gameRooms[gameId].gameSettings.currentIssueName = body.issueName;
-          broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'updatedGameSettings') {
-          if (!gameRooms[gameId])
-            return console.error(
-              'game room not found (updatedGameSettings) function'
-            );
-          gameRooms[gameId].gameSettings = body.gameSettingsToSave;
-          addChatToList(gameId, { type: 'settingsUpdate', token, ...body });
-          broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'kickPlayer') {
-          if (!gameRooms[gameId])
-            return console.error('game room not found (kickPlayer) function');
-          body.playerTokens.forEach((playerToken) => {
-            delete gameRooms[gameId].players[playerToken];
-            broadcastToPlayer(playerToken, 'kickedFromGame');
-          });
-          broadcastToRoom(gameId, 'gameUpdated');
-        }
-        //^ spacer -----------------------------------
-        else if (type === 'newChatMessage') {
-          if (!gameRooms[gameId]) {
-            return console.error(
-              'game room not found (newChatMessage) function'
+          //^ spacer -----------------------------------
+          else if (type === 'playerLeaveGame') {
+            if (!gameRooms[gameId])
+              return console.error(
+                'game room not found (playerLeaveGame) function'
+              );
+            delete gameRooms[gameId].players[token];
+            console.log(
+              '🚀🚀🚀 gameRooms[gameId].players after leave: ',
+              gameRooms[gameId].players
             );
           }
+          //^ spacer -----------------------------------
+          else if (type === 'updateGameState') {
+            if (!gameRooms[gameId])
+              return console.error(
+                'game room not found (updateGameState) function'
+              );
+            if (body.gameState === 'voting') {
+              Object.values?.(gameRooms?.[gameId]?.players)?.forEach(
+                (player) => {
+                  clientsList[player.token].currentCardChoice = null;
+                  player.hasVoted = false;
+                }
+              );
+              gameRooms[gameId].gameSettings.currentIssueName = null;
+            } else if (body.gameState === 'reveal') {
+              const votingObj = {
+                issueName: gameRooms[gameId].gameSettings.currentIssueName,
+                voteTime: Date.now(),
+                agreement: null,
+                votes: [],
+                isAnonymousVote:
+                  !!gameRooms?.[gameId]?.gameSettings?.anonymousMode,
+                average: null,
+                participation: '',
+              };
 
-          addChatToList(gameId, body);
-          broadcastToRoom(gameId, 'gameUpdated');
+              //? place each player's vote into the cardCounts object
+              const activePlayers = Object.values?.(
+                gameRooms?.[gameId]?.players
+              ).filter((p) => !p.observerOnly);
+
+              activePlayers?.forEach((player) => {
+                const vote = {
+                  card: clientsList[player.token].currentCardChoice,
+                };
+                if (!votingObj.isAnonymousVote) {
+                  vote.playerName = player.playerName;
+                }
+                votingObj.votes.push(vote);
+              });
+
+              //? calculate how many people had votes that are not null out of the total number of people in the voting
+              const validVotes = votingObj.votes.filter(
+                (vote) => vote.card
+              ).length;
+
+              const possibleVotes = activePlayers.length;
+
+              votingObj.participation = `${validVotes}/${possibleVotes}`;
+
+              //? calculate the average
+              votingObj.average = averageNumericValues(votingObj.votes);
+
+              //? calculate the agreement, which is calculated by taking the highest number of equal votes, and dividing it by the total number of votes that are not falsy
+              const cardCounts = {};
+              votingObj.votes.forEach(({ card }) => {
+                if (cardCounts[card]) {
+                  cardCounts[card]++;
+                } else if (card) {
+                  cardCounts[card] = 1;
+                }
+              });
+              const highestCount = Math.max(...Object.values(cardCounts));
+              const totalVotes = votingObj.votes.filter(
+                ({ card }) => card !== null
+              ).length;
+              votingObj.agreement =
+                highestCount < 2 && totalVotes > 1
+                  ? 0
+                  : highestCount / totalVotes;
+
+              //? push the voting object into the game vote history
+              gameRooms[gameId].voteHistory.push(votingObj);
+            }
+            gameRooms[gameId].gameSettings.gameState = body.gameState;
+            broadcastToRoom(gameId, 'gameUpdated');
+            broadcastToRoom(gameId, 'resetCardChoices', {
+              message: 'reset local card choice to null for new round',
+            });
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'updatedDeck') {
+            if (!gameRooms[gameId]) {
+              return console.error(
+                'game room not found (updatedDeck) function'
+              );
+            }
+            gameRooms[gameId].gameSettings.deck = body.deck;
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'updatedGameName') {
+            if (!gameRooms[gameId])
+              return console.error(
+                'game room not found (updatedGameName) function'
+              );
+            gameRooms[gameId].gameSettings.gameRoomName = body.name;
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'updateProfile') {
+            if (!gameRooms[gameId]) {
+              return console.error(
+                'game room not found (updateProfile) function'
+              );
+            }
+            const { playerCardImage, playerName, observerOnly } = body;
+            if (playerCardImage || playerCardImage === '') {
+              gameRooms[gameId].players[token].playerCardImage =
+                playerCardImage;
+            }
+            if (observerOnly) {
+              clientsList[token].currentCardChoice = null;
+              gameRooms[gameId].players[token].hasVoted = false;
+              broadcastToPlayer(token, 'cardChoicePrivateResponse', {
+                card: clientsList?.[token]?.currentCardChoice,
+              });
+            }
+            gameRooms[gameId].players[token].observerOnly = observerOnly;
+            if (
+              playerName !==
+                gameRooms?.[gameId]?.players?.[token]?.playerName &&
+              playerName?.trim()?.length < 13
+            ) {
+              const newName = getPlayerNameForRoom(
+                {
+                  playerName,
+                  token,
+                },
+                gameId
+              );
+              gameRooms[gameId].players[token].playerName = newName;
+              gameRooms[gameId].gameSettings.playerPowers[token].playerName =
+                newName;
+            }
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'setIssueName') {
+            if (!gameRooms[gameId])
+              return console.loerrorg(
+                'game room not found (setIssueName) function'
+              );
+            gameRooms[gameId].gameSettings.currentIssueName = body.issueName;
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'updatedGameSettings') {
+            if (!gameRooms[gameId]) {
+              return console.error(
+                'game room not found (updatedGameSettings) function'
+              );
+            }
+            //? check if the deck has changed. If so, reset player card choices
+            const oldDeck = gameRooms[gameId].gameSettings.deck;
+            const newDeck = body.gameSettingsToSave.deck;
+            if (oldDeck.values !== newDeck.values) {
+              Object.keys(clientsList).forEach((token) => {
+                if (clientsList?.[token]?.currentCardChoice) {
+                  clientsList[token].currentCardChoice = null;
+                }
+                if (gameRooms?.[gameId]?.players?.[token]?.hasVoted) {
+                  gameRooms[gameId].players[token].hasVoted = false;
+                }
+              });
+              broadcastToRoom(gameId, 'resetCardChoices', {
+                message: 'reset local card choice to null for new deck',
+              });
+            }
+            //? update gameRoom with new settings
+            gameRooms[gameId].gameSettings = body.gameSettingsToSave;
+            addChatToList(gameId, { type: 'settingsUpdate', token, ...body });
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'kickPlayer') {
+            if (!gameRooms[gameId])
+              return console.error('game room not found (kickPlayer) function');
+            body.playerTokens.forEach((playerToken) => {
+              delete gameRooms[gameId].players[playerToken];
+              broadcastToPlayer(playerToken, 'kickedFromGame');
+            });
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+          //^ spacer -----------------------------------
+          else if (type === 'newChatMessage') {
+            if (!gameRooms[gameId]) {
+              return console.error(
+                'game room not found (newChatMessage) function'
+              );
+            }
+
+            addChatToList(gameId, body);
+            broadcastToRoom(gameId, 'gameUpdated');
+          }
+        } catch (error) {
+          console.error('Error in gameRoomController:', error);
         }
       });
       //! END MESSAGES HANLDERS
@@ -531,11 +536,11 @@ module.exports = {
           gameRoomName: gameName,
           deck,
           woodTable: false,
+          showShadows: true,
           gameState: 'voting',
           showAgreement: true,
           showAverage: true,
           anonymousMode: false,
-          useWoodTable: false,
           funModeEnabled: false,
           defaultPlayerPower: 'low',
           revealPowerReq: 'low',

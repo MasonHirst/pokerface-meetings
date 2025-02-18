@@ -239,7 +239,7 @@ const VoteHistory = ({ showDialog, setShowDialog, gameData }) => {
               <TableCell
                 sx={{ ...headerCellStyle(0, '0'), width: '20px' }}
               ></TableCell>
-              <TableCell sx={headerCellStyle(140)}>Matter at hand</TableCell>
+              <TableCell sx={headerCellStyle(140)}>Vote topic</TableCell>
               <TableCell sx={headerCellStyle(90)}>Average</TableCell>
               <TableCell sx={headerCellStyle(100)}>Agreement</TableCell>
               <TableCell sx={headerCellStyle(100)}>Vote Time</TableCell>

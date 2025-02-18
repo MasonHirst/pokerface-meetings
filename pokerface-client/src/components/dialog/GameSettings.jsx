@@ -6,6 +6,7 @@ import { GameContext } from '../../context/GameContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { eventBus } from '../../utils/eventBus';
+import { getPowerLvlAsNumber } from '../../utils/helperFunctions';
 
 const {
   Box,
@@ -29,7 +30,8 @@ const {
 } = muiStyles;
 
 const GameSettings = ({ showDialog, setShowDialog }) => {
-  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext);
+  const { gameData, sendMessage, checkPowerLvl } =
+    useContext(GameContext);
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const [showPowersExpansion, setShowPowersExpansion] = useState(false);
   const [showKickPlayersCollapse, setShowKickPlayersCollapse] = useState(false);
@@ -189,20 +191,6 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
     }
   }
 
-  function orderByPowerLvl(token) {
-    const powerLvl = getPlayerSettings(token).powerLvl;
-
-    if (powerLvl === 'owner') {
-      return 1;
-    } else if (powerLvl === 'high') {
-      return 2;
-    } else if (powerLvl === 'low') {
-      return 3;
-    } else {
-      return 4;
-    }
-  }
-
   function handleOwnerChange(newOwner) {
     if (!checkPowerLvl()) {
       return toast.warning('Only the game owner can do this');
@@ -294,9 +282,8 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
     if (!gameSettingsToSave?.playerPowers) {
       return [];
     }
-
     return Object.values(gameSettingsToSave?.playerPowers).sort((a, b) => {
-      return orderByPowerLvl(a.token) - orderByPowerLvl(b.token);
+      return getPowerLvlAsNumber(a.powerLvl) - getPowerLvlAsNumber(b.powerLvl);
     });
   }, [gameSettingsToSave?.playerPowers]);
 
@@ -408,7 +395,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           <TextField
             spellCheck={false}
             fullWidth
-            inputProps={{ maxLength: 20 }}
+            inputProps={{ maxLength: 24 }}
             value={newName}
             placeholder='Enter a game name'
             disabled={!checkPowerLvl('low')}
@@ -498,6 +485,26 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               />
             }
             label='Show average'
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={gameSettingsToSave.showShadows}
+                color='success'
+                onChange={(e) => {
+                  if (checkPowerLvl('high')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      showShadows: e.target.checked,
+                    });
+                  } else {
+                    toast.warning('You need high power to do this');
+                  }
+                }}
+              />
+            }
+            label='Shadows'
           />
 
           <FormControlLabel
@@ -646,8 +653,7 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                 }}
               >
                 {playersSortedByPower.map((player, index) => {
-                  const { token, playerName } = player;
-                  const powerLvl = getPlayerSettings(token, false)?.powerLvl;
+                  const { token, playerName, powerLvl } = player || {};
                   return (
                     <Box
                       key={index}
@@ -757,76 +763,6 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                   />
                 ))}
               </RadioGroup>
-            </Collapse>
-
-            <Box
-              className='cursor-pointer'
-              onClick={() =>
-                setShowKickPlayersCollapse(!showKickPlayersCollapse)
-              }
-              sx={{ display: 'flex', gap: '10px', marginBottom: '10px' }}
-            >
-              {showKickPlayersCollapse ? (
-                <KeyboardArrowDownIcon />
-              ) : (
-                <KeyboardArrowRightIcon />
-              )}
-              <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
-                Kick players
-              </Typography>
-            </Box>
-            {/* kick players collapse */}
-            <Collapse in={showKickPlayersCollapse} sx={{ paddingLeft: '33px' }}>
-              <Box sx={{ maxWidth: 'fit-content' }}>
-                {Object.entries(gameData.players)
-                  .sort((a, b) => {
-                    return orderByPowerLvl(a[0]) - orderByPowerLvl(b[0]);
-                  })
-                  .map(([token, player], index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: 'flex',
-                        gap: '10px',
-                        alignItems: 'center',
-                        width: '100%',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Typography
-                        color={player?.token === localUserToken && 'primary'}
-                        sx={{
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                          textDecoration:
-                            playersToKickOnSave.includes(token) &&
-                            'line-through',
-                        }}
-                      >
-                        {player.playerName}
-                      </Typography>
-                      <Button
-                        color='error'
-                        size='small'
-                        disabled={
-                          getCurrentGameOwner()?.token === token ||
-                          newGameOwner?.token === token
-                        }
-                        sx={{
-                          maxHeight: '34px',
-                          textTransform: 'none',
-                          fontWeight: 'bold',
-                          fontSize: '17px',
-                        }}
-                        onClick={() => handleAddPlayerToKick(token)}
-                      >
-                        {playersToKickOnSave.includes(token)
-                          ? 'Cancel'
-                          : 'Kick'}
-                      </Button>
-                    </Box>
-                  ))}
-              </Box>
             </Collapse>
 
             {/* Power needed to change game state */}
@@ -952,6 +888,75 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
                   ))}
                 </FormGroup>
               </FormControl>
+            </Box>
+          </Collapse>
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box
+            onClick={() => {
+              setShowKickPlayersCollapse(!showKickPlayersCollapse);
+            }}
+            className='cursor-pointer'
+            sx={{
+              display: 'flex',
+              gap: '10px',
+              width: '100%',
+            }}
+          >
+            {showKickPlayersCollapse ? (
+              <KeyboardArrowDownIcon />
+            ) : (
+              <KeyboardArrowRightIcon />
+            )}
+            <Typography sx={{ fontSize: '18px', fontWeight: 'bold' }}>
+              Kick players
+            </Typography>
+          </Box>
+          {/* kick players collapse */}
+          <Collapse in={showKickPlayersCollapse} sx={{ paddingLeft: '33px' }}>
+            <Box sx={{ maxWidth: 'fit-content' }}>
+              {playersSortedByPower.map(({ token, playerName }, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography
+                    color={tokenIsMe(token) && 'primary'}
+                    sx={{
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      textDecoration:
+                        playersToKickOnSave.includes(token) && 'line-through',
+                    }}
+                  >
+                    {playerName}
+                  </Typography>
+                  <Button
+                    color='error'
+                    size='small'
+                    disabled={
+                      getCurrentGameOwner()?.token === token ||
+                      newGameOwner?.token === token
+                    }
+                    sx={{
+                      maxHeight: '34px',
+                      textTransform: 'none',
+                      fontWeight: 'bold',
+                      fontSize: '17px',
+                    }}
+                    onClick={() => handleAddPlayerToKick(token)}
+                  >
+                    {playersToKickOnSave.includes(token) ? 'Cancel' : 'Kick'}
+                  </Button>
+                </Box>
+              ))}
             </Box>
           </Collapse>
         </Box>

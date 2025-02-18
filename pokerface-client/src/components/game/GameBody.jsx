@@ -30,7 +30,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     iHaveBeenKicked,
     isAnonymousMode,
     activePlayersAsArray,
-    observerPlayersAsArray,
+    allPlayersAsArray,
   } = useContext(GameContext);
   const gameBodyRef = useRef();
   const [stateButtonDisabled, setStateButtonDisabled] = useState(false);
@@ -184,10 +184,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             bottomMessageMargin='3px 0 0 0'
             showBgImage={player?.hasVoted}
             borderColor='#902bf5'
-            bgColor='#f2f2f2'
             cardImage={getCardImage(player)}
             bottomMessage={player?.playerName}
             sizeMultiplier={cardSizeMultiplier}
+            showShadow
           />
         );
         assignPlayerSeat(deckCard, index);
@@ -215,9 +215,9 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             card={vote.card}
             bottomMessageMargin='3px 0 0 0'
             borderColor='#902bf5'
-            bgColor='#f2f2f2'
             bottomMessage={vote.playerName}
             sizeMultiplier={cardSizeMultiplier}
+            showShadow
           />
         );
         assignPlayerSeat(deckCard, index, length);
@@ -265,28 +265,9 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     return playerPositions.bottom.length > 0 && !hideCardsForAnonymousMode;
   }, [playerPositions]);
 
-  const anonymousModeAlertText = useMemo(() => {
-    if (gameState === 'reveal' && latestVoting.isAnonymousVote) {
-      return 'This vote was anonymous - only the results are visible.';
-    } else if (gameState === 'voting' && isAnonymousMode) {
-      return 'Anonymous mode is enabled. You can change this in settings.';
-    } else {
-      return '';
-    }
-  }, [gameState, isAnonymousMode, latestVoting]);
-
-  const observerList = useMemo(() => {
-    let list = [];
-    observerPlayersAsArray.forEach((p, index) => {
-      list.push(
-        <span key={index}>
-          <span style={{ color: blue[500] }}>{p.playerName}</span>
-          {index < observerPlayersAsArray.length - 1 && <span>, </span>}
-        </span>
-      );
-    });
-    return list;
-  }, [observerPlayersAsArray]);
+  const showWasAnonymousVoteText = useMemo(() => {
+    return gameState === 'reveal' && isAnonymousMode;
+  }, [gameState, isAnonymousMode]);
 
   // Yes, I do need the three parent boxes for scroll styling
   return (
@@ -325,20 +306,6 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             alignItems: 'center',
           }}
         >
-          {observerPlayersAsArray.length > 0 && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: isSmallScreen ? '.2rem' : '.5rem',
-                left: isSmallScreen ? '.2rem' : '.5rem',
-              }}
-            >
-              <Typography variant={isSmallScreen ? 'caption' : 'body1'}>
-                Observers: {observerList}
-              </Typography>
-            </Box>
-          )}
-
           {iHaveBeenKicked && (
             <Alert
               severity='error'
@@ -370,7 +337,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                   opacity: 0.6,
                 }}
               >
-                Matter at hand:
+                Vote topic:
               </Typography>
 
               <Box
@@ -387,6 +354,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                       sm: '24px',
                       position: 'relative',
                       top: '-3px',
+                      textAlign: 'center',
                     },
                   }}
                   className={gameState === 'voting' ? 'cursor-pointer' : ''}
@@ -449,7 +417,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                       }
                     }}
                     inputProps={{
-                      maxLength: 250,
+                      maxLength: 120,
                       style: {
                         fontSize: isSmallScreen ? '16px' : '20px',
                         width: 'clamp(240px, 50vw, 500px)',
@@ -502,7 +470,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 }}
                 endIcon={<EditIcon />}
                 sx={{
-                  marginBottom: '30px',
+                  marginBottom: '10px',
                   fontSize: '18px',
                   textTransform: 'none',
                   fontWeight: 'bold',
@@ -515,7 +483,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
           )}
 
           {gameData.players &&
-            activePlayersAsArray.length < 2 &&
+            allPlayersAsArray.length < 2 &&
             gameState === 'voting' && (
               <Box
                 sx={{
@@ -590,7 +558,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             </Box>
           )}
 
-          {isAnonymousMode && (
+          {showWasAnonymousVoteText && (
             <Typography
               sx={{
                 opacity: 0.7,
@@ -598,7 +566,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
                 textAlign: 'center',
               }}
             >
-              {anonymousModeAlertText}
+              This vote was anonymous - only the result are shown below.
             </Typography>
           )}
         </Box>

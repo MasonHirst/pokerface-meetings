@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import pokerLogo from '../../assets/poker-logo.png';
 import PurpleDeckCard from '../game/PurpleDeckCard';
@@ -6,6 +6,7 @@ import GraphemeSplitter from 'grapheme-splitter';
 import ChooseDeck from '../dialog/ChooseDeck';
 import axios from 'axios';
 import muiStyles from '../../style/muiStyles';
+import { deriveCardsFromDeck } from '../../utils/helperFunctions';
 const { Box, TextField, Button, StyleIcon, TvIcon, Typography } = muiStyles;
 
 const CreateGamePage = () => {
@@ -20,20 +21,19 @@ const CreateGamePage = () => {
   const [error, setError] = useState('');
   const [appIsLoading, setAppIsLoading] = useState(false);
 
-  const mappedSelectedDeck = [...new Set(selectedDeck.values.split(','))].map(
-    (card, index) => {
-      const length = splitter.splitGraphemes(card.trim()).length;
-      if (length > 4 || card.trim().length < 1) {
-        return;
-      }
-      return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />;
+  const selectedDeckCards = useMemo(() => {
+    if (typeof selectedDeck.values !== 'string') {
+      return [];
     }
-  );
+    return deriveCardsFromDeck(selectedDeck.values).map((card, index) => {
+      return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />;
+    });
+  }, [selectedDeck]);
 
   useEffect(() => {
     document.title = 'Pokerface - Create Game';
-  }, [])
-  
+  }, []);
+
   function handleHostGame(e) {
     setError('');
     e.preventDefault();
@@ -81,7 +81,7 @@ const CreateGamePage = () => {
         }}
       >
         <TextField
-          inputProps={{ maxLength: 20 }}
+          inputProps={{ maxLength: 24 }}
           onChange={(e) => setGameName(e.target.value)}
           sx={{ width: 'min(650px, 100%)' }}
           autoFocus
@@ -113,7 +113,7 @@ const CreateGamePage = () => {
               paddingBottom: '8px',
             }}
           >
-            {mappedSelectedDeck}
+            {selectedDeckCards}
           </Box>
         </Box>
 

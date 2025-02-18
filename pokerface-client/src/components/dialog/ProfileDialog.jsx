@@ -30,7 +30,7 @@ const ProfileDialog = ({ showDialog, setShowDialog }) => {
     localStorage.getItem('PokerfacePlayerName')
   );
   const [observerModeInput, setObserverModeInput] = useState(
-    gameData.players[clientToken].observerOnly
+    gameData?.players?.[clientToken]?.observerOnly
   );
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [uploadedPicture, setUploadedPicture] = useState('');
@@ -162,6 +162,7 @@ const ProfileDialog = ({ showDialog, setShowDialog }) => {
             <PurpleDeckCard
               showBgImage
               showCard={false}
+              showShadow
               cardImage={
                 uploadedPicture
                   ? uploadedPicture

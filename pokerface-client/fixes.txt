@@ -83,8 +83,6 @@ BUG - on mobile, tapping the deck card twice pops up a google thingy
 
 FIXED------ The input box to change the issue name should not submit on focus loss. It needs a cancel button and a submit button
 
-make the server broadcast function only send the necesary info from the message recieved. So if the player powers changed, it would only send (gameRooms[gameId].gameSettings.playersPowers). The front end would need to handle it correctly
-
 FIXED------ bug - users can change their name while in a game room to exactly another players name.
 
 FIXED------ bug - changing your name does not enforce the character limit
@@ -119,8 +117,14 @@ add tooltips or something to power collapses to explain what the power levels ar
 
 Change all the power levels to something cooler, like "King", "Advisor", "Knight", "Peasant"
 
-Increase the character limit for custom decks. Each card should be able to hold alot of text, it should just wrap and shrink as needed.
+FIXED------ Increase the character limit for custom decks. Each card should be able to hold alot of text, it should just wrap and shrink as needed.
 
 In the settings modal, remove the tooltips from the clickable box. this will let them be clicked on mobile.
 
 Make the remove picture button simply queue the picture for removal instead
+
+FIXED------ Fix the issue test input. It needs to be centered when really long, and decrease the character limit.
+
+make the server broadcast function only send the necesary info from the message recieved. So if the player powers changed, it would only send (gameRooms[gameId].gameSettings.playersPowers). The front end would need to handle it correctly
+
+FIXED------ bug - if I vote, change the deck, change the deck back, it shows what I voted but doesn't think I voted

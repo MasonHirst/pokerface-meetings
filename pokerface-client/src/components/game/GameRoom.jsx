@@ -4,7 +4,6 @@ import { useMediaQuery } from '@mui/material';
 import GameBody from './GameBody';
 import GameFooter from './GameFooter';
 import { GameContext } from '../../context/GameContext';
-import { ToastContainer, Slide } from 'react-toastify';
 import ChatDrawer from './ChatDrawer';
 import muiStyles from '../../style/muiStyles';
 const { Box, Dialog, TextField, Button, Typography, LinearProgress } =
@@ -56,11 +55,13 @@ const GameRoom = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setViewportHeight(window.innerHeight);
+      //? Trying this for more stable mobile sizes
+      setViewportHeight(document?.documentElement?.clientHeight);
       setViewportWidth(window.innerWidth);
     };
 
     window.addEventListener('resize', handleResize);
+    handleResize();
 
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -97,17 +98,6 @@ const GameRoom = () => {
 
   return (
     <>
-      <ToastContainer
-        position='top-center'
-        newestOnTop
-        draggable
-        hideProgressBar={false}
-        autoClose={2500}
-        transition={Slide}
-        pauseOnHover
-        pauseOnFocusLoss={false}
-        theme='light'
-      />
       {!joinGameLoading && playerName ? (
         <Box
           id='wrapper-for-the-app-and-chat-drawer'
@@ -143,8 +133,9 @@ const GameRoom = () => {
               />
             </Box>
             <GameFooter
-              shadowOn={bodyIsScrolling}
               setComponentHeight={setFooterHeight}
+              shadowOn={bodyIsScrolling}
+              chatDrawerOpen={chatDrawerOpen}
             />
           </Box>
           {chatDrawerOpen && (

@@ -22,9 +22,9 @@ const {
 
 const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
   const { gameData, sendMessage } = useContext(GameContext);
-  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  // const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const is750Screen = useMediaQuery('(max-width: 750px)');
-  const isMedScreen = useMediaQuery('(max-width: 900px)');
+  // const isMedScreen = useMediaQuery('(max-width: 900px)');
   const [chatInput, setChatInput] = useState('');
   const [showGifPopup, setShowGifPopup] = useState(false);
   const chatBodyRef = useRef();

@@ -13,6 +13,7 @@ const PlayingTable = ({ disableButton }) => {
     checkPowerLvl,
     activePlayersAsArray,
     gameState,
+    shadowsEnabled,
   } = useContext(GameContext);
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const isXsScreen = useMediaQuery('(max-width: 400px)');
@@ -74,7 +75,7 @@ const PlayingTable = ({ disableButton }) => {
         width: isXsScreen ? '140px' : { xs: '200px', sm: '380px' },
         height: { xs: '110px', sm: '200px' },
         borderRadius: '20px',
-        boxShadow: 'none',
+        boxShadow: shadowsEnabled ? '1px 3px 6px rgba(0, 0, 0, 0.5)' : 'none',
         display: 'flex',
         margin: isSmallScreen ? '0 0 7px 0' : '10px 0 20px 0',
         justifyContent: 'center',

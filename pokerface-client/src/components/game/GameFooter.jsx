@@ -2,17 +2,14 @@ import React, { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import muiStyles from '../../style/muiStyles';
 import PurpleDeckCard from './PurpleDeckCard';
 import { useMediaQuery } from '@mui/material';
-import GraphemeSplitter from 'grapheme-splitter';
 import { GameContext } from '../../context/GameContext';
 import VoteSummary from './VoteSummary';
+import { deriveCardsFromDeck } from '../../utils/helperFunctions';
 const { Box, Typography } = muiStyles;
 
-const GameFooter = ({ setComponentHeight, shadowOn }) => {
-  const [latestVoting, setLatestVoting] = useState([]);
-  const [deckCards, setDeckCards] = useState([]);
-  const [playersData, setPlayersData] = useState([]);
-  const [gameState, setGameState] = useState('');
+const GameFooter = ({ setComponentHeight, shadowOn, chatDrawerOpen }) => {
   const footerRef = useRef();
+  const cardBoxRef = useRef();
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const {
     gameData,
@@ -20,31 +17,39 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
     currentCardChoice,
     isAnonymousMode,
     iAmObserver,
+    gameDeck,
+    gameState,
   } = useContext(GameContext);
-  const splitter = GraphemeSplitter();
 
   useEffect(() => {
-    if (!footerRef.current) {
+    if (!footerRef?.current) {
       return;
     }
-    setComponentHeight(footerRef.current.offsetHeight);
-  }, [footerRef.current?.offsetHeight, gameState]);
+    //? Assign a ResizeObserver because it updates more accurately
+    //? than simply watching the footerRef with a useEffect.
+    const resizeObserver = new ResizeObserver(() => {
+      const height = footerRef?.current?.offsetHeight;
+      setComponentHeight(height);
+    });
+    resizeObserver.observe(footerRef?.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   function submitChoice(card) {
     const newChoice = card === currentCardChoice ? null : card;
     sendMessage('updatedCardChoice', { card: newChoice });
   }
 
-  useEffect(() => {
-    if (!gameData?.gameSettings?.gameRoomName) {
-      return;
+  const latestVoting = useMemo(() => {
+    if (!gameData?.voteHistory) {
+      return {};
     }
-    setGameState(gameData.gameSettings.gameState);
     const votes = gameData.voteHistory;
-    setLatestVoting(votes[votes.length - 1]);
-    setPlayersData(Object.values(gameData.players));
-    setDeckCards([...new Set(gameData.gameSettings.deck.values.split(','))]);
-  }, [gameData]);
+    return votes[votes.length - 1];
+  }, [gameData?.voteHistory]);
 
   const shouldShowParticipation = useMemo(() => {
     return gameState === 'reveal' && latestVoting.isAnonymousVote;
@@ -54,23 +59,24 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
     return gameState === 'voting' && iAmObserver;
   }, [iAmObserver, gameState]);
 
-  const mappedDeckCards = deckCards.map((card, index) => {
-    const length = splitter.splitGraphemes(card.trim()).length;
-    if (length > 0 && length < 5) {
-      return (
-        <PurpleDeckCard
-          key={index}
-          submitChoice={submitChoice}
-          card={card}
-          length={length}
-          clickable={gameState === 'voting'}
-          selected={currentCardChoice === card}
-          cardMargin='20px 0 0 0'
-          borderColor='#902bf5'
-        />
-      );
+  const mappedDeckCards = useMemo(() => {
+    if (!gameDeck?.values) {
+      return;
     }
-  });
+    const cardValues = deriveCardsFromDeck(gameDeck?.values);
+    return cardValues?.map((card, index) => (
+      <PurpleDeckCard
+        key={index}
+        submitChoice={submitChoice}
+        card={card}
+        length={cardValues?.length}
+        clickable={gameState === 'voting'}
+        selected={currentCardChoice === card}
+        cardMargin='20px 0 0 0'
+        borderColor='#902bf5'
+      />
+    ));
+  }, [gameDeck]);
 
   return (
     <Box
@@ -86,6 +92,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
         alignItems: 'flex-end',
         gap: '25px',
         flexWrap: 'nowrap',
+        zIndex: 10,
       }}
     >
       {showObserverMessage ? (
@@ -93,16 +100,18 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
           sx={{
             opacity: 0.7,
             fontStyle: 'italic',
-            marginBottom: '.5rem',
+            margin: '12px 0',
+            textAlign: 'center',
           }}
         >
-          Turn off observer mode to vote
+          Cards are hidden because you are in observer mode.
         </Typography>
       ) : (
         <>
           {gameState === 'voting' ? (
-            playersData.length ? (
+            mappedDeckCards?.length ? (
               <Box
+                ref={cardBoxRef}
                 sx={{
                   display: 'flex',
                   gap: { xs: '10px', sm: '18px' },
@@ -110,7 +119,7 @@ const GameFooter = ({ setComponentHeight, shadowOn }) => {
                   height: '100%',
                   alignItems: 'flex-end',
                   paddingBottom: '6px',
-                  // paddingTop: '15px',
+                  paddingTop: '15px',
                 }}
               >
                 {mappedDeckCards}

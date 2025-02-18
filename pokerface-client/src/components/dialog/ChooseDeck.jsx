@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
-import GraphemeSplitter from 'grapheme-splitter';
+import React, { useState, useRef, useMemo } from 'react';
 import data from '@emoji-mart/data';
 import PurpleDeckCard from '../game/PurpleDeckCard';
 import Picker from '@emoji-mart/react';
 import { useMediaQuery } from '@mui/material';
 import muiStyles from '../../style/muiStyles';
+import { toast } from 'react-toastify';
+import { deriveCardsFromDeck } from '../../utils/helperFunctions';
 const {
   Box,
   Typography,
@@ -25,6 +26,8 @@ const {
   Backdrop,
   Collapse,
 } = muiStyles;
+const deckCharacterLimit = 256;
+const deckNameCharacterLimit = 64;
 
 const ChooseDeck = ({
   showDeckDialog,
@@ -35,10 +38,11 @@ const ChooseDeck = ({
   const deckInputRef = useRef();
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const [autoCommas, setAutoCommas] = useState(true);
-  const splitter = GraphemeSplitter();
   const [deleteWarningIndex, setDeleteWarningIndex] = useState(null);
-  const [customDeckName, setCustomDeckName] = useState('');
-  const [customDeck, setCustomDeck] = useState('1,2,👍,true');
+  const [customDeckName, setCustomDeckName] = useState('Custom deck');
+  const [customDeck, setCustomDeck] = useState(
+    '1,2,👍,true,🍔🍟\\🍦,Best\\app\\ever'
+  );
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showCustomDeckForm, setShowCustomDeckForm] = useState(false);
   const viewportWidth = window.innerWidth;
@@ -61,21 +65,18 @@ const ChooseDeck = ({
       name: customDeckName || 'Custom Deck',
     };
 
-    let alreadyExists = false;
     const savedDecks = JSON.parse(localStorage.getItem('PokerfaceSavedDecks'));
-    savedDecks.forEach((deck) => {
-      if (deck.values === obj.values && deck.name === obj.name)
-        alreadyExists = true;
-    });
+    const alreadyExists = savedDecks.find(
+      (deck) => deck.values === obj.values && deck.name === obj.name
+    );
     if (alreadyExists) {
-      return;
+      return toast.warning('Did not save duplicate deck.');
     }
 
-    if (savedDecks?.length) {
-      localStorage.setItem('PokerfaceSavedDecks', JSON.stringify([...savedDecks, obj]));
-    } else {
-      localStorage.setItem('PokerfaceSavedDecks', JSON.stringify([obj]));
-    }
+    localStorage.setItem(
+      'PokerfaceSavedDecks',
+      JSON.stringify([...savedDecks, obj])
+    );
     setSavedDecks(JSON.parse(localStorage.getItem('PokerfaceSavedDecks')));
   }
 
@@ -112,7 +113,7 @@ const ChooseDeck = ({
                 sx={{
                   textTransform: 'none',
                   color: 'black',
-                  fontSize: { xs: '16px', sm: '20px' },
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
                 }}
               >
                 {deck.name} ({deck.values})
@@ -167,18 +168,27 @@ const ChooseDeck = ({
     return mappedDeckButtons;
   }
 
-  let mappedCustomDeck;
-  if (customDeck.includes(',')) {
-    mappedCustomDeck = [...new Set(customDeck.split(','))].map(
-      (card, index) => {
-        let length = splitter.splitGraphemes(card.trim()).length;
-        if (length > 4 || card.trim().length < 1) {
-          return;
-        }
-        return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />;
-      }
-    );
-  }
+  const customDeckValues = useMemo(() => {
+    return deriveCardsFromDeck(customDeck);
+  }, [customDeck]);
+
+  const customDeckCardsShadowed = useMemo(() => {
+    if (!customDeckValues?.length > 0) {
+      return [];
+    }
+    return customDeckValues.map((card, index) => (
+      <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} showShadow />
+    ));
+  }, [customDeckValues]);
+
+  const customDeckCards = useMemo(() => {
+    if (!customDeckValues?.length > 0) {
+      return [];
+    }
+    return customDeckValues.map((card, index) => (
+      <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />
+    ));
+  }, [customDeckValues]);
 
   return (
     <Dialog
@@ -231,6 +241,7 @@ const ChooseDeck = ({
                 paddingTop: '20px',
                 marginBottom: '20px',
                 overflowX: 'auto',
+                marginLeft: '-10px',
               }}
             >
               {savedDecks.length > 0 ? (
@@ -275,16 +286,25 @@ const ChooseDeck = ({
           <TextField
             autoFocus
             fullWidth
-            inputProps={{ maxLength: 15 }}
+            inputProps={{ maxLength: deckNameCharacterLimit }}
             label='Deck Name'
             placeholder='Enter a name for your deck'
+            value={customDeckName}
             onChange={(e) => setCustomDeckName(e.target.value)}
           />
+          <Typography
+            variant='body2'
+            color={customDeckName?.length >= deckNameCharacterLimit && 'error'}
+            sx={{ marginLeft: '25px', marginTop: '-10px' }}
+          >
+            {customDeckName?.length + ' / ' + deckNameCharacterLimit} characters
+            used.
+          </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField
               inputRef={deckInputRef}
               value={customDeck}
-              inputProps={{ maxLength: 100 }}
+              inputProps={{ maxLength: deckCharacterLimit }}
               spellCheck={false}
               onChange={(e) => setCustomDeck(e.target.value)}
               fullWidth
@@ -304,6 +324,13 @@ const ChooseDeck = ({
               <EmojiEmotionsOutlinedIcon />
             </IconButton>
           </Box>
+          <Typography
+            variant='body2'
+            color={customDeck?.length >= deckCharacterLimit && 'error'}
+            sx={{ marginLeft: '25px', marginTop: '-10px' }}
+          >
+            {customDeck?.length + ' / ' + deckCharacterLimit} characters used.
+          </Typography>
           <Box
             sx={{
               display: 'flex',
@@ -314,7 +341,21 @@ const ChooseDeck = ({
           >
             <InfoOutlinedIcon fontSize='small' color='primary' />
             <Typography variant='body2' color='primary'>
-              Enter up to 4 characters per value, separated by commas.
+              Enter up to 30 characters per value, separated by commas.
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              marginTop: '-9px',
+            }}
+          >
+            <InfoOutlinedIcon fontSize='small' color='primary' />
+            <Typography variant='body2' color='primary'>
+              Use a backslash '\' to break text into a new line. This can help
+              readability.
             </Typography>
           </Box>
           {showEmojiPicker && (
@@ -360,11 +401,8 @@ const ChooseDeck = ({
           <Typography variant='h6' sx={{ marginTop: '10px' }}>
             Preview
           </Typography>
-          <Typography
-            variant='body2'
-            sx={{ marginTop: '-10px', marginBottom: '10px' }}
-          >
-            This is a preview of your custom deck
+          <Typography variant='body2' sx={{ marginTop: '-10px' }}>
+            This is a preview of your custom deck in two styles
           </Typography>
           <Box
             sx={{
@@ -372,10 +410,22 @@ const ChooseDeck = ({
               display: 'flex',
               overflowX: 'auto',
               gap: '10px',
-              paddingBottom: '8px',
+              padding: '8px',
             }}
           >
-            {mappedCustomDeck}
+            {customDeckCardsShadowed}
+          </Box>
+          <Box
+            sx={{
+              minHeight: '50px',
+              display: 'flex',
+              overflowX: 'auto',
+              gap: '10px',
+              padding: '8px',
+              marginTop: '-10px',
+            }}
+          >
+            {customDeckCards}
           </Box>
 
           <Button

@@ -69,7 +69,8 @@ if (!localUserToken) {
   localStorage.setItem('PokerfaceLocalUserToken', uuidv4());
 }
 
-if (!localStorage.getItem('PokerfaceSavedDecks')) {
+const savedDecks = localStorage.getItem('PokerfaceSavedDecks');
+if (!savedDecks) {
   localStorage.setItem('PokerfaceSavedDecks', JSON.stringify([]));
 }
 
