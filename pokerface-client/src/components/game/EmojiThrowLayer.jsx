@@ -66,7 +66,7 @@ const EmojiThrowLayer = ({ tableRef }) => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      const size = 28 + Math.random() * 10;
+      const size = 24;
       const fromLeft = Math.random() > 0.5;
       const startX = fromLeft ? -size : viewportWidth + size;
       const startY = clamp(
