@@ -32,6 +32,8 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     isAnonymousMode,
     activePlayersAsArray,
     allPlayersAsArray,
+    playerName,
+    funModeEnabled,
   } = useContext(GameContext);
   const gameBodyRef = useRef();
   const [stateButtonDisabled, setStateButtonDisabled] = useState(false);
@@ -42,9 +44,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   });
   const [editingIssueName, setEditingIssueName] = useState(false);
   const [newIssueName, setNewIssueName] = useState(
-    gameData?.gameSettings?.currentIssueName || ''
+    gameData?.gameSettings?.currentIssueName || '',
   );
   const newIssueNameRef = useRef();
+  const localPlayerToken = localStorage.getItem('PokerfaceLocalUserToken');
 
   function submitNewIssueName() {
     sendMessage('setIssueName', { issueName: newIssueName.trim() });
@@ -109,7 +112,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     function assignPlayerSeat(
       deckCard,
       index,
-      totalCards = activePlayersAsArray.length
+      totalCards = activePlayersAsArray.length,
     ) {
       if (index === 0) {
         bottomPlayers.push(deckCard);
@@ -156,10 +159,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
         let length = 0;
         if (player?.currentChoice) {
           console.log(
-            '!!! If you see this log please contact the developer for a special prize !!!'
+            '!!! If you see this log please contact the developer for a special prize !!!',
           );
           length = splitter.splitGraphemes(
-            player?.currentChoice?.trim()
+            player?.currentChoice?.trim(),
           ).length;
         }
         if (length > 4) {
@@ -189,8 +192,8 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             bottomMessage={player?.playerName}
             sizeMultiplier={cardSizeMultiplier}
             showShadow
-            showFunMenu
-            playerId={player?.id}
+            showFunMenu={player?.token !== localPlayerToken && funModeEnabled}
+            playerId={player?.token}
           />
         );
         assignPlayerSeat(deckCard, index);
@@ -221,7 +224,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             bottomMessage={vote.playerName}
             sizeMultiplier={cardSizeMultiplier}
             showShadow
-            showFunMenu
+            showFunMenu={vote?.playerName !== playerName && funModeEnabled}
           />
         );
         assignPlayerSeat(deckCard, index, length);
@@ -549,9 +552,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
               <Box sx={sidePlayersBox}>{playerPositions.left}</Box>
             )}
 
-            <PlayingTable
-              disableButton={stateButtonDisabled}
-            />
+            <PlayingTable disableButton={stateButtonDisabled} />
 
             {showRightPlayers && (
               <Box sx={sidePlayersBox}>{playerPositions.right}</Box>

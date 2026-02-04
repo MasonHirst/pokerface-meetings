@@ -29,14 +29,13 @@ const PurpleDeckCard = ({
   borderThickness = 2,
   showShadow = false,
   showFunMenu = false,
-  playerId = null,
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const isXsScreen = useMediaQuery('(max-width: 400px)');
   const [cardFontSize, setCardFontSize] = useState(23);
   const cardTextRef = useRef();
   const cardSurfaceRef = useRef();
-  const { shadowsEnabled, funModeEnabled } = useContext(GameContext) || {};
+  const { shadowsEnabled } = useContext(GameContext) || {};
   const [menuOpen, setMenuOpen] = useState(false);
   const [lastEmoji, setLastEmoji] = useState(() => {
     const stored = localStorage.getItem('PokerfaceFunLastEmoji');
@@ -80,21 +79,6 @@ const PurpleDeckCard = ({
       );
     });
   }, [splitText]);
-
-  const showFunElements = useMemo(() => {
-    return funModeEnabled && showFunMenu;
-  }, [funModeEnabled, showFunMenu]);
-
-  const isMyCard = useMemo(() => {
-    if (!playerId) {
-      return false;
-    }
-    return playerId === localStorage.getItem('PokerfaceLocalUserToken');
-  }, [playerId]);
-
-  const shouldShowFunMenu = useMemo(() => {
-    return showFunElements && !isMyCard;
-  }, [showFunElements, isMyCard]);
 
   const shouldShowShadows = useMemo(() => {
     //? Next line is for when the cards are shown, but gameContext is not rendered yet
@@ -159,7 +143,7 @@ const PurpleDeckCard = ({
   }, []);
 
   function throwEmoji(emoji) {
-    if (!shouldShowFunMenu) {
+    if (!showFunMenu) {
       return;
     }
     const rect = cardSurfaceRef.current?.getBoundingClientRect();
@@ -192,7 +176,7 @@ const PurpleDeckCard = ({
   }, [lastEmoji]);
 
   const handleMenuEnter = () => {
-    if (!shouldShowFunMenu) {
+    if (!showFunMenu) {
       return;
     }
     if (hoverTimeoutRef.current) {
@@ -202,7 +186,7 @@ const PurpleDeckCard = ({
   };
 
   const handleMenuLeave = () => {
-    if (!shouldShowFunMenu) {
+    if (!showFunMenu) {
       return;
     }
     if (pickerAnchorEl) {
@@ -215,10 +199,10 @@ const PurpleDeckCard = ({
   };
 
   useEffect(() => {
-    if (!shouldShowFunMenu) {
+    if (!showFunMenu) {
       setMenuOpen(false);
     }
-  }, [shouldShowFunMenu]);
+  }, [showFunMenu]);
 
   useEffect(() => {
     if (pickerAnchorEl) {
@@ -294,7 +278,7 @@ const PurpleDeckCard = ({
         </Typography>
       </Box>
 
-      {shouldShowFunMenu && menuOpen && (
+      {showFunMenu && menuOpen && (
         <Box
           className='fun-emoji-menu'
           onMouseEnter={handleMenuEnter}
