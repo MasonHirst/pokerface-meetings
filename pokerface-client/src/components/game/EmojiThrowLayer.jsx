@@ -63,6 +63,9 @@ const EmojiThrowLayer = ({ tableRef }) => {
         return;
       }
       const tableRect = tableRef?.current?.getBoundingClientRect();
+      const footerRect = document
+        ?.querySelector('.game-footer')
+        ?.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const targetX = cardRect.left + cardRect.width / 2;
@@ -89,9 +92,12 @@ const EmojiThrowLayer = ({ tableRef }) => {
       const vx = (hitX - startX) / travelTime;
       const vy = (hitY - startY - 0.5 * GRAVITY * travelTime * travelTime) /
         travelTime;
-      const floorY = tableRect
-        ? Math.max(tableRect.bottom - 4, 120)
-        : viewportHeight * 0.62;
+      const footerFloorY = footerRect ? footerRect.top - 10 : null;
+      const floorY =
+        footerFloorY ??
+        (tableRect
+          ? Math.max(tableRect.bottom - 4, 120)
+          : viewportHeight * 0.62);
 
       setEmojis((prev) => [
         ...prev,
