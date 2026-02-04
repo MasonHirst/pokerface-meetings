@@ -365,6 +365,10 @@ export const GameProvider = ({ children }) => {
     setICanShowCustomCardImg(newCanDisplayImg);
   }, [gameData?.gameSettings]);
 
+  const funModeEnabled = useMemo(() => {
+    return gameData?.gameSettings?.funModeEnabled;
+  }, [gameData?.gameSettings?.funModeEnabled]);
+
   return (
     <GameContext.Provider
       value={{
@@ -396,6 +400,7 @@ export const GameProvider = ({ children }) => {
         gameDeck,
         triggerLatestUpdatesMessage,
         shadowsEnabled,
+        funModeEnabled,
       }}
     >
       {children}

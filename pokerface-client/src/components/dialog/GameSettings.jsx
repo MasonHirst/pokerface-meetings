@@ -30,8 +30,7 @@ const {
 } = muiStyles;
 
 const GameSettings = ({ showDialog, setShowDialog }) => {
-  const { gameData, sendMessage, checkPowerLvl } =
-    useContext(GameContext);
+  const { gameData, sendMessage, checkPowerLvl } = useContext(GameContext);
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const [showPowersExpansion, setShowPowersExpansion] = useState(false);
   const [showKickPlayersCollapse, setShowKickPlayersCollapse] = useState(false);
@@ -530,10 +529,16 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
           <FormControlLabel
             control={
               <Switch
-                // checked={gameSettingsToSave.funMode}
-                checked={false}
+                checked={gameSettingsToSave.funModeEnabled}
                 onChange={(e) => {
-                  return toast('This feature is not available yet');
+                  if (checkPowerLvl('low')) {
+                    setGameSettingsToSave({
+                      ...gameSettingsToSave,
+                      funModeEnabled: e.target.checked,
+                    });
+                  } else {
+                    toast.warning('You need low power to do this');
+                  }
                 }}
                 color='success'
               />

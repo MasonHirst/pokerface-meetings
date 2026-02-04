@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import PlayingTable from './PlayingTable';
+import EmojiThrowLayer from './EmojiThrowLayer';
 import { GameContext } from '../../context/GameContext';
 import useClipboard from 'react-use-clipboard';
 import GraphemeSplitter from 'grapheme-splitter';
@@ -44,6 +45,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     gameData?.gameSettings?.currentIssueName || ''
   );
   const newIssueNameRef = useRef();
+  const tableRef = useRef(null);
 
   function submitNewIssueName() {
     sendMessage('setIssueName', { issueName: newIssueName.trim() });
@@ -188,6 +190,8 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             bottomMessage={player?.playerName}
             sizeMultiplier={cardSizeMultiplier}
             showShadow
+            showFunMenu
+            playerId={player?.id}
           />
         );
         assignPlayerSeat(deckCard, index);
@@ -218,6 +222,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             bottomMessage={vote.playerName}
             sizeMultiplier={cardSizeMultiplier}
             showShadow
+            showFunMenu
           />
         );
         assignPlayerSeat(deckCard, index, length);
@@ -545,7 +550,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
               <Box sx={sidePlayersBox}>{playerPositions.left}</Box>
             )}
 
-            <PlayingTable disableButton={stateButtonDisabled} />
+            <PlayingTable
+              disableButton={stateButtonDisabled}
+              tableRef={tableRef}
+            />
 
             {showRightPlayers && (
               <Box sx={sidePlayersBox}>{playerPositions.right}</Box>
@@ -571,6 +579,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
           )}
         </Box>
       </Box>
+      <EmojiThrowLayer tableRef={tableRef} />
     </Box>
   );
 };

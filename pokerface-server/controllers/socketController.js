@@ -268,6 +268,7 @@ async function startSocketServer(app, port, host = 'localhost') {
               activePlayers?.forEach((player) => {
                 const vote = {
                   card: clientsList[player.token].currentCardChoice,
+                  voteId: votingObj.votes.length + 1,
                 };
                 if (!votingObj.isAnonymousVote) {
                   vote.playerName = player.playerName;

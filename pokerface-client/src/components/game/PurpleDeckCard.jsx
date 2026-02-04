@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
-import { useMediaQuery } from '@mui/material';
+import { Popover, useMediaQuery } from '@mui/material';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 import purpleAbstract from '../../assets/purple-abstract.jpg';
 import muiStyles from '../../style/muiStyles';
 import { GameContext } from '../../context/GameContext';
 import { isTrueOrFalse } from '../../utils/helperFunctions';
+import { eventBus } from '../../utils/eventBus';
 
 const { Box, Typography } = muiStyles;
 
@@ -25,12 +28,34 @@ const PurpleDeckCard = ({
   sizeMultiplier = 1,
   borderThickness = 2,
   showShadow = false,
+  showFunMenu = false,
+  playerId = null,
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const isXsScreen = useMediaQuery('(max-width: 400px)');
   const [cardFontSize, setCardFontSize] = useState(23);
   const cardTextRef = useRef();
-  const { shadowsEnabled } = useContext(GameContext) || {};
+  const cardSurfaceRef = useRef();
+  const { shadowsEnabled, funModeEnabled } = useContext(GameContext) || {};
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [lastEmoji, setLastEmoji] = useState(() => {
+    const stored = localStorage.getItem('PokerfaceFunLastEmoji');
+    if (stored) {
+      return stored;
+    }
+    const emojiMartLast = localStorage.getItem('emoji-mart.last');
+    if (!emojiMartLast) {
+      return '✨';
+    }
+    try {
+      const parsed = JSON.parse(emojiMartLast);
+      return parsed?.native || parsed?.emoji || parsed?.id || '✨';
+    } catch (error) {
+      return emojiMartLast || '✨';
+    }
+  });
+  const [pickerAnchorEl, setPickerAnchorEl] = useState(null);
+  const hoverTimeoutRef = useRef(null);
 
   function isNativeEmoji(str) {
     return /\p{Emoji}/u.test(str) && isNaN(Number(str));
@@ -55,6 +80,21 @@ const PurpleDeckCard = ({
       );
     });
   }, [splitText]);
+
+  const showFunElements = useMemo(() => {
+    return funModeEnabled && showFunMenu;
+  }, [funModeEnabled, showFunMenu]);
+
+  const isMyCard = useMemo(() => {
+    if (!playerId) {
+      return false;
+    }
+    return playerId === localStorage.getItem('PokerfaceLocalUserToken');
+  }, [playerId]);
+
+  const shouldShowFunMenu = useMemo(() => {
+    return showFunElements && !isMyCard;
+  }, [showFunElements, isMyCard]);
 
   const shouldShowShadows = useMemo(() => {
     //? Next line is for when the cards are shown, but gameContext is not rendered yet
@@ -110,6 +150,87 @@ const PurpleDeckCard = ({
     }
   }, [cardTextRef.current, splitText, cardFontSize, cardDimensions]);
 
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function throwEmoji(emoji) {
+    if (!shouldShowFunMenu) {
+      return;
+    }
+    const rect = cardSurfaceRef.current?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+    eventBus.emit('funThrowEmoji', { emoji, cardRect: rect });
+  }
+
+  function persistLastEmoji(emoji, emojiData) {
+    const value = emojiData?.native || emojiData?.emoji || emoji;
+    if (!value) {
+      return;
+    }
+    setLastEmoji(value);
+    localStorage.setItem('PokerfaceFunLastEmoji', value);
+    if (emojiData) {
+      try {
+        localStorage.setItem('emoji-mart.last', JSON.stringify(emojiData));
+      } catch (error) {
+        localStorage.setItem('emoji-mart.last', value);
+      }
+    } else {
+      localStorage.setItem('emoji-mart.last', value);
+    }
+  }
+
+  const emojiOptions = useMemo(() => {
+    return ['😂', '👏', '🔥', lastEmoji || '✨'];
+  }, [lastEmoji]);
+
+  const handleMenuEnter = () => {
+    if (!shouldShowFunMenu) {
+      return;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setMenuOpen(true);
+  };
+
+  const handleMenuLeave = () => {
+    if (!shouldShowFunMenu) {
+      return;
+    }
+    if (pickerAnchorEl) {
+      return;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => setMenuOpen(false), 140);
+  };
+
+  useEffect(() => {
+    if (!shouldShowFunMenu) {
+      setMenuOpen(false);
+    }
+  }, [shouldShowFunMenu]);
+
+  useEffect(() => {
+    if (pickerAnchorEl) {
+      setMenuOpen(true);
+    }
+  }, [pickerAnchorEl]);
+
+  const handleEmojiClick = (emoji) => {
+    persistLastEmoji(emoji);
+    throwEmoji(emoji);
+  };
+
   return (
     <Box
       onClick={() => {
@@ -118,6 +239,8 @@ const PurpleDeckCard = ({
         }
         submitChoice(card);
       }}
+      onMouseEnter={handleMenuEnter}
+      onMouseLeave={handleMenuLeave}
       className={
         clickable ? 'cursor-pointer no-tap-highlight' : 'no-tap-highlight'
       }
@@ -133,6 +256,7 @@ const PurpleDeckCard = ({
       }}
     >
       <Box
+        ref={cardSurfaceRef}
         sx={{
           boxShadow: shouldShowShadows
             ? '1px 2px 6px rgba(0, 0, 0, 0.5)'
@@ -140,8 +264,7 @@ const PurpleDeckCard = ({
           height: cardDimensions.height,
           width: cardDimensions.width,
           minWidth: cardDimensions.width,
-          border:
-            !shouldShowShadows && `${borderThickness}px solid ${borderColor}`,
+          border: !shouldShowShadows && `${borderThickness}px solid ${borderColor}`,
           transition: '0.2s',
           margin: cardMargin,
           display: 'flex',
@@ -170,6 +293,62 @@ const PurpleDeckCard = ({
           {cardTextElements}
         </Typography>
       </Box>
+
+      {shouldShowFunMenu && menuOpen && (
+        <Box
+          className='fun-emoji-menu'
+          onMouseEnter={handleMenuEnter}
+          onMouseLeave={handleMenuLeave}
+          onClick={(event) => event.stopPropagation()}
+        >
+          {emojiOptions.map((emoji, index) => (
+            <button
+              key={`${emoji}-${index}`}
+              className='fun-emoji-button'
+              type='button'
+              onClick={() => handleEmojiClick(emoji)}
+            >
+              {emoji}
+            </button>
+          ))}
+          <button
+            className='fun-emoji-button fun-emoji-picker'
+            type='button'
+            onClick={(event) => {
+              setPickerAnchorEl(event.currentTarget);
+            }}
+          >
+            +
+          </button>
+        </Box>
+      )}
+
+      <Popover
+        open={Boolean(pickerAnchorEl)}
+        anchorEl={pickerAnchorEl}
+        onClose={() => setPickerAnchorEl(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        PaperProps={{
+          sx: { borderRadius: '14px', overflow: 'hidden' },
+        }}
+      >
+        <Picker
+          data={data}
+          onEmojiSelect={(emojiData) => {
+            const emojiValue =
+              emojiData?.native || emojiData?.emoji || emojiData?.id;
+            if (!emojiValue) {
+              return;
+            }
+            persistLastEmoji(emojiValue, emojiData);
+            throwEmoji(emojiValue);
+            setPickerAnchorEl(null);
+          }}
+          previewPosition='none'
+          theme='light'
+        />
+      </Popover>
 
       {bottomMessage && (
         <Typography

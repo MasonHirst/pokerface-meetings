@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import tableTop from '../../assets/table-top.jpeg';
 const { Card, Typography, Button, blue } = muiStyles;
 
-const PlayingTable = ({ disableButton }) => {
+const PlayingTable = ({ disableButton, tableRef }) => {
   const {
     gameData,
     sendMessage,
@@ -69,6 +69,7 @@ const PlayingTable = ({ disableButton }) => {
 
   return (
     <Card
+      ref={tableRef}
       className={tableAttrs.tableClass}
       sx={{
         backgroundColor: blue[200],
