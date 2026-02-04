@@ -19,7 +19,7 @@ function getLastEmojiValue(value) {
   return null;
 }
 
-const EmojiThrowLayer = ({ tableRef }) => {
+const EmojiThrowLayer = () => {
   const [emojis, setEmojis] = useState([]);
   const emojisRef = useRef([]);
   const animationRef = useRef(null);
@@ -62,7 +62,6 @@ const EmojiThrowLayer = ({ tableRef }) => {
       if (!emoji || !cardRect) {
         return;
       }
-      const tableRect = tableRef?.current?.getBoundingClientRect();
       const footerRect = document
         ?.querySelector('.game-footer')
         ?.getBoundingClientRect();
@@ -93,11 +92,7 @@ const EmojiThrowLayer = ({ tableRef }) => {
       const vy = (hitY - startY - 0.5 * GRAVITY * travelTime * travelTime) /
         travelTime;
       const footerFloorY = footerRect ? footerRect.top - 10 : null;
-      const floorY =
-        footerFloorY ??
-        (tableRect
-          ? Math.max(tableRect.bottom - 4, 120)
-          : viewportHeight * 0.62);
+      const floorY = footerFloorY ?? viewportHeight * 0.62;
 
       setEmojis((prev) => [
         ...prev,
@@ -124,7 +119,7 @@ const EmojiThrowLayer = ({ tableRef }) => {
     return () => {
       eventBus.off('funThrowEmoji', handleThrow);
     };
-  }, [tableRef]);
+  }, []);
 
   return (
     <div className='emoji-throw-layer'>

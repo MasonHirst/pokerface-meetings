@@ -45,7 +45,6 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     gameData?.gameSettings?.currentIssueName || ''
   );
   const newIssueNameRef = useRef();
-  const tableRef = useRef(null);
 
   function submitNewIssueName() {
     sendMessage('setIssueName', { issueName: newIssueName.trim() });
@@ -552,7 +551,6 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
 
             <PlayingTable
               disableButton={stateButtonDisabled}
-              tableRef={tableRef}
             />
 
             {showRightPlayers && (
@@ -579,7 +577,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
           )}
         </Box>
       </Box>
-      <EmojiThrowLayer tableRef={tableRef} />
+      <EmojiThrowLayer />
     </Box>
   );
 };
