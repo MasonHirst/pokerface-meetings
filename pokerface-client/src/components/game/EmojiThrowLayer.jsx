@@ -65,9 +65,11 @@ const EmojiThrowLayer = ({ tableRef }) => {
       const tableRect = tableRef?.current?.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
+      const targetX = cardRect.left + cardRect.width / 2;
+      const probabilityFromLeft = clamp(targetX / viewportWidth, 0.08, 0.92);
 
       const size = 24;
-      const fromLeft = Math.random() > 0.5;
+      const fromLeft = Math.random() < probabilityFromLeft;
       const startX = fromLeft ? -size : viewportWidth + size;
       const startY = clamp(
         cardRect.top + cardRect.height * (0.2 + Math.random() * 0.4),
