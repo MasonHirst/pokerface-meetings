@@ -10,6 +10,9 @@ import { eventBus } from '../../utils/eventBus';
 
 const { Box, Typography } = muiStyles;
 
+const DEFAULT_EMOJIS = ['⚽️', '👍', '❗️'];
+const DEFAULT_EXTRA_EMOJI = '🧀';
+
 const PurpleDeckCard = ({
   card = '',
   submitChoice,
@@ -39,18 +42,22 @@ const PurpleDeckCard = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [lastEmoji, setLastEmoji] = useState(() => {
     const stored = localStorage.getItem('PokerfaceFunLastEmoji');
-    if (stored) {
+    if (stored && !DEFAULT_EMOJIS.includes(stored)) {
       return stored;
     }
     const emojiMartLast = localStorage.getItem('emoji-mart.last');
     if (!emojiMartLast) {
-      return '✨';
+      return DEFAULT_EXTRA_EMOJI;
     }
     try {
       const parsed = JSON.parse(emojiMartLast);
-      return parsed?.native || parsed?.emoji || parsed?.id || '✨';
+      const candidate = parsed?.native || parsed?.emoji || parsed?.id || null;
+      if (candidate && !DEFAULT_EMOJIS.includes(candidate)) {
+        return candidate;
+      }
+      return DEFAULT_EXTRA_EMOJI;
     } catch (error) {
-      return emojiMartLast || '✨';
+      return DEFAULT_EXTRA_EMOJI;
     }
   });
   const [pickerAnchorEl, setPickerAnchorEl] = useState(null);
@@ -158,8 +165,10 @@ const PurpleDeckCard = ({
     if (!value) {
       return;
     }
-    setLastEmoji(value);
-    localStorage.setItem('PokerfaceFunLastEmoji', value);
+    if (!DEFAULT_EMOJIS.includes(value)) {
+      setLastEmoji(value);
+      localStorage.setItem('PokerfaceFunLastEmoji', value);
+    }
     if (emojiData) {
       try {
         localStorage.setItem('emoji-mart.last', JSON.stringify(emojiData));
@@ -172,7 +181,7 @@ const PurpleDeckCard = ({
   }
 
   const emojiOptions = useMemo(() => {
-    return ['😂', '👏', '🔥', lastEmoji || '✨'];
+    return [...DEFAULT_EMOJIS, lastEmoji || DEFAULT_EXTRA_EMOJI];
   }, [lastEmoji]);
 
   const handleMenuEnter = () => {
