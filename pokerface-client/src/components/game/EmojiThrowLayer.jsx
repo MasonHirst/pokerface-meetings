@@ -78,16 +78,22 @@ const EmojiThrowLayer = () => {
         40,
         viewportHeight * 0.65
       );
+      const edgeBiasLeft = -size;
+      const edgeBiasRight = size * 0.05;
       const hitX = fromLeft
-        ? cardRect.left - size * 0.35
-        : cardRect.right + size * 0.35;
+        ? cardRect.left + edgeBiasLeft
+        : cardRect.right - edgeBiasRight;
       const hitY = clamp(
-        cardRect.top + cardRect.height * (0.35 + Math.random() * 0.3),
+        cardRect.top + cardRect.height * (0.24 + Math.random() * 0.12),
         20,
         viewportHeight - 80
       );
 
-      const travelTime = 0.55 + Math.random() * 0.25;
+      const speed = 550;
+      const dx = hitX - startX;
+      const dy = hitY - startY;
+      const distance = Math.hypot(dx, dy);
+      const travelTime = clamp(distance / speed, 0.22, 0.6);
       const vx = (hitX - startX) / travelTime;
       const vy = (hitY - startY - 0.5 * GRAVITY * travelTime * travelTime) /
         travelTime;
