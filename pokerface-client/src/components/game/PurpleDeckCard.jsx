@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
-import { Popover, useMediaQuery } from '@mui/material';
+import { Dialog, useMediaQuery } from '@mui/material';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import purpleAbstract from '../../assets/purple-abstract.jpg';
@@ -60,7 +60,7 @@ const PurpleDeckCard = ({
       return DEFAULT_EXTRA_EMOJI;
     }
   });
-  const [pickerAnchorEl, setPickerAnchorEl] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
 
   function isNativeEmoji(str) {
@@ -198,7 +198,7 @@ const PurpleDeckCard = ({
     if (!showFunMenu) {
       return;
     }
-    if (pickerAnchorEl) {
+    if (pickerOpen) {
       return;
     }
     if (hoverTimeoutRef.current) {
@@ -214,10 +214,10 @@ const PurpleDeckCard = ({
   }, [showFunMenu]);
 
   useEffect(() => {
-    if (pickerAnchorEl) {
+    if (pickerOpen) {
       setMenuOpen(true);
     }
-  }, [pickerAnchorEl]);
+  }, [pickerOpen]);
 
   const handleEmojiClick = (emoji) => {
     persistLastEmoji(emoji);
@@ -308,7 +308,7 @@ const PurpleDeckCard = ({
             className='fun-emoji-button fun-emoji-picker'
             type='button'
             onClick={(event) => {
-              setPickerAnchorEl(event.currentTarget);
+              setPickerOpen(true);
             }}
           >
             +
@@ -316,14 +316,11 @@ const PurpleDeckCard = ({
         </Box>
       )}
 
-      <Popover
-        open={Boolean(pickerAnchorEl)}
-        anchorEl={pickerAnchorEl}
-        onClose={() => setPickerAnchorEl(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      <Dialog
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
         PaperProps={{
-          sx: { borderRadius: '14px', overflow: 'hidden' },
+          sx: { borderRadius: '16px', overflow: 'hidden' },
         }}
       >
         <Picker
@@ -336,12 +333,12 @@ const PurpleDeckCard = ({
             }
             persistLastEmoji(emojiValue, emojiData);
             throwEmoji(emojiValue);
-            setPickerAnchorEl(null);
+            setPickerOpen(false);
           }}
           previewPosition='none'
           theme='light'
         />
-      </Popover>
+      </Dialog>
 
       {bottomMessage && (
         <Typography
