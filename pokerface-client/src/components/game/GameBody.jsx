@@ -8,6 +8,8 @@ import muiStyles from '../../style/muiStyles';
 import { IconButton, useMediaQuery } from '@mui/material';
 import { toast } from 'react-toastify';
 import PurpleDeckCard from './PurpleDeckCard';
+import { eventBus } from '../../utils/eventBus';
+import { DEFAULT_EXTRA_EMOJI } from '../../utils/funEmojiDefaults';
 const {
   Box,
   Typography,
@@ -46,6 +48,9 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const [newIssueName, setNewIssueName] = useState(
     gameData?.gameSettings?.currentIssueName || '',
   );
+  const [funLastEmoji, setFunLastEmoji] = useState(
+    () => localStorage.getItem('PokerfaceFunLastEmoji') || DEFAULT_EXTRA_EMOJI
+  );
   const newIssueNameRef = useRef();
   const localPlayerToken = localStorage.getItem('PokerfaceLocalUserToken');
 
@@ -53,9 +58,24 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
     sendMessage('setIssueName', { issueName: newIssueName.trim() });
   }
 
+  
+
   useEffect(() => {
     setBodyIsScrolling(availableHeight < gameBodyRef.current?.scrollHeight);
   }, [availableHeight]);
+
+  useEffect(() => {
+    const handleEmojiUpdate = (value) => {
+      if (!value) {
+        return;
+      }
+      setFunLastEmoji(value);
+    };
+    eventBus.on('funEmojiUpdated', handleEmojiUpdate);
+    return () => {
+      eventBus.off('funEmojiUpdated', handleEmojiUpdate);
+    };
+  }, []);
 
   const sidePlayersBox = {
     display: 'flex',
@@ -194,6 +214,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             showShadow
             showFunMenu={player?.token !== localPlayerToken && funModeEnabled}
             playerId={player?.token}
+            lastEmoji={funLastEmoji}
           />
         );
         assignPlayerSeat(deckCard, index);
@@ -225,6 +246,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             sizeMultiplier={cardSizeMultiplier}
             showShadow
             showFunMenu={vote?.playerName !== playerName && funModeEnabled}
+            lastEmoji={funLastEmoji}
           />
         );
         assignPlayerSeat(deckCard, index, length);
@@ -238,7 +260,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
       bottom: bottomPlayers,
     };
     return positions;
-  }, [gameData]);
+  }, [gameData, funLastEmoji]);
 
   function getCardImage(player) {
     const { token, playerCardImage } = player;

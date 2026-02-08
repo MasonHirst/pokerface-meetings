@@ -5,13 +5,11 @@ import data from '@emoji-mart/data';
 import purpleAbstract from '../../assets/purple-abstract.jpg';
 import muiStyles from '../../style/muiStyles';
 import { GameContext } from '../../context/GameContext';
+import { DEFAULT_EMOJIS } from '../../utils/funEmojiDefaults';
 import { isTrueOrFalse } from '../../utils/helperFunctions';
 import { eventBus } from '../../utils/eventBus';
 
 const { Box, Typography } = muiStyles;
-
-const DEFAULT_EMOJIS = ['⚽️', '👍', '❗️'];
-const DEFAULT_EXTRA_EMOJI = '🧀';
 
 const PurpleDeckCard = ({
   card = '',
@@ -32,6 +30,7 @@ const PurpleDeckCard = ({
   borderThickness = 2,
   showShadow = false,
   showFunMenu = false,
+  lastEmoji,
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const isXsScreen = useMediaQuery('(max-width: 400px)');
@@ -40,26 +39,6 @@ const PurpleDeckCard = ({
   const cardSurfaceRef = useRef();
   const { shadowsEnabled } = useContext(GameContext) || {};
   const [menuOpen, setMenuOpen] = useState(false);
-  const [lastEmoji, setLastEmoji] = useState(() => {
-    const stored = localStorage.getItem('PokerfaceFunLastEmoji');
-    if (stored && !DEFAULT_EMOJIS.includes(stored)) {
-      return stored;
-    }
-    const emojiMartLast = localStorage.getItem('emoji-mart.last');
-    if (!emojiMartLast) {
-      return DEFAULT_EXTRA_EMOJI;
-    }
-    try {
-      const parsed = JSON.parse(emojiMartLast);
-      const candidate = parsed?.native || parsed?.emoji || parsed?.id || null;
-      if (candidate && !DEFAULT_EMOJIS.includes(candidate)) {
-        return candidate;
-      }
-      return DEFAULT_EXTRA_EMOJI;
-    } catch (error) {
-      return DEFAULT_EXTRA_EMOJI;
-    }
-  });
   const [pickerOpen, setPickerOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
 
@@ -166,8 +145,8 @@ const PurpleDeckCard = ({
       return;
     }
     if (!DEFAULT_EMOJIS.includes(value)) {
-      setLastEmoji(value);
       localStorage.setItem('PokerfaceFunLastEmoji', value);
+      eventBus.emit('funEmojiUpdated', value);
     }
     if (emojiData) {
       try {
@@ -181,7 +160,7 @@ const PurpleDeckCard = ({
   }
 
   const emojiOptions = useMemo(() => {
-    return [...DEFAULT_EMOJIS, lastEmoji || DEFAULT_EXTRA_EMOJI];
+    return [...DEFAULT_EMOJIS, lastEmoji];
   }, [lastEmoji]);
 
   const handleMenuEnter = () => {
@@ -257,7 +236,8 @@ const PurpleDeckCard = ({
           height: cardDimensions.height,
           width: cardDimensions.width,
           minWidth: cardDimensions.width,
-          border: !shouldShowShadows && `${borderThickness}px solid ${borderColor}`,
+          border:
+            !shouldShowShadows && `${borderThickness}px solid ${borderColor}`,
           transition: '0.2s',
           margin: cardMargin,
           display: 'flex',
