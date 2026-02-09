@@ -288,7 +288,7 @@ export const GameProvider = ({ children }) => {
         } else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt');
           notFoundConnectCounter++;
-          if (notFoundConnectCounter < 15) {
+          if (notFoundConnectCounter < 12) {
             setTimeout(() => {
               console.warning('Trying to rejoin game room...');
               ws.close(); // close the socket connection, which will trigger a reconnect
