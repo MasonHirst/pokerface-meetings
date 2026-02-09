@@ -430,6 +430,28 @@ async function startSocketServer(app, port, host = 'localhost') {
             addChatToList(gameId, body);
             broadcastToRoom(gameId, 'gameUpdated');
           }
+          //^ spacer -----------------------------------
+          else if (type === 'funEmojiThrow') {
+            if (!gameRooms[gameId]) {
+              return console.error(
+                'game room not found (funEmojiThrow) function'
+              );
+            }
+            if (!gameRooms[gameId]?.gameSettings?.funModeEnabled) {
+              return;
+            }
+            const { emoji, targetPlayerId, fromSide } = body || {};
+            if (!emoji || !targetPlayerId) {
+              return;
+            }
+            const normalizedSide =
+              fromSide === 'left' || fromSide === 'right' ? fromSide : null;
+            broadcastToRoom(gameId, 'funEmojiThrow', {
+              emoji,
+              targetPlayerId,
+              fromSide: normalizedSide,
+            });
+          }
         } catch (error) {
           console.error('Error in gameRoomController:', error);
         }

@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { eventBus } from '../../utils/eventBus';
+import { clamp } from '../../utils/helperFunctions';
 
 const GRAVITY = 2200; // px/s^2
 const MAX_DT = 0.034; // clamp dt to avoid large jumps
-
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 function getLastEmojiValue(value) {
   if (!value) {
@@ -58,8 +57,15 @@ const EmojiThrowLayer = () => {
   }, []);
 
   useEffect(() => {
-    const handleThrow = ({ emoji, cardRect }) => {
-      if (!emoji || !cardRect) {
+    const handleThrow = ({ emoji, targetPlayerId, fromSide }) => {
+      if (!emoji || !targetPlayerId) {
+        return;
+      }
+      const cardElement = document.querySelector(
+        `[data-player-id="${targetPlayerId}"]`
+      );
+      const cardRect = cardElement?.getBoundingClientRect();
+      if (!cardRect) {
         return;
       }
       const footerRect = document
@@ -67,11 +73,9 @@ const EmojiThrowLayer = () => {
         ?.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const targetX = cardRect.left + cardRect.width / 2;
-      const probabilityFromLeft = clamp(targetX / viewportWidth, 0.08, 0.92);
 
-      const size = 28;
-      const fromLeft = Math.random() < probabilityFromLeft;
+      const size = 26;
+      const fromLeft = fromSide === 'left';
       const startX = fromLeft ? -size : viewportWidth + size;
       const startY = clamp(
         cardRect.top + cardRect.height * (0.2 + Math.random() * 0.4),

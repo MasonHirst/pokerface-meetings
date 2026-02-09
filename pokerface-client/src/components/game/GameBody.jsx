@@ -9,7 +9,7 @@ import { IconButton, useMediaQuery } from '@mui/material';
 import { toast } from 'react-toastify';
 import PurpleDeckCard from './PurpleDeckCard';
 import { eventBus } from '../../utils/eventBus';
-import { DEFAULT_EXTRA_EMOJI } from '../../utils/funEmojiDefaults';
+import { DEFAULT_EXTRA_EMOJI, resolveFunLastEmoji } from '../../utils/funEmojiDefaults';
 const {
   Box,
   Typography,
@@ -48,8 +48,10 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
   const [newIssueName, setNewIssueName] = useState(
     gameData?.gameSettings?.currentIssueName || '',
   );
-  const [funLastEmoji, setFunLastEmoji] = useState(
-    () => localStorage.getItem('PokerfaceFunLastEmoji') || DEFAULT_EXTRA_EMOJI
+  const [funLastEmoji, setFunLastEmoji] = useState(() =>
+    resolveFunLastEmoji(
+      localStorage.getItem('PokerfaceFunLastEmoji') || DEFAULT_EXTRA_EMOJI
+    )
   );
   const newIssueNameRef = useRef();
   const localPlayerToken = localStorage.getItem('PokerfaceLocalUserToken');
@@ -69,7 +71,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
       if (!value) {
         return;
       }
-      setFunLastEmoji(value);
+      setFunLastEmoji(resolveFunLastEmoji(value));
     };
     eventBus.on('funEmojiUpdated', handleEmojiUpdate);
     return () => {

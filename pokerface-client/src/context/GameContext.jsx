@@ -158,6 +158,17 @@ export const GameProvider = ({ children }) => {
     socket?.send(bodyObj);
   }
 
+  function sendFunEmojiThrow({ emoji, targetPlayerId, fromSide }) {
+    if (!emoji || !targetPlayerId) {
+      return;
+    }
+    sendMessage('funEmojiThrow', {
+      emoji,
+      targetPlayerId,
+      fromSide,
+    });
+  }
+
   function checkPowerLvl(powerCheck) {
     //? Check to see if the player has power at least as high as the powerCheck
     if (myPowerLvl === 'owner') {
@@ -277,7 +288,7 @@ export const GameProvider = ({ children }) => {
         } else if (messageData.event_type === 'gameNotFound') {
           console.warning('Game not found at join attempt');
           notFoundConnectCounter++;
-          if (notFoundConnectCounter < 10) {
+          if (notFoundConnectCounter < 15) {
             setTimeout(() => {
               console.warning('Trying to rejoin game room...');
               ws.close(); // close the socket connection, which will trigger a reconnect
@@ -285,6 +296,8 @@ export const GameProvider = ({ children }) => {
           } else {
             confirmFailJoin(ws);
           }
+        } else if (messageData.event_type === 'funEmojiThrow') {
+          eventBus.emit('funThrowEmoji', messageData.data);
         }
       });
 
@@ -380,6 +393,7 @@ export const GameProvider = ({ children }) => {
         gameData,
         setGameData,
         sendMessage,
+        sendFunEmojiThrow,
         playerName,
         setPlayerName,
         joinGameLoading,

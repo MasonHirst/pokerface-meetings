@@ -5,8 +5,11 @@ import data from '@emoji-mart/data';
 import purpleAbstract from '../../assets/purple-abstract.jpg';
 import muiStyles from '../../style/muiStyles';
 import { GameContext } from '../../context/GameContext';
-import { DEFAULT_EMOJIS } from '../../utils/funEmojiDefaults';
-import { isTrueOrFalse } from '../../utils/helperFunctions';
+import {
+  DEFAULT_EMOJIS,
+  resolveFunLastEmoji,
+} from '../../utils/funEmojiDefaults';
+import { clamp, isTrueOrFalse } from '../../utils/helperFunctions';
 import { eventBus } from '../../utils/eventBus';
 
 const { Box, Typography } = muiStyles;
@@ -31,13 +34,14 @@ const PurpleDeckCard = ({
   showShadow = false,
   showFunMenu = false,
   lastEmoji,
+  playerId,
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const isXsScreen = useMediaQuery('(max-width: 400px)');
   const [cardFontSize, setCardFontSize] = useState(23);
   const cardTextRef = useRef();
   const cardSurfaceRef = useRef();
-  const { shadowsEnabled } = useContext(GameContext) || {};
+  const { shadowsEnabled, sendFunEmojiThrow } = useContext(GameContext) || {};
   const [menuOpen, setMenuOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -128,15 +132,28 @@ const PurpleDeckCard = ({
     };
   }, []);
 
+  const shouldShowFunMenu = useMemo(() => {
+    return showFunMenu && !!playerId;
+  }, [showFunMenu, playerId]);
+
   function throwEmoji(emoji) {
-    if (!showFunMenu) {
+    if (!shouldShowFunMenu) {
       return;
     }
-    const rect = cardSurfaceRef.current?.getBoundingClientRect();
-    if (!rect) {
+    const cardRect = cardSurfaceRef.current?.getBoundingClientRect();
+    if (!cardRect) {
       return;
     }
-    eventBus.emit('funThrowEmoji', { emoji, cardRect: rect });
+
+    const viewportWidth = window.innerWidth;
+    const targetX = cardRect.left + cardRect.width / 2;
+    const probabilityFromLeft = clamp(targetX / viewportWidth, 0.08, 0.92);
+
+    sendFunEmojiThrow({
+      emoji,
+      targetPlayerId: playerId,
+      fromSide: Math.random() < probabilityFromLeft ? 'left' : 'right',
+    });
   }
 
   function persistLastEmoji(emoji, emojiData) {
@@ -160,11 +177,11 @@ const PurpleDeckCard = ({
   }
 
   const emojiOptions = useMemo(() => {
-    return [...DEFAULT_EMOJIS, lastEmoji];
+    return [...DEFAULT_EMOJIS, resolveFunLastEmoji(lastEmoji)];
   }, [lastEmoji]);
 
   const handleMenuEnter = () => {
-    if (!showFunMenu) {
+    if (!shouldShowFunMenu) {
       return;
     }
     if (hoverTimeoutRef.current) {
@@ -174,7 +191,7 @@ const PurpleDeckCard = ({
   };
 
   const handleMenuLeave = () => {
-    if (!showFunMenu) {
+    if (!shouldShowFunMenu) {
       return;
     }
     if (pickerOpen) {
@@ -187,10 +204,10 @@ const PurpleDeckCard = ({
   };
 
   useEffect(() => {
-    if (!showFunMenu) {
+    if (!shouldShowFunMenu) {
       setMenuOpen(false);
     }
-  }, [showFunMenu]);
+  }, [shouldShowFunMenu]);
 
   useEffect(() => {
     if (pickerOpen) {
@@ -229,6 +246,7 @@ const PurpleDeckCard = ({
     >
       <Box
         ref={cardSurfaceRef}
+        data-player-id={playerId}
         sx={{
           boxShadow: shouldShowShadows
             ? '1px 2px 6px rgba(0, 0, 0, 0.5)'
@@ -267,7 +285,7 @@ const PurpleDeckCard = ({
         </Typography>
       </Box>
 
-      {showFunMenu && menuOpen && (
+      {shouldShowFunMenu && menuOpen && (
         <Box
           className='fun-emoji-menu'
           onMouseEnter={handleMenuEnter}

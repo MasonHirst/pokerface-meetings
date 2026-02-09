@@ -5,6 +5,10 @@ export function isTrueOrFalse(val) {
   return val === true || val === false;
 }
 
+export function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 export function getPowerLvlAsNumber(powerLvl) {
   if (powerLvl === 'owner') {
     return 1;
