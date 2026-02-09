@@ -1,10 +1,10 @@
-import { useContext, useState, useEffect, useRef } from 'react'
-import { useMediaQuery } from '@mui/material'
-import muiStyles from '../../style/muiStyles'
-import ChatMessage from './ChatMessage'
-import { GameContext } from '../../context/GameContext'
-import noMessageImg from '../../assets/no-messages.webp'
-import GifSelect from '../dialog/GifSelect'
+import { useContext, useState, useEffect, useRef, useMemo } from 'react';
+import { useMediaQuery } from '@mui/material';
+import muiStyles from '../../style/muiStyles';
+import ChatMessage from './ChatMessage';
+import { GameContext } from '../../context/GameContext';
+import noMessageImg from '../../assets/no-messages.webp';
+import GifSelect from '../dialog/GifSelect';
 
 const {
   Box,
@@ -18,78 +18,78 @@ const {
   KeyboardArrowDownIcon,
   LightTooltip,
   blue,
-} = muiStyles
+} = muiStyles;
 
 const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
-  const { gameData, sendMessage } = useContext(GameContext)
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const is750Screen = useMediaQuery('(max-width: 750px)')
-  const isMedScreen = useMediaQuery('(max-width: 900px)')
-  const [chatInput, setChatInput] = useState('')
-  const [chatMessages, setChatMessages] = useState([])
-  const [showGifPopup, setShowGifPopup] = useState(false)
-  // const [selectedGif, setSelectedGif] = useState({})
-  const chatBodyRef = useRef()
-  const [showScrollDownBtn, setShowScrollDownBtn] = useState(false)
+  const { gameData, sendMessage } = useContext(GameContext);
+  // const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const is750Screen = useMediaQuery('(max-width: 750px)');
+  // const isMedScreen = useMediaQuery('(max-width: 900px)');
+  const [chatInput, setChatInput] = useState('');
+  const [showGifPopup, setShowGifPopup] = useState(false);
+  const chatBodyRef = useRef();
+  const [showScrollDownBtn, setShowScrollDownBtn] = useState(false);
 
   function handleOnScroll() {
-    const div = chatBodyRef.current
+    const div = chatBodyRef.current;
     if (div.scrollTop < -200 && !showScrollDownBtn) {
-      setShowScrollDownBtn(true)
+      setShowScrollDownBtn(true);
     } else if (div.scrollTop > -200 && showScrollDownBtn) {
-      setShowScrollDownBtn(false)
+      setShowScrollDownBtn(false);
     }
   }
 
   function handleScrollDown() {
-    const div = chatBodyRef.current
+    const div = chatBodyRef.current;
     div.scrollTo({
       top: 0,
       behavior: 'smooth',
-    })
+    });
   }
 
-  useEffect(() => {
-    if (!gameData.chatMessages) return
-    const mappedMessages = gameData.chatMessages.map((msg, i) => (
+  const chatMessages = useMemo(() => {
+    return gameData.chatMessages.map((msg, i) => (
       <ChatMessage key={i} msg={msg} />
-    ))
-    setChatMessages(mappedMessages)
-  }, [gameData.chatMessages])
+    ));
+  }, [gameData.chatMessages]);
 
   useEffect(() => {
-    return () => {}
-  }, [])
+    return () => {};
+  }, []);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmitMessage()
+      e.preventDefault();
+      handleSubmitMessage();
     }
-  }
+  };
 
   function handleSubmitMessage(e) {
-    if (e) e.preventDefault()
-    if (!chatInput.trim().length > 0) return
-    handleSend(chatInput, 'text')
-    setChatInput('')
+    if (e) {
+      e.preventDefault();
+    }
+    if (!chatInput.trim().length > 0) {
+      return;
+    }
+    handleSend(chatInput.trim(), 'text');
+    setChatInput('');
   }
 
   function handleSend(message, type) {
     const messageBody = {
-      senderName: localStorage.getItem('playerName'),
-      senderPhoto: localStorage.getItem('pokerCardImage'),
+      senderName: localStorage.getItem('PokerfacePlayerName'),
+      senderPhoto: localStorage.getItem('PokerfaceCardImage'),
       message,
       sendTime: Date.now(),
       type,
       chatNumber: null,
-    }
-    sendMessage('newChatMessage', messageBody)
+    };
+    sendMessage('newChatMessage', messageBody);
   }
 
   function handleSelectGif(gif) {
-    handleSend(gif.url, 'img')
-    setShowGifPopup(false)
+    handleSend(gif.url, 'img');
+    setShowGifPopup(false);
   }
 
   return (
@@ -262,7 +262,7 @@ const ChatDrawer = ({ toggleChatDrawer, chatDrawerOpen, drawerWidth }) => {
         )}
       </Box>
     </Drawer>
-  )
-}
+  );
+};
 
-export default ChatDrawer
+export default ChatDrawer;

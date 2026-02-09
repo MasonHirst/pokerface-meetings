@@ -1,9 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { useMediaQuery } from '@mui/material'
-import purpleAbstract from '../../assets/purple-abstract.jpg'
-import muiStyles from '../../style/muiStyles'
+import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
+import { Dialog, useMediaQuery } from '@mui/material';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
+import purpleAbstract from '../../assets/purple-abstract.jpg';
+import muiStyles from '../../style/muiStyles';
+import { GameContext } from '../../context/GameContext';
+import {
+  DEFAULT_EMOJIS,
+  resolveFunLastEmoji,
+} from '../../utils/funEmojiDefaults';
+import { clamp, isTrueOrFalse } from '../../utils/helperFunctions';
+import { eventBus } from '../../utils/eventBus';
 
-const { Box, Typography } = muiStyles
+const { Box, Typography } = muiStyles;
 
 const PurpleDeckCard = ({
   card = '',
@@ -22,73 +31,231 @@ const PurpleDeckCard = ({
   fontSizeMultiplier = 1,
   sizeMultiplier = 1,
   borderThickness = 2,
+  showShadow = false,
+  showFunMenu = false,
+  lastEmoji,
+  playerId,
 }) => {
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const isXsScreen = useMediaQuery('(max-width: 400px)')
-  const [cardFontSize, setCardFontSize] = useState(23)
-  const cardTextRef = useRef()
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const isXsScreen = useMediaQuery('(max-width: 400px)');
+  const [cardFontSize, setCardFontSize] = useState(23);
+  const cardTextRef = useRef();
+  const cardSurfaceRef = useRef();
+  const { shadowsEnabled, sendFunEmojiThrow } = useContext(GameContext) || {};
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const hoverTimeoutRef = useRef(null);
 
   function isNativeEmoji(str) {
-    return /\p{Emoji}/u.test(str) && isNaN(Number(str))
+    return /\p{Emoji}/u.test(str) && isNaN(Number(str));
   }
+
+  const splitText = useMemo(() => {
+    if (!card) {
+      return [];
+    }
+    return card.trim().split('\\');
+  }, [card]);
+
+  const cardTextElements = useMemo(() => {
+    if (!splitText?.length > 0) {
+      return;
+    }
+    return splitText.map((text, index) => {
+      return (
+        <span key={index} style={{ display: 'block' }}>
+          {text}
+        </span>
+      );
+    });
+  }, [splitText]);
+
+  const shouldShowShadows = useMemo(() => {
+    //? Next line is for when the cards are shown, but gameContext is not rendered yet
+    if (!isTrueOrFalse(shadowsEnabled)) {
+      return showShadow;
+    } else {
+      return shadowsEnabled && showShadow;
+    }
+  }, [shadowsEnabled, showShadow]);
 
   useEffect(() => {
     if (isNativeEmoji(card)) {
-      setCardFontSize(34 * fontSizeMultiplier)
-    } else setCardFontSize(23 * fontSizeMultiplier)
-  }, [card])
+      setCardFontSize(34 * fontSizeMultiplier);
+    } else {
+      setCardFontSize(23 * fontSizeMultiplier);
+    }
+  }, [card]);
 
-  let cardHeight = 98 * sizeMultiplier
-  let cardWidth = 62 * sizeMultiplier
+  const cardDimensions = useMemo(() => {
+    let cardHeight = 98 * sizeMultiplier;
+    let cardWidth = 62 * sizeMultiplier;
 
-  if (isXsScreen) {
-    cardHeight = cardHeight * 0.6
-    cardWidth = cardWidth * 0.6
-  } else if (isSmallScreen) {
-    cardHeight = cardHeight * 0.7
-    cardWidth = cardWidth * 0.7
-  }
+    if (isXsScreen) {
+      cardHeight = cardHeight * 0.6;
+      cardWidth = cardWidth * 0.6;
+    } else if (isSmallScreen) {
+      cardHeight = cardHeight * 0.7;
+      cardWidth = cardWidth * 0.7;
+    }
+    return { height: cardHeight, width: cardWidth };
+  }, [sizeMultiplier, isXsScreen, isSmallScreen]);
 
   useEffect(() => {
     if (isSmallScreen) {
-      setCardFontSize(cardFontSize * 0.9)
+      setCardFontSize(cardFontSize * 0.9);
     } else {
-      setCardFontSize(isNativeEmoji(card) ? 34 : 23)
+      setCardFontSize(isNativeEmoji(card) ? 34 : 23);
     }
-  }, [isSmallScreen])
+  }, [isSmallScreen]);
 
   useEffect(() => {
-    if (!cardTextRef.current) return
-    const fontWidth = cardTextRef.current.clientWidth
-    if (fontWidth > cardWidth - 6) {
-      setCardFontSize(cardFontSize - 1)
+    if (!cardTextRef.current) {
+      return;
     }
-  }, [cardTextRef.current, card, cardFontSize, cardWidth, cardFontSize])
+    const fontWidth = cardTextRef.current.clientWidth;
+    const fontHeight = cardTextRef.current.clientHeight;
+    const isBiggerThanCard =
+      fontWidth > cardDimensions.width - 8 ||
+      fontHeight > cardDimensions.height - 6;
+
+    if (isBiggerThanCard && cardFontSize > 5) {
+      setCardFontSize((prev) => prev - 0.5);
+    }
+  }, [cardTextRef.current, splitText, cardFontSize, cardDimensions]);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const shouldShowFunMenu = useMemo(() => {
+    return showFunMenu && !!playerId;
+  }, [showFunMenu, playerId]);
+
+  function throwEmoji(emoji) {
+    if (!shouldShowFunMenu) {
+      return;
+    }
+    const cardRect = cardSurfaceRef.current?.getBoundingClientRect();
+    if (!cardRect) {
+      return;
+    }
+
+    const viewportWidth = window.innerWidth;
+    const targetX = cardRect.left + cardRect.width / 2;
+    const probabilityFromLeft = clamp(targetX / viewportWidth, 0.08, 0.92);
+
+    sendFunEmojiThrow({
+      emoji,
+      targetPlayerId: playerId,
+      fromSide: Math.random() < probabilityFromLeft ? 'left' : 'right',
+    });
+  }
+
+  function persistLastEmoji(emoji, emojiData) {
+    const value = emojiData?.native || emojiData?.emoji || emoji;
+    if (!value) {
+      return;
+    }
+    if (!DEFAULT_EMOJIS.includes(value)) {
+      localStorage.setItem('PokerfaceFunLastEmoji', value);
+      eventBus.emit('funEmojiUpdated', value);
+    }
+    if (emojiData) {
+      try {
+        localStorage.setItem('emoji-mart.last', JSON.stringify(emojiData));
+      } catch (error) {
+        localStorage.setItem('emoji-mart.last', value);
+      }
+    } else {
+      localStorage.setItem('emoji-mart.last', value);
+    }
+  }
+
+  const emojiOptions = useMemo(() => {
+    return [...DEFAULT_EMOJIS, resolveFunLastEmoji(lastEmoji)];
+  }, [lastEmoji]);
+
+  const handleMenuEnter = () => {
+    if (!shouldShowFunMenu) {
+      return;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setMenuOpen(true);
+  };
+
+  const handleMenuLeave = () => {
+    if (!shouldShowFunMenu) {
+      return;
+    }
+    if (pickerOpen) {
+      return;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => setMenuOpen(false), 140);
+  };
+
+  useEffect(() => {
+    if (!shouldShowFunMenu) {
+      setMenuOpen(false);
+    }
+  }, [shouldShowFunMenu]);
+
+  useEffect(() => {
+    if (pickerOpen) {
+      setMenuOpen(true);
+    }
+  }, [pickerOpen]);
+
+  const handleEmojiClick = (emoji) => {
+    persistLastEmoji(emoji);
+    throwEmoji(emoji);
+  };
 
   return (
     <Box
       onClick={() => {
-        if (!clickable) return
-        submitChoice(card)
+        if (!clickable) {
+          return;
+        }
+        submitChoice(card);
       }}
-      className={clickable ? 'cursor-pointer no-tap-highlight' : 'no-tap-highlight'}
+      onMouseEnter={handleMenuEnter}
+      onMouseLeave={handleMenuLeave}
+      className={
+        clickable ? 'cursor-pointer no-tap-highlight' : 'no-tap-highlight'
+      }
       // className="no-tap-highlight"
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        minWidth: bottomMessage && `${cardWidth + 10}px`,
+        minWidth: bottomMessage && `${cardDimensions.width + 10}px`,
         position: 'relative',
         bottom: selected ? '15px' : 0,
         transition: '0.2s',
       }}
     >
       <Box
+        ref={cardSurfaceRef}
+        data-player-id={playerId}
         sx={{
-          height: cardHeight,
-          width: cardWidth,
-          minWidth: cardWidth,
-          border: `${borderThickness}px solid ${borderColor}`,
+          boxShadow: shouldShowShadows
+            ? '1px 2px 6px rgba(0, 0, 0, 0.5)'
+            : 'none',
+          height: cardDimensions.height,
+          width: cardDimensions.width,
+          minWidth: cardDimensions.width,
+          border:
+            !shouldShowShadows && `${borderThickness}px solid ${borderColor}`,
           transition: '0.2s',
           margin: cardMargin,
           display: 'flex',
@@ -96,7 +263,7 @@ const PurpleDeckCard = ({
           backgroundColor: selected ? selectedBgColor : bgColor,
           color: selected && '#ffffff',
           alignItems: 'center',
-          borderRadius: `${cardHeight / 12}px`,
+          borderRadius: `${cardDimensions.height / 12}px`,
           backgroundImage:
             showBgImage && `url(${cardImage ? cardImage : purpleAbstract})`,
           backgroundPosition: 'center',
@@ -105,21 +272,75 @@ const PurpleDeckCard = ({
         }}
       >
         <Typography
-          variant="h6"
+          variant='h6'
           sx={{
             fontSize: cardFontSize,
-            whiteSpace: 'nowrap',
             userSelect: 'none',
+            textAlign: 'center',
+            lineHeight: 1.1,
           }}
           ref={cardTextRef}
         >
-          {card}
+          {cardTextElements}
         </Typography>
       </Box>
 
+      {shouldShowFunMenu && menuOpen && (
+        <Box
+          className='fun-emoji-menu'
+          onMouseEnter={handleMenuEnter}
+          onMouseLeave={handleMenuLeave}
+          onClick={(event) => event.stopPropagation()}
+        >
+          {emojiOptions.map((emoji, index) => (
+            <button
+              key={`${emoji}-${index}`}
+              className='fun-emoji-button'
+              type='button'
+              onClick={() => handleEmojiClick(emoji)}
+            >
+              {emoji}
+            </button>
+          ))}
+          <button
+            className='fun-emoji-button fun-emoji-picker'
+            type='button'
+            onClick={(event) => {
+              setPickerOpen(true);
+            }}
+          >
+            +
+          </button>
+        </Box>
+      )}
+
+      <Dialog
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        PaperProps={{
+          sx: { borderRadius: '16px', overflow: 'hidden' },
+        }}
+      >
+        <Picker
+          data={data}
+          onEmojiSelect={(emojiData) => {
+            const emojiValue =
+              emojiData?.native || emojiData?.emoji || emojiData?.id;
+            if (!emojiValue) {
+              return;
+            }
+            persistLastEmoji(emojiValue, emojiData);
+            throwEmoji(emojiValue);
+            setPickerOpen(false);
+          }}
+          previewPosition='none'
+          theme='light'
+        />
+      </Dialog>
+
       {bottomMessage && (
         <Typography
-          variant="subtitle1"
+          variant='subtitle1'
           sx={{
             userSelect: 'none',
             whiteSpace: 'nowrap',
@@ -133,7 +354,7 @@ const PurpleDeckCard = ({
         </Typography>
       )}
     </Box>
-  )
-}
+  );
+};
 
-export default PurpleDeckCard
+export default PurpleDeckCard;

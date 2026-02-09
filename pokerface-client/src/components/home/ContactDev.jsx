@@ -9,7 +9,7 @@ const { Paper, TextField, Box, Typography, LoadingButton, Button } = muiStyles;
 const ContactDev = () => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const [nameInput, setNameInput] = useState(
-    localStorage.getItem('playerName') || ''
+    localStorage.getItem('PokerfacePlayerName') || ''
   );
   const [contactInput, setContactInput] = useState('');
   const [messageInput, setMessageInput] = useState('');
@@ -21,13 +21,15 @@ const ContactDev = () => {
 
   function handleSubmit(e) {
     e.preventDefault();
-    setSubmitError('')
+    setSubmitError('');
     if (contactInput && !validate(contactInput)) {
       return setContactError(
         'If you provide contact info, it must be a valid email address'
       );
     }
-    if (!messageInput) return setMessageError('Message cannot be empty');
+    if (!messageInput) {
+      return setMessageError('Message cannot be empty');
+    }
     setDisableForm(true);
     axios
       .post('/contact', {
