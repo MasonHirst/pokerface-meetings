@@ -1,9 +1,8 @@
-import React from 'react'
 import pokerLogo from '../../assets/poker-logo.png'
 import muiStyles from '../../style/muiStyles'
 import { useMediaQuery } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-const { AppBar, Toolbar, Typography, Button, Box } = muiStyles
+const { Typography, Button, Box } = muiStyles
 
 const Header = ({hasScroll}) => {
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
@@ -58,7 +57,7 @@ const Header = ({hasScroll}) => {
             onClick={() => navigate('/')}
             sx={{ fontSize: '15px', opacity: 0.6 }}
           >
-            by Mason Hirst
+            by Mason Hirst bro
           </Typography>
         </Box>
       </Box>
