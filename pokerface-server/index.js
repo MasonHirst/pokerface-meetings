@@ -4,6 +4,7 @@ const app = express()
 const cors = require('cors')
 require('dotenv').config()
 const path = require('path')
+const os = require('os')
 
 //! Middleware
 const join = path.join(__dirname, '.', 'build')
@@ -30,8 +31,30 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '.', 'build', 'index.html'))
 })
 
-
-
 //! Server listen
 const PORT = process.env.PORT || 8080
-startSocketServer(app, PORT)
+const USE_LOCAL_IP = process.env.USE_LOCAL_IP === 'true'
+let host
+
+if (USE_LOCAL_IP) {
+  host = getLocalIPAddress()
+}
+
+if (host) {
+  startSocketServer(app, PORT, host)
+} else {
+  startSocketServer(app, PORT)
+}
+
+function getLocalIPAddress() {
+  const interfaces = os.networkInterfaces()
+  for (const iface of Object.values(interfaces)) {
+    for (const alias of iface) {
+      if (alias.family === 'IPv4' && !alias.internal) {
+        // Only consider IPv4 addresses and exclude internal (localhost)
+        return alias.address
+      }
+    }
+  }
+  return null
+}

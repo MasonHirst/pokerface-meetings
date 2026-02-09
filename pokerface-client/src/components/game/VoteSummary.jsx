@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import muiStyles from '../../style/muiStyles'
+import React, { useState, useEffect, useMemo } from 'react';
+import muiStyles from '../../style/muiStyles';
 
-import PurpleDeckCard from './PurpleDeckCard'
-import { createTheme, ThemeProvider } from '@mui/material/styles'
-import { green, yellow, red } from '@mui/material/colors'
+import PurpleDeckCard from './PurpleDeckCard';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { green, yellow, red } from '@mui/material/colors';
 
 const circleIndicatorTheme = createTheme({
   palette: {
@@ -20,9 +20,9 @@ const circleIndicatorTheme = createTheme({
       main: 'rgba(0, 0, 0, 0.1)',
     },
   },
-})
+});
 
-const { Box, Typography, CircularProgress } = muiStyles
+const { Box, Typography, CircularProgress } = muiStyles;
 
 const VoteSummary = ({
   voteDetails,
@@ -31,87 +31,102 @@ const VoteSummary = ({
   canScroll = true,
   hasPadding = true,
   gameData,
+  showParticipation = false,
 }) => {
-  const [fillPercentage, setFillPercentage] = useState(0)
-  const [showAgreement, setShowAgreement] = useState(false)
-  const [showAverage, setShowAverage] = useState(false)
+  const [fillPercentage, setFillPercentage] = useState(0);
+
+  const showAgreement = useMemo(() => {
+    return gameData?.gameSettings?.showAgreement;
+  }, [gameData?.gameSettings]);
+
+  const showAverage = useMemo(() => {
+    return gameData?.gameSettings?.showAverage;
+  }, [gameData?.gameSettings]);
 
   useEffect(() => {
-    if (!gameData?.gameSettings) return
-    setShowAgreement(gameData.gameSettings.showAgreement)
-    setShowAverage(gameData.gameSettings.showAverage)
-  }, [gameData])
-
-  useEffect(() => {
-    setFillPercentage(0)
+    setFillPercentage(0);
     setTimeout(() => {
-      if (!voteDetails?.agreement) return
-      setFillPercentage(voteDetails.agreement * 100)
-    }, 400)
-  }, [voteDetails])
-
-  const cardCounts = {}
-  if (voteDetails?.playerVotes) {
-    Object.values(voteDetails.playerVotes).forEach((vote) => {
-      if (!vote) return
-      const obj = {
-        choice: vote,
-        count: 1,
+      if (!voteDetails?.agreement) {
+        return;
       }
-      if (cardCounts[vote]) {
-        cardCounts[vote].count++
-      } else cardCounts[vote] = obj
-    })
-  }
+      setFillPercentage(voteDetails.agreement * 100);
+    }, 400);
+  }, [voteDetails]);
 
-  const revealCardCount = Object.values(cardCounts)
-    .sort((a, b) => b.count - a.count) // Sort the objects by vote count in descending order
-    .map((obj, index) => {
-      const votePercentage = (obj.count / Object.values(voteDetails.playerVotes).filter((vote) => vote).length) * 100
-      return (
-        <Box
-          key={index}
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          {!wrapMode && (
-            <Box
-              sx={{
-                height: { xs: '45px', sm: '60px' },
-                width: '8px',
-                backgroundColor: '#dddddd',
-                borderRadius: '4px',
-                display: 'flex',
-                alignItems: 'flex-end',
-              }}
-            >
+  const cardCounts = useMemo(() => {
+    const counts = {};
+    if (voteDetails?.votes) {
+      voteDetails.votes.forEach((vote) => {
+        const { card } = vote || {};
+        if (!card) {
+          return;
+        }
+        const obj = {
+          choice: card,
+          count: 1,
+        };
+        if (counts[card]) {
+          counts[card].count++;
+        } else {
+          counts[card] = obj;
+        }
+      });
+    }
+    return counts;
+  }, [voteDetails]);
+
+  const revealCardCount = useMemo(() => {
+    return Object.values?.(cardCounts)
+      .sort((a, b) => b.count - a.count)
+      .map((obj, index) => {
+        const votePercentage =
+          (obj.count / voteDetails.votes.filter((vote) => vote.card).length) *
+          100;
+        return (
+          <Box
+            key={index}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            {!wrapMode && (
               <Box
                 sx={{
-                  width: '100%',
-                  transition: 'height 0.5s ease-in-out',
-                  height: `${votePercentage}%`, // percentage of the largest vote count
-                  borderRadius: '5px',
-                  borderTopLeftRadius: votePercentage < 98 ? '0px' : '5px',
-                  borderTopRightRadius: votePercentage < 98 ? '0px' : '5px',
-                  backgroundColor: '#4caf50',
+                  height: { xs: '45px', sm: '60px' },
+                  width: '8px',
+                  backgroundColor: '#dddddd',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'flex-end',
                 }}
-              />
-            </Box>
-          )}
-          <PurpleDeckCard
-            card={obj.choice}
-            gameState={gameState}
-            sizeMultiplier={0.9}
-            borderColor="black"
-            bottomMessage={`${obj.count} ${obj.count > 1 ? 'votes' : 'vote'}`}
-          />
-        </Box>
-      )
-    })
+              >
+                <Box
+                  sx={{
+                    width: '100%',
+                    transition: 'height 0.5s ease-in-out',
+                    height: `${votePercentage}%`, // percentage of the largest vote count
+                    borderRadius: '5px',
+                    borderTopLeftRadius: votePercentage < 98 ? '0px' : '5px',
+                    borderTopRightRadius: votePercentage < 98 ? '0px' : '5px',
+                    backgroundColor: '#4caf50',
+                  }}
+                />
+              </Box>
+            )}
+            <PurpleDeckCard
+              card={obj.choice}
+              gameState={gameState}
+              sizeMultiplier={0.9}
+              borderColor='black'
+              bottomMessage={`${obj.count} ${obj.count > 1 ? 'votes' : 'vote'}`}
+            />
+          </Box>
+        );
+      });
+  }, [voteDetails]);
 
   return (
     <Box
@@ -147,7 +162,7 @@ const VoteSummary = ({
               }}
             >
               <Typography
-                variant="body1"
+                variant='body1'
                 sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
               >
                 Agreement
@@ -156,14 +171,14 @@ const VoteSummary = ({
               <Box sx={{ position: 'relative' }}>
                 <ThemeProvider theme={circleIndicatorTheme}>
                   <CircularProgress
-                    variant="determinate"
-                    color="primary"
+                    variant='determinate'
+                    color='primary'
                     value={fillPercentage}
                     size={wrapMode ? 60 : 90}
                   />
                   <CircularProgress
-                    variant="determinate"
-                    color="fourth"
+                    variant='determinate'
+                    color='fourth'
                     value={100}
                     size={wrapMode ? 60 : 90}
                     sx={{ position: 'absolute', left: '0px', top: '0px' }}
@@ -178,7 +193,7 @@ const VoteSummary = ({
                   }}
                 >
                   <Typography
-                    variant="h5"
+                    variant='h5'
                     sx={{
                       marginTop: wrapMode ? '-5px' : '-8px',
                       fontSize: { xs: '18px', sm: '25px' },
@@ -191,42 +206,70 @@ const VoteSummary = ({
             </Box>
           )}
 
-          {Object.values(voteDetails).length &&
-            voteDetails.average &&
-            showAverage && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '7px',
-                  position: 'relative',
-                  bottom: wrapMode ? '0px' : !showAgreement ? '45px' : '15px',
-                }}
+          {voteDetails?.votes?.length && voteDetails.average && showAverage && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '7px',
+                position: 'relative',
+                bottom: wrapMode ? '0px' : !showAgreement ? '45px' : '15px',
+              }}
+            >
+              <Typography
+                variant='body1'
+                sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
               >
+                Average
+              </Typography>
+              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                 <Typography
-                  variant="body1"
-                  sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
+                  variant='h5'
+                  sx={{
+                    marginTop: '-10px',
+                    fontSize: { xs: '34px', sm: '38px' },
+                  }}
                 >
-                  Average
+                  {voteDetails.average}
                 </Typography>
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      marginTop: '-10px',
-                      fontSize: { xs: '34px', sm: '38px' },
-                    }}
-                  >
-                    {voteDetails.average}
-                  </Typography>
-                </Box>
               </Box>
-            )}
+            </Box>
+          )}
+
+          {voteDetails.participation && showParticipation && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '7px',
+                position: 'relative',
+                bottom: wrapMode ? '0px' : !showAgreement ? '45px' : '15px',
+              }}
+            >
+              <Typography
+                variant='body1'
+                sx={{ fontSize: { xs: '15px', sm: '18px' }, opacity: 0.5 }}
+              >
+                Participation
+              </Typography>
+              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  sx={{
+                    marginTop: '-10px',
+                    fontSize: { xs: '34px', sm: '38px' },
+                  }}
+                >
+                  {voteDetails.participation}
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </Box>
       )}
     </Box>
-  )
-}
+  );
+};
 
-export default VoteSummary
+export default VoteSummary;

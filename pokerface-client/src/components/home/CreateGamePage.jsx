@@ -1,47 +1,61 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import pokerLogo from '../../assets/poker-logo.png'
-import PurpleDeckCard from '../game/PurpleDeckCard'
-import GraphemeSplitter from 'grapheme-splitter'
-import ChooseDeck from '../dialog/ChooseDeck'
-import axios from 'axios'
-import muiStyles from '../../style/muiStyles'
-const { Box, TextField, Button, StyleIcon, TvIcon, Typography } = muiStyles
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import pokerLogo from '../../assets/poker-logo.png';
+import PurpleDeckCard from '../game/PurpleDeckCard';
+import GraphemeSplitter from 'grapheme-splitter';
+import ChooseDeck from '../dialog/ChooseDeck';
+import axios from 'axios';
+import muiStyles from '../../style/muiStyles';
+import { deriveCardsFromDeck } from '../../utils/helperFunctions';
+const { Box, TextField, Button, StyleIcon, TvIcon, Typography } = muiStyles;
 
 const CreateGamePage = () => {
-  document.title = 'Pokerface - Create Game'
-  const splitter = GraphemeSplitter()
-  const [selectedDeck, setSelectedDeck] = useState({ values: '1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?, ☕', name: 'Fibonacci' })
-  const navigate = useNavigate()
-  const [showDeckDialog, setShowDeckDialog] = useState(false)
-  const [gameName, setGameName] = useState('')
-  const [error, setError] = useState('')
-  const [appIsLoading, setAppIsLoading] = useState(false)
+  const splitter = GraphemeSplitter();
+  const [selectedDeck, setSelectedDeck] = useState({
+    values: '1,2,3,5,8,13,21,34,55,?,☕',
+    name: 'Fibonacci',
+  });
+  const navigate = useNavigate();
+  const [showDeckDialog, setShowDeckDialog] = useState(false);
+  const [gameName, setGameName] = useState('');
+  const [error, setError] = useState('');
+  const [appIsLoading, setAppIsLoading] = useState(false);
 
-  const mappedSelectedDeck = [...new Set(selectedDeck.values.split(','))].map(
-    (card, index) => {
-      const length = splitter.splitGraphemes(card.trim()).length
-      if (length > 4 || card.trim().length < 1) return
-      return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />
+  const selectedDeckCards = useMemo(() => {
+    if (typeof selectedDeck.values !== 'string') {
+      return [];
     }
-  )
+    return deriveCardsFromDeck(selectedDeck.values).map((card, index) => {
+      return <PurpleDeckCard key={index} card={card} sizeMultiplier={0.9} />;
+    });
+  }, [selectedDeck]);
+
+  useEffect(() => {
+    document.title = 'Pokerface - Create Game';
+  }, []);
 
   function handleHostGame(e) {
-    setError('')
-    e.preventDefault()
-    if (!gameName) return setError('Please enter a game name')
-    setAppIsLoading(true)
+    setError('');
+    e.preventDefault();
+    if (!gameName) {
+      return setError('Please enter a game name');
+    }
+    setAppIsLoading(true);
     axios
-      .post('game/create', { gameName: gameName.trim(), deck: selectedDeck, gameHost: localStorage.getItem('localUserToken') })
+      .post('game/create', {
+        gameName: gameName.trim(),
+        deck: selectedDeck,
+        gameHost: localStorage.getItem('PokerfaceLocalUserToken'),
+      })
       .then(({ data }) => {
         if (data.gameRoomId) {
-          navigate(`/game/${data.gameRoomId}`)
+          navigate(`/game/${data.gameRoomId}`);
         } else {
-          setError('Error creating game')
+          setError('Error creating game');
         }
       })
       .catch(console.error)
-      .finally(() => setAppIsLoading(false))
+      .finally(() => setAppIsLoading(false));
   }
 
   return (
@@ -67,16 +81,17 @@ const CreateGamePage = () => {
         }}
       >
         <TextField
-          inputProps={{ maxLength: 20 }}
+          inputProps={{ maxLength: 24 }}
           onChange={(e) => setGameName(e.target.value)}
           sx={{ width: 'min(650px, 100%)' }}
           autoFocus
+          name='pokerface-game-name'
           disabled={appIsLoading}
           error={!!error}
           value={gameName}
-          label="Game Name"
-          size="large"
-          placeholder="Enter a game name"
+          label='Game Name'
+          size='large'
+          placeholder='Enter a game name'
           helperText={error}
         />
 
@@ -98,14 +113,14 @@ const CreateGamePage = () => {
               paddingBottom: '8px',
             }}
           >
-            {mappedSelectedDeck}
+            {selectedDeckCards}
           </Box>
         </Box>
 
         <Button
           onClick={() => setShowDeckDialog(!showDeckDialog)}
-          color="secondary"
-          variant="contained"
+          color='secondary'
+          variant='contained'
           disableElevation
           sx={{ textTransform: 'none', fontSize: '17px', fontWeight: 'bold' }}
           startIcon={<StyleIcon />}
@@ -114,8 +129,8 @@ const CreateGamePage = () => {
         </Button>
 
         <Button
-          variant="contained"
-          size="large"
+          variant='contained'
+          size='large'
           disableElevation
           disabled={appIsLoading}
           sx={{
@@ -151,24 +166,24 @@ const CreateGamePage = () => {
       >
         <img
           src={pokerLogo}
-          className="cursor-pointer"
+          className='cursor-pointer'
           onClick={() => navigate('/')}
-          alt="poker-logo"
+          alt='poker-logo'
           style={{ width: 'clamp(50px, 15vw, 80px)' }}
         />
         <Box>
           <Typography
-            variant="h5"
-            className="cursor-pointer"
+            variant='h5'
+            className='cursor-pointer'
             onClick={() => navigate('/')}
-            color="primary"
+            color='primary'
             sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
           >
             Pokerface
           </Typography>
           <Typography
-            variant="body2"
-            className="cursor-pointer"
+            variant='body2'
+            className='cursor-pointer'
             onClick={() => navigate('/')}
             sx={{ fontSize: 'clamp(12px, 3vw, 15px)', opacity: 0.6 }}
           >
@@ -190,7 +205,7 @@ const CreateGamePage = () => {
         New game setup
       </Typography>
     </Box>
-  )
-}
+  );
+};
 
-export default CreateGamePage
+export default CreateGamePage;

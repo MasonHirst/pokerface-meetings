@@ -1,32 +1,36 @@
-import React, { useState } from 'react'
-import muiStyles from '../../style/muiStyles'
-import pokerLogo from '../../assets/poker-logo.png'
-import { useMediaQuery } from '@mui/material'
-import axios from 'axios'
-import { validate } from 'email-validator'
-const { Paper, TextField, Box, Typography, LoadingButton, Button } = muiStyles
+import React, { useState } from 'react';
+import muiStyles from '../../style/muiStyles';
+import pokerLogo from '../../assets/poker-logo.png';
+import { useMediaQuery } from '@mui/material';
+import axios from 'axios';
+import { validate } from 'email-validator';
+const { Paper, TextField, Box, Typography, LoadingButton, Button } = muiStyles;
 
 const ContactDev = () => {
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
   const [nameInput, setNameInput] = useState(
-    localStorage.getItem('playerName') || ''
-  )
-  const [contactInput, setContactInput] = useState('')
-  const [messageInput, setMessageInput] = useState('')
-  const [disableForm, setDisableForm] = useState(false)
-  const [contactError, setContactError] = useState('')
-  const [messageError, setMessageError] = useState('')
-  const [messageSent, setMessageSent] = useState(false)
+    localStorage.getItem('PokerfacePlayerName') || ''
+  );
+  const [contactInput, setContactInput] = useState('');
+  const [messageInput, setMessageInput] = useState('');
+  const [disableForm, setDisableForm] = useState(false);
+  const [contactError, setContactError] = useState('');
+  const [messageError, setMessageError] = useState('');
+  const [messageSent, setMessageSent] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   function handleSubmit(e) {
-    e.preventDefault()
+    e.preventDefault();
+    setSubmitError('');
     if (contactInput && !validate(contactInput)) {
       return setContactError(
         'If you provide contact info, it must be a valid email address'
-      )
+      );
     }
-    if (!messageInput) return setMessageError('Message cannot be empty')
-    setDisableForm(true)
+    if (!messageInput) {
+      return setMessageError('Message cannot be empty');
+    }
+    setDisableForm(true);
     axios
       .post('/contact', {
         name: nameInput,
@@ -34,8 +38,20 @@ const ContactDev = () => {
         message: messageInput,
       })
       .then(() => setMessageSent(true))
-      .catch(console.error)
-      .finally(() => setDisableForm(false))
+      .catch((err) => {
+        console.error(err);
+        setSubmitError('Failed to send message. Please try again later.');
+      })
+      .finally(() => setDisableForm(false));
+  }
+
+  function handleMessageChange(e) {
+    setMessageInput(e?.target?.value);
+    _resetMessageError();
+  }
+
+  function _resetMessageError() {
+    setMessageError('');
   }
 
   return (
@@ -68,7 +84,7 @@ const ContactDev = () => {
                 justifyContent: 'space-between',
               }}
             >
-              <Typography variant="h4" sx={{ marginBottom: '15px' }}>
+              <Typography variant='h4' sx={{ marginBottom: '15px' }}>
                 Contact Developer
               </Typography>
               {!isSmallScreen && <img src={pokerLogo} width={90} alt='logo' />}
@@ -77,9 +93,10 @@ const ContactDev = () => {
               fullWidth
               spellCheck={false}
               inputProps={{ maxLength: 20 }}
-              label="Name (optional)"
+              label='Name (optional)'
+              autoFocus
               disabled={disableForm}
-              variant="outlined"
+              variant='outlined'
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
             />
@@ -90,8 +107,8 @@ const ContactDev = () => {
               fullWidth
               error={!!contactError}
               helperText={contactError}
-              label="Email (optional)"
-              variant="outlined"
+              label='Email (optional)'
+              variant='outlined'
               value={contactInput}
               onChange={(e) => setContactInput(e.target.value)}
             />
@@ -99,24 +116,27 @@ const ContactDev = () => {
               disabled={disableForm}
               inputProps={{ maxLength: 1024 }}
               fullWidth
-              label="Comments"
+              label='Comments'
               spellCheck={false}
-              variant="outlined"
+              variant='outlined'
               value={messageInput}
               error={!!messageError}
               helperText={messageError}
-              placeholder="Give feedback, suggestions, or report bugs"
+              placeholder='Give feedback, suggestions, or report bugs'
               multiline
               minRows={4}
               maxRows={10}
-              onChange={(e) => setMessageInput(e.target.value)}
+              onChange={handleMessageChange}
             />
+            <Typography color={'error'} align={'center'}>
+              {submitError}
+            </Typography>
             <LoadingButton
               loading={disableForm}
-              type="submit"
-              variant="contained"
+              type='submit'
+              variant='contained'
               disableElevation
-              color="primary"
+              color='primary'
               sx={{
                 textTransform: 'none',
                 fontSize: '17px',
@@ -135,18 +155,18 @@ const ContactDev = () => {
               gap: '15px',
             }}
           >
-            <Typography variant="h4">Message has been sent</Typography>
-            <Typography variant="h6">Thank you for your feedback!</Typography>
+            <Typography variant='h4'>Message has been sent</Typography>
+            <Typography variant='h6'>Thank you for your feedback!</Typography>
             {/* <Typography color="GrayText">
               You can safely close this tab
             </Typography> */}
             <Button
               disableElevation
-              variant="contained"
+              variant='contained'
               // color="secondary"
               onClick={() => {
                 // close the current tab
-                window.close()
+                window.close();
               }}
               sx={{
                 textTransform: 'none',
@@ -155,15 +175,17 @@ const ContactDev = () => {
                 fontSize: '18px',
                 width: '170px',
               }}
-            >Continue</Button>
-            <Typography color="primary">
+            >
+              Close
+            </Button>
+            <Typography color='primary'>
               App built and maintained by Mason Hirst
             </Typography>
           </Box>
         )}
       </Paper>
     </Box>
-  )
-}
+  );
+};
 
-export default ContactDev
+export default ContactDev;

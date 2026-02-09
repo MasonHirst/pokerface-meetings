@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useRef, useContext } from 'react'
-import GameHeader from './GameHeader'
-import { useMediaQuery } from '@mui/material'
-import GameBody from './GameBody'
-import GameFooter from './GameFooter'
-import { GameContext } from '../../context/GameContext'
-import { ToastContainer, Slide } from 'react-toastify'
-import muiStyles from '../../style/muiStyles'
-const { Box, Dialog, TextField, Button, Typography, LinearProgress } = muiStyles
+import React, { useEffect, useState, useRef, useContext } from 'react';
+import GameHeader from './GameHeader';
+import { useMediaQuery } from '@mui/material';
+import GameBody from './GameBody';
+import GameFooter from './GameFooter';
+import { GameContext } from '../../context/GameContext';
+import ChatDrawer from './ChatDrawer';
+import muiStyles from '../../style/muiStyles';
+const { Box, Dialog, TextField, Button, Typography, LinearProgress } =
+  muiStyles;
 
 const GameRoom = () => {
   const {
@@ -16,101 +17,143 @@ const GameRoom = () => {
     gameData,
     joinGameLoading,
     toggleActiveSocket,
-  } = useContext(GameContext)
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const [nameError, setNameError] = useState('')
-  const [nameInput, setNameInput] = useState('')
-  const [footerHeight, setFooterHeight] = useState(0)
-  const [headerHeight, setHeaderHeight] = useState(0)
-  const [availableBodyHeight, setAvailableBodyHeight] = useState(0)
-  const [bodyIsScrolling, setBodyIsScrolling] = useState(false)
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
-  const bodyRef = useRef()
+  } = useContext(GameContext);
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const is750Screen = useMediaQuery('(max-width: 750px)');
+  const isMedScreen = useMediaQuery('(max-width: 900px)');
+  const [nameError, setNameError] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [footerHeight, setFooterHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [availableBodyHeight, setAvailableBodyHeight] = useState(0);
+  const [bodyIsScrolling, setBodyIsScrolling] = useState(false);
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
+  const [drawerWidth, setDrawerWidth] = useState(300);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const bodyRef = useRef();
 
   function updateName(e) {
-    e.preventDefault()
-    const trimmedName = nameInput.trim()
-    if (!trimmedName) return setNameError('Please enter a name')
-    localStorage.setItem('playerName', trimmedName)
-    setPlayerName(trimmedName)
+    e.preventDefault();
+    const trimmedName = nameInput.trim();
+    if (!trimmedName) {
+      return setNameError('Please enter a name');
+    }
+    localStorage.setItem('PokerfacePlayerName', trimmedName);
+    setPlayerName(trimmedName);
+  }
+
+  useEffect(() => {
+    if (isMedScreen) {
+      setDrawerWidth(220);
+    } else setDrawerWidth(300);
+  }, [isMedScreen]);
+
+  function toggleChatDrawer() {
+    setChatDrawerOpen(!chatDrawerOpen);
   }
 
   useEffect(() => {
     const handleResize = () => {
-      setViewportHeight(window.innerHeight)
-      setViewportWidth(window.innerWidth)
-    }
+      //? Trying this for more stable mobile sizes
+      setViewportHeight(document?.documentElement?.clientHeight);
+      setViewportWidth(window.innerWidth);
+    };
 
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', handleResize);
+    handleResize();
 
     return () => {
-      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (gameData?.gameSettings?.gameRoomName) {
+      document.title = `Pokerface - ${gameData?.gameSettings?.gameRoomName}`;
     }
-  }, [])
+  }, [gameData?.gameSettings?.gameRoomName]);
 
   useEffect(() => {
-    if (gameData?.gameRoomName) {
-      document.title = `Pokerface - ${gameData.gameRoomName}`
-    }
-  }, [gameData.gameRoomName])
+    toggleActiveSocket(true);
 
-  useEffect(() => {
-    toggleActiveSocket(true)
-  }, [])
-
-  useEffect(() => {
     return () => {
-      sendMessage('playerLeaveGame', {})
-    }
-  }, [playerName])
+      sendMessage('playerLeaveGame', {});
+    };
+  }, []);
 
   useEffect(() => {
-    if (!footerHeight || !headerHeight) return
-    const availableHeight = window.innerHeight - footerHeight - headerHeight
-    setAvailableBodyHeight(availableHeight - 1)
-  }, [footerHeight, headerHeight, viewportHeight, viewportWidth])
+    if (!footerHeight || !headerHeight) {
+      return;
+    }
+    const availableHeight = window.innerHeight - footerHeight - headerHeight;
+    setAvailableBodyHeight(availableHeight - 1);
+  }, [
+    footerHeight,
+    headerHeight,
+    viewportHeight,
+    viewportWidth,
+    chatDrawerOpen,
+  ]);
 
   return (
     <>
-    <ToastContainer
-        position="top-center"
-        newestOnTop
-        draggable
-        hideProgressBar={false}
-        autoClose={2500}
-        transition={Slide}
-        pauseOnHover
-        pauseOnFocusLoss={false}
-        theme="light"
-      />
       {!joinGameLoading && playerName ? (
         <Box
-          sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+          id='wrapper-for-the-app-and-chat-drawer'
+          sx={{
+            flexGrow: 1,
+          }}
         >
-          <GameHeader
-            shadowOn={bodyIsScrolling}
-            setComponentHeight={setHeaderHeight}
-          />
-          <Box ref={bodyRef} sx={{ width: '100%' }}>
-            <GameBody
-              availableHeight={availableBodyHeight}
-              setBodyIsScrolling={setBodyIsScrolling}
+          <Box
+            className='hide-scrollbar'
+            sx={{
+              minHeight: '100vh',
+              maxHeight: '100vh',
+              width: is750Screen
+                ? '100vw'
+                : chatDrawerOpen
+                ? `calc(100vw - ${drawerWidth}px)`
+                : '100vw',
+              display: 'flex',
+              transition: '0.2s',
+              flexDirection: 'column',
+            }}
+          >
+            <GameHeader
+              shadowOn={bodyIsScrolling}
+              setComponentHeight={setHeaderHeight}
+              setChatDrawerOpen={setChatDrawerOpen}
+              chatDrawerOpen={chatDrawerOpen}
+            />
+            <Box ref={bodyRef} sx={{ width: '100%' }}>
+              <GameBody
+                availableHeight={availableBodyHeight}
+                setBodyIsScrolling={setBodyIsScrolling}
+              />
+            </Box>
+            <GameFooter
+              setComponentHeight={setFooterHeight}
+              shadowOn={bodyIsScrolling}
+              chatDrawerOpen={chatDrawerOpen}
             />
           </Box>
-          <GameFooter
-            shadowOn={bodyIsScrolling}
-            setComponentHeight={setFooterHeight}
-          />
+          {chatDrawerOpen && (
+            <ChatDrawer
+              drawerWidth={drawerWidth}
+              chatDrawerOpen={chatDrawerOpen}
+              toggleChatDrawer={toggleChatDrawer}
+            />
+          )}
         </Box>
       ) : (
         joinGameLoading && (
           <Box>
             <LinearProgress
-              size="large"
+              size='large'
               sx={{ position: 'fixed', top: 0, width: '100vw' }}
             />
-            <Typography variant="h4" align="center" sx={{ marginTop: '20px' }}>
+            <Typography variant='h4' align='center' sx={{ marginTop: '20px' }}>
               Joining Game...
             </Typography>
           </Box>
@@ -140,7 +183,7 @@ const GameRoom = () => {
             justifyContent: 'center',
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '22px' }}>
+          <Typography variant='h6' sx={{ fontSize: '22px' }}>
             Enter a display name to join game
           </Typography>
           <TextField
@@ -150,14 +193,14 @@ const GameRoom = () => {
             fullWidth
             autoFocus
             error={!!nameError}
-            label="Player Name"
-            placeholder="Enter your name"
+            label='Player Name'
+            placeholder='Enter your name'
             helperText={nameError}
           />
           <Button
             fullWidth
-            type="submit"
-            variant="contained"
+            type='submit'
+            variant='contained'
             sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '18px' }}
             disableElevation
           >
@@ -166,7 +209,7 @@ const GameRoom = () => {
         </form>
       </Dialog>
     </>
-  )
-}
+  );
+};
 
-export default GameRoom
+export default GameRoom;

@@ -1,16 +1,20 @@
-import React, { useEffect, useContext, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import pokerLogo from '../../assets/poker-logo.png'
-import useClipboard from 'react-use-clipboard'
-import { GameContext } from '../../context/GameContext'
-import dontGo from '../../assets/dont-go.gif'
-import { useMediaQuery } from '@mui/material'
-import GameSettings from '../dialog/GameSettings'
-import ProfileDialog from '../dialog/ProfileDialog'
-import VoteHistory from '../dialog/VoteHistory'
-import muiStyles from '../../style/muiStyles'
-import Swal from 'sweetalert2'
-import PurpleDeckCard from './PurpleDeckCard'
+import React, { useEffect, useContext, useState, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import pokerLogo from '../../assets/poker-logo.png';
+import useClipboard from 'react-use-clipboard';
+import { GameContext } from '../../context/GameContext';
+import dontGo from '../../assets/dont-go.gif';
+import { useMediaQuery } from '@mui/material';
+import GameSettings from '../dialog/GameSettings';
+import ProfileDialog from '../dialog/ProfileDialog';
+import VoteHistory from '../dialog/VoteHistory';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import muiStyles from '../../style/muiStyles';
+import Swal from 'sweetalert2';
+import PurpleDeckCard from './PurpleDeckCard';
+import AnonymousMaskImg from '../../assets/incognito-mode-inverted.webp';
+import { blue } from '@mui/material/colors';
+
 const {
   Typography,
   LogoutIcon,
@@ -19,7 +23,6 @@ const {
   Dialog,
   TextField,
   ExpandMoreIcon,
-  EditNoteIcon,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -32,40 +35,102 @@ const {
   EditIcon,
   Tooltip,
   LinkIcon,
-} = muiStyles
+  ChatOutlinedIcon,
+  LightTooltip,
+  Avatar,
+  Badge,
+} = muiStyles;
 
-const GameHeader = ({ setComponentHeight, shadowOn }) => {
-  const navigate = useNavigate()
-  const footerRef = useRef()
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const isXsScreen = useMediaQuery('(max-width: 400px)')
-  const { gameData } = useContext(GameContext)
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [showProfileDialog, setShowProfileDialog] = useState(false)
-  const open = Boolean(anchorEl)
-  const [roomName, setRoomName] = useState('')
-  const [showInviteDialog, setShowInviteDialog] = useState(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const inviteLinkInputRef = useRef()
+const GameHeader = ({
+  setComponentHeight,
+  shadowOn,
+  setChatDrawerOpen,
+  chatDrawerOpen,
+}) => {
+  const navigate = useNavigate();
+  const headerRef = useRef();
+  const isMedScreen = useMediaQuery('(max-width: 900px)');
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const isXsScreen = useMediaQuery('(max-width: 400px)');
+  const {
+    gameData,
+    myPowerLvl,
+    isAnonymousMode,
+    observerPlayersAsArray,
+    triggerLatestUpdatesMessage,
+  } = useContext(GameContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const open = Boolean(anchorEl);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const inviteLinkInputRef = useRef();
+  const [hideChatsNotifications, setHideChatsNotifications] = useState(true);
   const [isCopied, setCopied] = useClipboard(window.location.href, {
     // `isCopied` will go back to `false` after 1500ms.
     successDuration: 1500,
-  })
-  const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false)
-  const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+  });
+  const [showGameSettingsDialog, setShowGameSettingsDialog] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const clientToken = localStorage.getItem('PokerfaceLocalUserToken');
 
   useEffect(() => {
-    if (!gameData || !gameData?.gameSettings?.gameRoomName) return
-    setRoomName(gameData.gameSettings.gameRoomName)
-  }, [gameData])
+    if (!gameData?.chatMessages) {
+      return;
+    }
+
+    if (gameData.chatMessages.length < 1) {
+      sessionStorage.setItem('PokerfaceChatNumber', 0);
+      return;
+    }
+    // if the chatDrawer is open, set the session storage number to the last message in the chat.
+    if (chatDrawerOpen) {
+      sessionStorage.setItem(
+        'PokerfaceChatNumber',
+        gameData.chatMessages[0].chatNumber
+      );
+      setHideChatsNotifications(true);
+    } else {
+      // if the chat drawer is closed when a new message comes in, set the notification to true
+      if (
+        gameData.chatMessages[0].chatNumber >
+        +sessionStorage.getItem('PokerfaceChatNumber')
+      ) {
+        setHideChatsNotifications(false);
+      }
+    }
+  }, [gameData?.chatMessages]);
+
+  const roomName = useMemo(() => {
+    return gameData?.gameSettings?.gameRoomName;
+  }, [gameData?.gameSettings?.gameRoomName]);
 
   useEffect(() => {
-    if (!footerRef.current) return
-    setComponentHeight(footerRef.current.offsetHeight)
-  }, [footerRef.current?.offsetHeight])
+    if (!headerRef.current) {
+      return;
+    }
+    setComponentHeight(headerRef.current.offsetHeight);
+  }, [headerRef.current?.offsetHeight]);
+
+  useEffect(() => {
+    if (!headerRef?.current) {
+      return;
+    }
+    //? Assign a ResizeObserver because it updates more accurately
+    //? than simply watching the headerRef with a useEffect.
+    const resizeObserver = new ResizeObserver(() => {
+      const height = headerRef?.current?.offsetHeight;
+      setComponentHeight(height);
+    });
+    resizeObserver.observe(headerRef?.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   function handleLeaveGame() {
-    handleCloseGameSettings()
+    handleCloseGameSettings();
     Swal.fire({
       title: 'Are you sure?',
       text: 'You will be removed from the game',
@@ -76,39 +141,86 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
       showCancelButton: true,
       cancelButtonText: 'Stay',
       customClass: {
-        popup: 'swal2-popup', // Add the custom CSS class to the 'popup' element
+        popup: 'swal2-popup',
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate('/home')
-        window.location.reload()
+        navigate('/home');
+        window.location.reload();
       }
-    })
+    });
   }
 
   function handleOpenGameSettings(event) {
-    setAnchorEl(event.currentTarget)
+    setAnchorEl(event.currentTarget);
   }
   function handleCloseGameSettings() {
-    setAnchorEl(null)
+    setAnchorEl(null);
   }
+
+  const badgeCount = useMemo(() => {
+    if (!gameData?.chatMessages || gameData?.chatMessages?.length < 1) {
+      return 0;
+    }
+
+    const lastStoredChatNumber =
+      +sessionStorage.getItem('PokerfaceChatNumber') || 0;
+
+    const unreadMessages = gameData.chatMessages.filter(
+      (msg) =>
+        msg.type !== 'settingsUpdate' && msg.chatNumber > lastStoredChatNumber
+    );
+
+    return unreadMessages.length;
+  }, [gameData?.chatMessages, chatDrawerOpen, drawerOpen]);
 
   useEffect(() => {
     setTimeout(() => {
       if (inviteLinkInputRef.current) {
-        inviteLinkInputRef.current.select()
+        inviteLinkInputRef.current.select();
       }
-    }, 200)
-  }, [showInviteDialog, inviteLinkInputRef])
+    }, 200);
+  }, [showInviteDialog, inviteLinkInputRef]);
+
+  function onChatButtonClick() {
+    if (!chatDrawerOpen) {
+      if (gameData.chatMessages.length > 0) {
+        sessionStorage.setItem(
+          'PokerfaceChatNumber',
+          gameData.chatMessages[0].chatNumber
+        );
+      } else {
+        sessionStorage.setItem('PokerfaceChatNumber', 0);
+      }
+      setHideChatsNotifications(true);
+    }
+    setChatDrawerOpen(!chatDrawerOpen);
+    if (isXsScreen) {
+      setDrawerOpen(false);
+    }
+  }
+
+  const observerList = useMemo(() => {
+    let list = [];
+    observerPlayersAsArray.forEach((p, index) => {
+      list.push(
+        <span key={index}>
+          <span style={{ color: blue[500] }}>{p.playerName}</span>
+          {index < observerPlayersAsArray.length - 1 && <span>, </span>}
+        </span>
+      );
+    });
+    return list;
+  }, [observerPlayersAsArray]);
 
   return (
     <Box
-      ref={footerRef}
-      className="game-header-container"
+      ref={headerRef}
+      className='game-header-container'
       sx={{
         boxShadow: shadowOn && '0px 0px 8px 0px rgba(0,0,0,0.75)',
         width: '100%',
-        height: { xs: '70px', sm: '95px' },
+        height: { xs: '55px', sm: '80px' },
         backgroundColor: '#9c4fd7',
         display: 'flex',
         justifyContent: 'center',
@@ -117,15 +229,63 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
       }}
     >
       <Box
-        className="game-header"
+        className='game-header'
         sx={{
           width: 'min(100%, 1200px)',
           height: '100%',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          position: 'relative',
         }}
       >
+        {observerPlayersAsArray.length > 0 && (
+          <LightTooltip
+            placement='bottom'
+            title='These players are viewing the game, but not voting'
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: isSmallScreen ? '-3px' : '-8px',
+                left: isSmallScreen ? '3px' : '8px',
+                transform: 'translateY(calc(100% + 5px))',
+                zIndex: 100,
+              }}
+            >
+              <Typography variant={isSmallScreen ? 'caption' : 'body1'}>
+                Observers: {observerList}
+              </Typography>
+            </Box>
+          </LightTooltip>
+        )}
+
+        {isAnonymousMode && (
+          <LightTooltip placement='bottom' title='Anonymous mode is active'>
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: isSmallScreen ? '-3px' : '-8px',
+                right: isSmallScreen ? '3px' : '8px',
+                transform: 'translateY(calc(100% + 5px))',
+                zIndex: 100,
+              }}
+            >
+              <Avatar
+                src={AnonymousMaskImg}
+                alt='Profile'
+                sx={{
+                  padding: isSmallScreen ? '6px' : '8px',
+                  width: isSmallScreen ? '45px' : '65px',
+                  height: isSmallScreen ? '45px' : '65px',
+                  bgcolor: blue[500],
+                  boxShadow: '1px 3px 5px rgba(0, 0, 0, 0.5)',
+                }}
+              />
+            </Box>
+          </LightTooltip>
+        )}
+
         <Box
           sx={{
             display: 'flex',
@@ -134,116 +294,133 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
           }}
         >
           <img
-            className="cursor-pointer"
+            className='cursor-pointer'
             onClick={handleLeaveGame}
             src={pokerLogo}
-            alt="logo"
+            alt='logo'
             style={{
-              height: isSmallScreen ? '46px' : '70px',
+              height: isSmallScreen ? '46px' : '65px',
               display: isXsScreen && 'none',
+              marginRight: '5px',
             }}
           />
-          <Box>
-            <Button
-              variant="text"
-              size={isSmallScreen ? 'small' : 'medium'}
-              color="white"
-              endIcon={<ExpandMoreIcon />}
-              onClick={handleOpenGameSettings}
-              sx={{
-                textTransform: 'none',
-                fontSize: { xs: '18px', sm: '22px' },
-              }}
-              disableElevation
-            >
-              {roomName}
-            </Button>
-          </Box>
+          <Button
+            variant='text'
+            size={isSmallScreen ? 'small' : 'medium'}
+            color='white'
+            endIcon={<ExpandMoreIcon />}
+            onClick={handleOpenGameSettings}
+            sx={{
+              textTransform: 'none',
+              fontSize: { xs: '18px', sm: '22px' },
+              lineHeight: 1,
+              marginRight: '10px',
+            }}
+            disableElevation
+          >
+            {roomName}
+          </Button>
         </Box>
         <Menu open={open} anchorEl={anchorEl} onClose={handleCloseGameSettings}>
           <MenuItem
             onClick={() => {
-              handleCloseGameSettings()
-              setShowGameSettingsDialog(!showGameSettingsDialog)
+              handleCloseGameSettings();
+              setShowGameSettingsDialog(!showGameSettingsDialog);
             }}
           >
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
-            <Typography variant="h6">Game Settings</Typography>
+            <Typography variant='h6'>Game Settings</Typography>
           </MenuItem>
 
           <MenuItem
             onClick={() => {
-              handleCloseGameSettings()
-              setShowHistoryDialog(!showHistoryDialog)
+              handleCloseGameSettings();
+              setShowHistoryDialog(!showHistoryDialog);
             }}
           >
             <ListItemIcon>
               <PollOutlinedIcon />
             </ListItemIcon>
-            <Typography variant="h6">Vote History</Typography>
+            <Typography variant='h6'>Vote History</Typography>
           </MenuItem>
 
           <MenuItem
             onClick={() => {
-              handleCloseGameSettings()
-              setShowInviteDialog(!showInviteDialog)
+              handleCloseGameSettings();
+              setShowInviteDialog(!showInviteDialog);
             }}
           >
             <ListItemIcon>
               <LinkIcon />
             </ListItemIcon>
-            <Typography variant="h6">Invite players</Typography>
+            <Typography variant='h6'>Invite players</Typography>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => {
+              handleCloseGameSettings();
+              triggerLatestUpdatesMessage();
+            }}
+          >
+            <ListItemIcon>
+              <NewReleasesIcon />
+            </ListItemIcon>
+            <Typography variant='h6'>Latest features</Typography>
           </MenuItem>
 
           <MenuItem onClick={handleLeaveGame}>
             <ListItemIcon>
               <LogoutIcon />
             </ListItemIcon>
-            <Typography variant="h6">Leave Game</Typography>
+            <Typography variant='h6'>Leave Game</Typography>
           </MenuItem>
         </Menu>
 
         <Box sx={{ display: 'flex', gap: '22px', alignItems: 'center' }}>
-          <Button
-            color="white"
-            size="large"
-            onClick={() => setShowInviteDialog(!showInviteDialog)}
-            variant="outlined"
-            sx={{
-              textTransform: 'none',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              borderWidth: '1.5px',
-              borderColor: '#ffffff',
-              display: { xs: 'none', md: 'block' },
-              borderRadius: '8px',
-              '&:hover': {
-                borderWidth: '1.5px',
-              },
-            }}
-          >
-            Invite players
-          </Button>
+          {
+            // hide the button if the screen is less tha 600px, or if the screen is less than 900px and the chat drawer is open
+            isSmallScreen ||
+              (!isMedScreen && !chatDrawerOpen && (
+                <Button
+                  color='white'
+                  size='large'
+                  onClick={() => setShowInviteDialog(!showInviteDialog)}
+                  variant='outlined'
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    borderWidth: '1.5px',
+                    borderColor: '#ffffff',
+                    borderRadius: '8px',
+                    '&:hover': {
+                      borderWidth: '1.5px',
+                    },
+                  }}
+                >
+                  Invite players
+                </Button>
+              ))
+          }
 
           {!isSmallScreen ? (
             <Button
               onClick={() => setDrawerOpen(!drawerOpen)}
               endIcon={<ExpandMoreIcon />}
-              color="white"
+              color='white'
               sx={{
                 textTransform: 'none',
-                gap: '12px',
               }}
             >
               <PurpleDeckCard
                 showBgImage
                 showCard={false}
-                borderColor="white"
+                borderColor='white'
                 borderThickness={1}
                 sizeMultiplier={0.6}
-                cardImage={localStorage.getItem('pokerCardImage')}
+                cardImage={localStorage.getItem('PokerfaceCardImage')}
               />
               <Typography
                 sx={{
@@ -251,7 +428,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
                   fontSize: { xs: '18px', sm: '21px' },
                 }}
               >
-                {localStorage.getItem('playerName')}
+                {localStorage.getItem('PokerfacePlayerName')}
               </Typography>
             </Button>
           ) : (
@@ -259,13 +436,42 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
               sx={{ padding: { xs: '7px', sm: '12px' } }}
               onClick={() => setDrawerOpen(!drawerOpen)}
             >
-              <MenuIcon color="white" />
+              <Badge
+                color='primary'
+                overlap='circular'
+                badgeContent={badgeCount}
+                invisible={!isXsScreen || hideChatsNotifications}
+              >
+                <MenuIcon color='white' sx={{ fontSize: '28px' }} />
+              </Badge>
+            </IconButton>
+          )}
+          {!isXsScreen && (
+            <IconButton
+              sx={{
+                padding: { xs: '7px', sm: '12px' },
+              }}
+              onClick={onChatButtonClick}
+            >
+              <Badge
+                color='primary'
+                overlap='circular'
+                badgeContent={badgeCount}
+                invisible={hideChatsNotifications}
+              >
+                <ChatOutlinedIcon
+                  color={isXsScreen ? 'blue' : 'white'}
+                  sx={{
+                    fontSize: isSmallScreen ? '24px' : '28px',
+                  }}
+                />
+              </Badge>
             </IconButton>
           )}
         </Box>
 
         <Drawer
-          anchor="right"
+          anchor='right'
           open={drawerOpen}
           onClose={() => setDrawerOpen(!drawerOpen)}
         >
@@ -287,20 +493,20 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
               }}
             >
               <Box sx={{ display: 'flex', gap: '10px' }}>
-                <img src={pokerLogo} width={50} alt="logo" />
+                <img src={pokerLogo} width={50} alt='logo' />
                 <Box>
                   <Typography
-                    color="primary"
+                    color='primary'
                     sx={{ fontSize: '20px', fontWeight: 'bold' }}
                   >
                     Pokerface
                   </Typography>
-                  <Typography sx={{ fontSize: '15px' }} color="GrayText">
+                  <Typography sx={{ fontSize: '15px' }} color='GrayText'>
                     By Mason Hirst
                   </Typography>
                 </Box>
               </Box>
-              <Tooltip title="Close drawer" arrow>
+              <Tooltip title='Close drawer' arrow>
                 <IconButton
                   onClick={() => setDrawerOpen(!drawerOpen)}
                   sx={{
@@ -312,12 +518,44 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
                 </IconButton>
               </Tooltip>
             </Box>
-            <Tooltip title="Edit profile" arrow enterDelay={700}>
+
+            {isXsScreen && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  margin: '15px 5px 10px 6px',
+                }}
+              >
+                <IconButton
+                  sx={{
+                    padding: '12px',
+                  }}
+                  onClick={onChatButtonClick}
+                >
+                  <Badge
+                    color='error'
+                    overlap='circular'
+                    badgeContent={badgeCount}
+                    invisible={hideChatsNotifications}
+                  >
+                    <ChatOutlinedIcon
+                      color='primary'
+                      sx={{
+                        fontSize: '36px',
+                      }}
+                    />
+                  </Badge>
+                </IconButton>
+              </Box>
+            )}
+
+            <Tooltip title='Edit profile' arrow enterDelay={700}>
               <MenuItem
                 sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                 onClick={() => {
-                  setShowProfileDialog(!showProfileDialog)
-                  setDrawerOpen(!drawerOpen)
+                  setShowProfileDialog(!showProfileDialog);
+                  setDrawerOpen(!drawerOpen);
                 }}
               >
                 <PurpleDeckCard
@@ -326,19 +564,42 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
                   borderColor={'#902bf5'}
                   borderThickness={1.5}
                   sizeMultiplier={0.8}
-                  cardImage={localStorage.getItem('pokerCardImage')}
+                  cardImage={localStorage.getItem('PokerfaceCardImage')}
                 />
-                <Typography variant="h6">
-                  {localStorage.getItem('playerName')}
+                <Typography variant='h6'>
+                  {localStorage.getItem('PokerfacePlayerName')}
                 </Typography>
                 <EditIcon />
               </MenuItem>
             </Tooltip>
 
+            <Typography
+              variant='subtitle1'
+              sx={{
+                marginLeft: '.8rem',
+              }}
+            >
+              <span style={{ opacity: 0.7 }}>Power level: </span>
+              <span style={{ fontWeight: 'bold' }}>{myPowerLvl}</span>
+            </Typography>
+
+            <Typography
+              variant='subtitle1'
+              sx={{
+                marginLeft: '.8rem',
+                paddingRight: '.5rem',
+              }}
+            >
+              <span style={{ opacity: 0.7 }}>Name in room: </span>
+              <span style={{ fontWeight: 'bold' }}>
+                {gameData.players?.[clientToken]?.playerName}
+              </span>
+            </Typography>
+
             <Button
               href={`${document.location.origin}/contact`}
-              target="_blank"
-              variant="contained"
+              target='_blank'
+              variant='contained'
               disableElevation
               fullWidth
               sx={{
@@ -372,7 +633,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         >
           <IconButton
             sx={{ position: 'absolute', top: 7, right: 5 }}
-            aria-label="close"
+            aria-label='close'
             onClick={() => setShowInviteDialog(!showInviteDialog)}
           >
             <CloseIcon />
@@ -392,15 +653,15 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
             value={window.location.href}
           />
           <Button
-            variant="contained"
+            variant='contained'
             disableElevation
             fullWidth
             sx={{ textTransform: 'none', fontSize: '18px', fontWeight: 'bold' }}
             onClick={(e) => {
-              setCopied(e)
+              setCopied(e);
               setTimeout(() => {
-                setShowInviteDialog(!showInviteDialog)
-              }, 700)
+                setShowInviteDialog(!showInviteDialog);
+              }, 700);
             }}
           >
             {isCopied ? 'Copied!' : 'Copy invite link'}
@@ -431,7 +692,7 @@ const GameHeader = ({ setComponentHeight, shadowOn }) => {
         />
       )}
     </Box>
-  )
-}
+  );
+};
 
-export default GameHeader
+export default GameHeader;

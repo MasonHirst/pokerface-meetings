@@ -1,12 +1,12 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import './reset.css'
-import App from './App'
-import { BrowserRouter } from 'react-router-dom'
-import axios from 'axios'
-import { v4 as uuidv4 } from 'uuid'
-import { createTheme, ThemeProvider } from '@mui/material/styles'
-import { blue } from '@mui/material/colors'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './reset.css';
+import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { blue } from '@mui/material/colors';
 
 const theme = createTheme({
   palette: {
@@ -23,34 +23,75 @@ const theme = createTheme({
       main: '#4caf50',
     },
   },
-})
+});
 
-const localUserToken = localStorage.getItem('localUserToken')
+
+
+
+
+//! The following block of code should be removed in around 6 months. 
+//! It helps transfer old localStorage values to the new key names
+//! Added Feb 2025
+
+const oldToken = localStorage.getItem('localUserToken');
+if (oldToken) {
+  localStorage.setItem('PokerfaceLocalUserToken', oldToken)
+  localStorage.removeItem('localUserToken')
+}
+
+const oldPlayerName = localStorage.getItem('playerName');
+if (oldPlayerName) {
+  localStorage.setItem('PokerfacePlayerName', oldPlayerName)
+  localStorage.removeItem('playerName')
+}
+
+const oldCardImage = localStorage.getItem('pokerCardImage');
+if (oldCardImage) {
+  localStorage.setItem('PokerfaceCardImage', oldCardImage)
+  localStorage.removeItem('pokerCardImage')
+}
+
+const oldSavedDecks = localStorage.getItem('savedDecks');
+if (oldSavedDecks) {
+  localStorage.setItem('PokerfaceSavedDecks', oldSavedDecks)
+  localStorage.removeItem('savedDecks')
+}
+
+//! End of temporary block of code (to be removed)
+
+
+
+
+
+
+const localUserToken = localStorage.getItem('PokerfaceLocalUserToken');
 if (!localUserToken) {
-  localStorage.setItem('localUserToken', uuidv4())
+  localStorage.setItem('PokerfaceLocalUserToken', uuidv4());
 }
 
-if (!localStorage.getItem('savedDecks')) {
-  localStorage.setItem('savedDecks', JSON.stringify([]))
+const savedDecks = localStorage.getItem('PokerfaceSavedDecks');
+if (!savedDecks) {
+  localStorage.setItem('PokerfaceSavedDecks', JSON.stringify([]));
 }
 
-const serverUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:8080/'
-    : document.location.origin
-axios.defaults.baseURL = serverUrl
+const { protocol, hostname } = window.location;
+let serverUrl = protocol + '//' + hostname;
+if (process.env.NODE_ENV === 'development') {
+  serverUrl += ':8080';
+}
+axios.defaults.baseURL = serverUrl;
 
 axios.interceptors.request.use(function (config) {
-  config.headers.Authorization = localStorage.getItem('localUserToken')
+  config.headers.Authorization = localStorage.getItem('PokerfaceLocalUserToken');
   // Do something before request is sent
-  return config
-})
+  return config;
+});
 
-const root = ReactDOM.createRoot(document.getElementById('root'))
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <BrowserRouter>
     <ThemeProvider theme={theme}>
       <App />
     </ThemeProvider>
   </BrowserRouter>
-)
+);
