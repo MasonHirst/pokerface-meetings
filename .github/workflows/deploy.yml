@@ -18,15 +18,14 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: pokerface-client/package-lock.json
+          cache-dependency-path: client/package-lock.json
 
       - name: Install client dependencies
         run: npm ci
-        working-directory: pokerface-client
-
+        working-directory: client
       - name: Build client into server
         run: npm run build
-        working-directory: pokerface-client
+        working-directory: client
         env:
           CI: false
 
@@ -42,8 +41,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: pokerface-server
-          file: pokerface-server/Dockerfile
+          context: server
+          file: server/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pokerface:latest
