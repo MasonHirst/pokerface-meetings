@@ -531,6 +531,11 @@ const GameSettings = ({ showDialog, setShowDialog }) => {
               <Switch
                 checked={gameSettingsToSave.funModeEnabled}
                 onChange={(e) => {
+                  //? Fun mode can exponentially increase the socket message frequency, so we are blocking it on the fly.dev deployment to prevent performance issues.
+                  // if (window.location.href.includes('pokerface.fly.dev')) {
+                  if (window.location.href.includes('http://localhost:3000')) {
+                    return toast.warning('Fun mode is not available on the fly.dev deployment');
+                  }
                   if (checkPowerLvl('low')) {
                     setGameSettingsToSave({
                       ...gameSettingsToSave,
