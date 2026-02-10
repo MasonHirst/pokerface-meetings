@@ -25,7 +25,7 @@ jobs:
         working-directory: client
 
       - name: Compute App Version
-        run: echo "REACT_APP_VERSION=$((GITHUB_RUN_NUMBER + 44))" >> "$GITHUB_ENV"
+        run: echo "REACT_APP_VERSION=$((GITHUB_RUN_NUMBER + 43))" >> "$GITHUB_ENV"
 
       - name: Build client into server
         run: npm run build
