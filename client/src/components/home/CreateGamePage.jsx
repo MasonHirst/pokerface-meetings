@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import pokerLogo from '../../assets/poker-logo.png';
+import pokerLogo from '../../assets/pokerface-logo.png';
 import PurpleDeckCard from '../game/PurpleDeckCard';
 import GraphemeSplitter from 'grapheme-splitter';
 import ChooseDeck from '../dialog/ChooseDeck';
@@ -168,8 +168,8 @@ const CreateGamePage = () => {
           src={pokerLogo}
           className='cursor-pointer'
           onClick={() => navigate('/')}
-          alt='poker-logo'
-          style={{ width: 'clamp(50px, 15vw, 80px)' }}
+          alt='pokerface-logo'
+          style={{ width: 'clamp(90px, 20vw, 130px)' }}
         />
         <Box>
           <Typography

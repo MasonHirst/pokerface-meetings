@@ -1,4 +1,4 @@
-import pokerLogo from '../../assets/poker-logo.png';
+import pokerLogo from '../../assets/pokerface-logo.png';
 import muiStyles from '../../style/muiStyles';
 import { useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -38,8 +38,8 @@ const Header = ({ hasScroll }) => {
           src={pokerLogo}
           className='cursor-pointer'
           onClick={() => navigate('/')}
-          alt='poker-logo'
-          style={{ width: 'clamp(50px, 12vw, 80px)' }}
+          alt='pokerface-logo'
+          style={{ width: 'clamp(90px, 20vw, 130px)' }}
         />
         <Box>
           <Typography
@@ -47,7 +47,7 @@ const Header = ({ hasScroll }) => {
             onClick={() => navigate('/')}
             variant='h5'
             color='primary'
-            sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
+            sx={{ fontWeight: 'bold', fontSize: 'clamp(24px, 7vw, 27px)' }}
           >
             Pokerface
           </Typography>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import muiStyles from '../../style/muiStyles';
-import pokerLogo from '../../assets/poker-logo.png';
+import pokerLogo from '../../assets/pokerface-logo.png';
 import { useMediaQuery } from '@mui/material';
 import axios from 'axios';
 import { validate } from 'email-validator';

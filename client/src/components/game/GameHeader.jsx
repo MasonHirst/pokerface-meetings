@@ -1,6 +1,6 @@
-import React, { useEffect, useContext, useState, useRef, useMemo } from 'react';
+import { useEffect, useContext, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import pokerLogo from '../../assets/poker-logo.png';
+import pokerLogo from '../../assets/pokerface-logo.png';
 import useClipboard from 'react-use-clipboard';
 import { GameContext } from '../../context/GameContext';
 import dontGo from '../../assets/dont-go.gif';
@@ -492,8 +492,8 @@ const GameHeader = ({
                 padding: '5px 10px',
               }}
             >
-              <Box sx={{ display: 'flex', gap: '10px' }}>
-                <img src={pokerLogo} width={50} alt='logo' />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img src={pokerLogo} width={60} alt='logo' />
                 <Box>
                   <Typography
                     color='primary'
