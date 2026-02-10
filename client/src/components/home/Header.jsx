@@ -57,7 +57,7 @@ const Header = ({hasScroll}) => {
             onClick={() => navigate('/')}
             sx={{ fontSize: '15px', opacity: 0.6 }}
           >
-            by Mason Hirst licious
+            by Mason Hirst broskilicious
           </Typography>
         </Box>
       </Box>
