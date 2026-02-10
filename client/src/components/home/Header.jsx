@@ -1,12 +1,12 @@
-import pokerLogo from '../../assets/poker-logo.png'
-import muiStyles from '../../style/muiStyles'
-import { useMediaQuery } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-const { Typography, Button, Box } = muiStyles
+import pokerLogo from '../../assets/poker-logo.png';
+import muiStyles from '../../style/muiStyles';
+import { useMediaQuery } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+const { Typography, Button, Box } = muiStyles;
 
-const Header = ({hasScroll}) => {
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const navigate = useNavigate()
+const Header = ({ hasScroll }) => {
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const navigate = useNavigate();
 
   return (
     <Box
@@ -36,36 +36,36 @@ const Header = ({hasScroll}) => {
       >
         <img
           src={pokerLogo}
-          className="cursor-pointer"
+          className='cursor-pointer'
           onClick={() => navigate('/')}
-          alt="poker-logo"
+          alt='poker-logo'
           style={{ width: 'clamp(50px, 12vw, 80px)' }}
         />
         <Box>
           <Typography
-            className="cursor-pointer"
+            className='cursor-pointer'
             onClick={() => navigate('/')}
-            variant="h5"
-            color="primary"
+            variant='h5'
+            color='primary'
             sx={{ fontWeight: 'bold', fontSize: 'clamp(17px, 5vw, 25px)' }}
           >
             Pokerface
           </Typography>
           <Typography
-            variant="body2"
-            className="cursor-pointer"
+            variant='body2'
+            className='cursor-pointer'
             onClick={() => navigate('/')}
-            sx={{ fontSize: '15px', opacity: 0.6 }}
+            sx={{ fontSize: '1rem', opacity: 0.7 }}
           >
-            by Mason Hirst broski2
+            by Mason Hirst
           </Typography>
         </Box>
       </Box>
       {!isSmallScreen && (
         <Button
           disableElevation
-          size="large"
-          variant="contained"
+          size='large'
+          variant='contained'
           onClick={() => navigate(`/game/create`)}
           sx={{
             textTransform: 'none',
@@ -78,7 +78,7 @@ const Header = ({hasScroll}) => {
         </Button>
       )}
     </Box>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
