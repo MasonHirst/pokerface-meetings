@@ -5,6 +5,7 @@ import { clamp } from '../../utils/helperFunctions';
 const GRAVITY = 2200; // px/s^2
 const MAX_DT = 0.034; // clamp dt to avoid large jumps
 const WALL_BOUNCE = 0.62;
+const FADE_DURATION = 0.9; // seconds
 
 function getLastEmojiValue(value) {
   if (!value) {
@@ -149,6 +150,9 @@ const EmojiThrowLayer = () => {
           style={{
             transform: `translate3d(${emoji.x}px, ${emoji.y}px, 0) rotate(${emoji.rotation}deg)`,
             fontSize: `${emoji.size}px`,
+            opacity: emoji.life > FADE_DURATION
+              ? 1
+              : clamp(emoji.life / FADE_DURATION, 0, 1),
           }}
         >
           {emoji.emoji}
