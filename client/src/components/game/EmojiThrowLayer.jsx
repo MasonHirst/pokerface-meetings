@@ -4,6 +4,7 @@ import { clamp } from '../../utils/helperFunctions';
 
 const GRAVITY = 2200; // px/s^2
 const MAX_DT = 0.034; // clamp dt to avoid large jumps
+const WALL_BOUNCE = 0.62;
 
 function getLastEmojiValue(value) {
   if (!value) {
@@ -101,8 +102,14 @@ const EmojiThrowLayer = () => {
       const vx = (hitX - startX) / travelTime;
       const vy = (hitY - startY - 0.5 * GRAVITY * travelTime * travelTime) /
         travelTime;
-      const footerFloorY = footerRect ? footerRect.top - 10 : null;
-      const floorY = footerFloorY ?? viewportHeight * 0.62;
+      const footerFloorY = footerRect?.top;
+      const floorY = clamp(
+        footerFloorY ?? viewportHeight - 30,
+        size + 8,
+        viewportHeight - 8
+      );
+      const minX = 0;
+      const maxX = Math.max(minX, viewportWidth - size);
 
       setEmojis((prev) => [
         ...prev,
@@ -120,6 +127,8 @@ const EmojiThrowLayer = () => {
           fromLeft,
           size,
           floorY,
+          minX,
+          maxX,
           life: 4 + Math.random() * 2,
         },
       ]);
@@ -162,6 +171,8 @@ const stepEmoji = (emoji, dt) => {
     fromLeft,
     size,
     floorY,
+    minX,
+    maxX,
     life,
   } = emoji;
 
@@ -186,9 +197,20 @@ const stepEmoji = (emoji, dt) => {
     }
   }
 
-  const radius = size / 2;
-  if (y + radius >= floorY) {
-    y = floorY - radius;
+  if (x <= minX && vx < 0) {
+    x = minX;
+    vx = -vx * WALL_BOUNCE;
+    vy *= 0.96;
+    vRot = -vRot * 0.55;
+  } else if (x >= maxX && vx > 0) {
+    x = maxX;
+    vx = -vx * WALL_BOUNCE;
+    vy *= 0.96;
+    vRot = -vRot * 0.55;
+  }
+
+  if (y + size >= floorY) {
+    y = floorY - size;
     if (Math.abs(vy) > 180) {
       vy = -vy * 0.35;
       vx *= 0.85;
