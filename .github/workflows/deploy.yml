@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Deploy (Docker Hub + Fly)
 
 on:
   push:
@@ -47,3 +47,36 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pokerface:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/pokerface:${{ github.sha }}
+
+  fly:
+    name: Deploy to Fly.io (Server)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Build client into server
+        run: npm run build
+        working-directory: client
+        env:
+          CI: false
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        run: flyctl deploy --remote-only
+        working-directory: server
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
