@@ -215,7 +215,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             sizeMultiplier={cardSizeMultiplier}
             showShadow
             showFunMenu={player?.token !== localPlayerToken && funModeEnabled}
-            playerId={player?.token}
+            playerId={player?.playerName}
             lastEmoji={funLastEmoji}
           />
         );
@@ -248,6 +248,7 @@ const GameBody = ({ availableHeight, setBodyIsScrolling }) => {
             sizeMultiplier={cardSizeMultiplier}
             showShadow
             showFunMenu={vote?.playerName !== playerName && funModeEnabled}
+            playerId={vote?.playerName}
             lastEmoji={funLastEmoji}
           />
         );
