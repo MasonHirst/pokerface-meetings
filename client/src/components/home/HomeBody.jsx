@@ -1,17 +1,18 @@
-import React, { useRef, useEffect } from 'react'
-import muiStyles from '../../style/muiStyles'
-import crewSvg from '../../assets/crew-people.svg'
-import { useNavigate } from 'react-router-dom'
-import { useMediaQuery } from '@mui/material'
+import muiStyles from '../../style/muiStyles';
+import crewSvg from '../../assets/crew-people.svg';
+import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 
-const { Box, Typography, Button } = muiStyles
+const { Box, Typography, Button } = muiStyles;
+const appVersion = process.env.REACT_APP_VERSION;
+const versionLabel = appVersion ? `v${appVersion}` : 'dev';
 
 const HomeBody = () => {
-  const navigate = useNavigate()
-  const isSmallScreen = useMediaQuery('(max-width: 600px)')
-  const isSmallishScreen = useMediaQuery('(max-width: 1000px)')
-  const isMdScreen = useMediaQuery('(max-width: 1100px)')
-  const isLgScreen = useMediaQuery('(max-width: 1280px)')
+  const navigate = useNavigate();
+  const isSmallScreen = useMediaQuery('(max-width: 600px)');
+  const isSmallishScreen = useMediaQuery('(max-width: 1000px)');
+  const isMdScreen = useMediaQuery('(max-width: 1100px)');
+  // const isLgScreen = useMediaQuery('(max-width: 1280px)')
 
   const stepCardStyles = {
     display: 'flex',
@@ -21,16 +22,16 @@ const HomeBody = () => {
     maxWidth: isSmallishScreen ? '100%' : 'min(100%, 400px)',
     textAlign: 'center',
     width: '100%',
-  }
+  };
   const stepCardTitleStyles = {
     fontSize: isSmallScreen ? '25px' : '32px',
     fontWeight: 'bold',
     marginTop: '25px',
-  }
+  };
   const stepCardBodyStyles = {
     fontSize: { xs: '16px', sm: '18px' },
     color: '#47545D',
-  }
+  };
 
   return (
     <Box
@@ -74,7 +75,7 @@ const HomeBody = () => {
             }}
           >
             <Typography
-              variant="h5"
+              variant='h5'
               sx={{
                 fontWeight: 'bold',
                 fontSize: 'clamp(20px, 5vw, 50px)',
@@ -85,7 +86,7 @@ const HomeBody = () => {
               A Scrum Poker app for agile development teams
             </Typography>
             <Typography
-              color="#47545D"
+              color='#47545D'
               sx={{
                 fontSize: 'clamp(14px, 2vw, 18px)',
                 textAlign: isMdScreen ? 'center' : 'left',
@@ -95,8 +96,8 @@ const HomeBody = () => {
             </Typography>
             <Button
               disableElevation
-              variant="contained"
-              size="large"
+              variant='contained'
+              size='large'
               onClick={() => navigate(`/game/create`)}
               sx={{
                 textTransform: 'none',
@@ -152,17 +153,19 @@ const HomeBody = () => {
               muted
               autoPlay
               loop
-              width="100%"
-              src="https://res.cloudinary.com/dk9vsivmu/video/upload/v1686083344/pokerfacevideo_ab1jva.mp4"
+              width='100%'
+              src='https://res.cloudinary.com/dk9vsivmu/video/upload/v1686083344/pokerfacevideo_ab1jva.mp4'
             />
           </Box>
         </Box>
       </Box>
 
-      <svg viewBox="0 0 1440 128" style={{ transform: 'translateY(1px)' }}>{greyWaveSvg}</svg>
+      <svg viewBox='0 0 1440 128' style={{ transform: 'translateY(1px)' }}>
+        {greyWaveSvg}
+      </svg>
 
       <Box
-        className="2nd section"
+        className='2nd section'
         sx={{
           backgroundColor: '#F9F9F9',
           padding: '60px 10px 80px 10px',
@@ -172,7 +175,7 @@ const HomeBody = () => {
         }}
       >
         <Typography
-          variant="h4"
+          variant='h4'
           sx={{
             fontWeight: 'bold',
             fontSize: isSmallScreen ? '38px' : '45px',
@@ -194,7 +197,7 @@ const HomeBody = () => {
           }}
         >
           <img
-            src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686354937/Screenshot_2023-06-09_at_5.53.47_PM_hvnh9z.png"
+            src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686354937/Screenshot_2023-06-09_at_5.53.47_PM_hvnh9z.png'
             style={{
               borderRadius: '12px',
               width: '100%',
@@ -212,7 +215,7 @@ const HomeBody = () => {
             }}
           >
             <Typography
-              variant="h4"
+              variant='h4'
               sx={{
                 fontWeight: 'bold',
                 fontSize: isSmallScreen ? '25px' : '32px',
@@ -222,7 +225,7 @@ const HomeBody = () => {
               Vote and Estimate Issues in Real-Time
             </Typography>
             <Typography
-              variant="body1"
+              variant='body1'
               sx={{ fontSize: '17px', color: '#47545D' }}
             >
               The Pokerface app has a clean and simple interface that is not
@@ -234,7 +237,7 @@ const HomeBody = () => {
       </Box>
 
       <Box
-        className="3rd-section"
+        className='3rd-section'
         sx={{
           backgroundColor: '#F9F9F9',
           padding: '80px 10px',
@@ -255,7 +258,7 @@ const HomeBody = () => {
           }}
         >
           <Typography
-            variant="h4"
+            variant='h4'
             sx={{
               fontWeight: 'bold',
               fontSize: isSmallScreen ? '25px' : '32px',
@@ -264,7 +267,7 @@ const HomeBody = () => {
             Voting Round Visual Results at a Glance
           </Typography>
           <Typography
-            variant="body1"
+            variant='body1'
             sx={{ fontSize: '17px', color: '#47545D' }}
           >
             With Poker Planner Online, results are quick and super-easy to
@@ -273,7 +276,7 @@ const HomeBody = () => {
           </Typography>
         </Box>
         <img
-          src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686507423/Screenshot_2023-06-11_at_11.55.25_AM_y4xhkx.png"
+          src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686507423/Screenshot_2023-06-11_at_11.55.25_AM_y4xhkx.png'
           style={{
             borderRadius: '12px',
             width: '100%',
@@ -284,7 +287,7 @@ const HomeBody = () => {
       </Box>
 
       <Box
-        className="4th-section"
+        className='4th-section'
         sx={{
           backgroundColor: '#F9F9F9',
           padding: '80px 10px',
@@ -296,7 +299,7 @@ const HomeBody = () => {
         }}
       >
         <img
-          src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686506530/Screenshot_2023-06-11_at_11.58.54_AM_kjcf7s.png"
+          src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686506530/Screenshot_2023-06-11_at_11.58.54_AM_kjcf7s.png'
           style={{
             borderRadius: '12px',
             width: '100%',
@@ -314,7 +317,7 @@ const HomeBody = () => {
           }}
         >
           <Typography
-            variant="h4"
+            variant='h4'
             sx={{
               fontWeight: 'bold',
               fontSize: isSmallScreen ? '25px' : '32px',
@@ -323,7 +326,7 @@ const HomeBody = () => {
             Review your meeting with ease
           </Typography>
           <Typography
-            variant="body1"
+            variant='body1'
             sx={{ fontSize: '17px', color: '#47545D' }}
           >
             A comprehensive vote history is always available, so you can review
@@ -333,7 +336,7 @@ const HomeBody = () => {
       </Box>
 
       <Box
-        className="5th-section"
+        className='5th-section'
         sx={{
           padding: '0 10px',
           paddingTop: '60px',
@@ -346,7 +349,7 @@ const HomeBody = () => {
         }}
       >
         <img
-          src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686552697/pokerface-mobile_cbhwxv.png"
+          src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686552697/pokerface-mobile_cbhwxv.png'
           style={{
             width: '100%',
             maxWidth: 'clamp(200px, 60%, 380px)',
@@ -363,7 +366,7 @@ const HomeBody = () => {
           }}
         >
           <Typography
-            variant="h4"
+            variant='h4'
             sx={{
               fontWeight: 'bold',
               fontSize: isSmallScreen ? '25px' : '32px',
@@ -372,7 +375,7 @@ const HomeBody = () => {
             Take your meetings on the go!
           </Typography>
           <Typography
-            variant="body1"
+            variant='body1'
             sx={{ fontSize: '17px', color: '#47545D' }}
           >
             Pokerface has been painstakingly constructed to look beautiful on
@@ -383,7 +386,7 @@ const HomeBody = () => {
       </Box>
 
       <Box
-        className="6th-section"
+        className='6th-section'
         sx={{
           padding: '100px 10px',
           display: 'flex',
@@ -394,7 +397,7 @@ const HomeBody = () => {
         }}
       >
         <Typography
-          variant="h4"
+          variant='h4'
           sx={{
             fontWeight: 'bold',
             fontSize: isSmallScreen ? '25px' : '32px',
@@ -402,7 +405,7 @@ const HomeBody = () => {
         >
           Press Play on Pokerface Online
         </Typography>
-        <Typography variant="body1" sx={{ fontSize: '17px', color: '#47545D' }}>
+        <Typography variant='body1' sx={{ fontSize: '17px', color: '#47545D' }}>
           3 Simple Steps to Start Your Story Estimates
         </Typography>
         <Box
@@ -418,20 +421,20 @@ const HomeBody = () => {
         >
           <Box sx={stepCardStyles}>
             <img
-              src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686555839/step-1-pokerface_irropw.svg"
+              src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686555839/step-1-pokerface_irropw.svg'
               style={{
                 width: '100%',
                 maxWidth: 'min(200px, 100%)',
               }}
             />
-            <Typography variant="h5" sx={stepCardTitleStyles}>
+            <Typography variant='h5' sx={stepCardTitleStyles}>
               1. Initiate a New Game
             </Typography>
             <Typography sx={stepCardBodyStyles}>
               <span
                 style={{}}
                 onClick={() => navigate(`/game/create`)}
-                className="start-game-link"
+                className='start-game-link'
               >
                 Start a new game
               </span>{' '}
@@ -440,13 +443,13 @@ const HomeBody = () => {
           </Box>
           <Box sx={stepCardStyles}>
             <img
-              src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686555839/step-2-pokerface_prigs7.svg"
+              src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686555839/step-2-pokerface_prigs7.svg'
               style={{
                 width: '100%',
                 maxWidth: 'min(200px, 100%)',
               }}
             />
-            <Typography variant="h5" sx={stepCardTitleStyles}>
+            <Typography variant='h5' sx={stepCardTitleStyles}>
               2. Invite Your Agile Development Team
             </Typography>
             <Typography sx={stepCardBodyStyles}>
@@ -456,13 +459,13 @@ const HomeBody = () => {
           </Box>
           <Box sx={stepCardStyles}>
             <img
-              src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686555839/step-3-pokerface_tu296s.svg"
+              src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686555839/step-3-pokerface_tu296s.svg'
               style={{
                 width: '100%',
                 maxWidth: 'min(200px, 100%)',
               }}
             />
-            <Typography variant="h5" sx={stepCardTitleStyles}>
+            <Typography variant='h5' sx={stepCardTitleStyles}>
               3. Vote!
             </Typography>
             <Typography sx={stepCardBodyStyles}>
@@ -473,10 +476,12 @@ const HomeBody = () => {
         </Box>
       </Box>
 
-      <svg viewBox="0 0 1440 128" style={{ transform: 'translateY(40%)' }}>{greyWaveSvg}</svg>
+      <svg viewBox='0 0 1440 128' style={{ transform: 'translateY(40%)' }}>
+        {greyWaveSvg}
+      </svg>
 
       <Box
-        className="7th-section"
+        className='7th-section'
         sx={{
           width: '100%',
           display: 'flex',
@@ -499,7 +504,7 @@ const HomeBody = () => {
           }}
         >
           <Typography
-            variant="h4"
+            variant='h4'
             sx={{
               fontWeight: 'bold',
               fontSize: { xs: '37px', sm: '45px' },
@@ -525,10 +530,10 @@ const HomeBody = () => {
           >
             <Button
               disableElevation
-              variant="outlined"
+              variant='outlined'
               href={`${document.location.origin}/contact`}
-              target="_blank"
-              size="large"
+              target='_blank'
+              size='large'
               sx={{
                 textTransform: 'none',
                 fontSize: '17px',
@@ -545,10 +550,10 @@ const HomeBody = () => {
             </Button>
             <Button
               disableElevation
-              variant="outlined"
-              href="https://github.com/MasonHirst/pokerface-meetings"
-              target="_blank"
-              size="large"
+              variant='outlined'
+              href='https://github.com/MasonHirst/pokerface-meetings'
+              target='_blank'
+              size='large'
               sx={{
                 textTransform: 'none',
                 fontSize: '17px',
@@ -566,13 +571,13 @@ const HomeBody = () => {
           </Box>
         </Box>
         <img
-          src="https://res.cloudinary.com/dk9vsivmu/image/upload/v1686587983/perplexed-pokerface_nf3o0e.svg"
+          src='https://res.cloudinary.com/dk9vsivmu/image/upload/v1686587983/perplexed-pokerface_nf3o0e.svg'
           style={{ width: 'min(100%, 350px)' }}
         />
       </Box>
 
       <svg
-        viewBox="0 0 1440 128"
+        viewBox='0 0 1440 128'
         style={{
           width: '100%',
           // border: '1px solid red',
@@ -581,9 +586,9 @@ const HomeBody = () => {
         {darkWaveSvg}
       </svg>
       <Box
-        className="footer"
+        className='footer'
         sx={{
-          padding: '0 10px 80px 10px',
+          padding: '0 10px 50px 10px',
           width: '100%',
           backgroundColor: '#1A2935',
         }}
@@ -598,8 +603,8 @@ const HomeBody = () => {
           }}
         >
           <Typography
-            variant="h4"
-            color="#ffffff"
+            variant='h4'
+            color='#ffffff'
             sx={{
               fontWeight: 'bold',
               fontSize: isSmallScreen ? '25px' : '32px',
@@ -608,7 +613,7 @@ const HomeBody = () => {
             Ready to get started?
           </Typography>
           <Typography
-            color="#A8AEB2"
+            color='#A8AEB2'
             sx={{ fontSize: { xs: '16px', sm: '18px' } }}
           >
             Pokerface is free to use. No sign-up required. Just click the button
@@ -616,8 +621,8 @@ const HomeBody = () => {
           </Typography>
           <Button
             disableElevation
-            variant="contained"
-            size="large"
+            variant='contained'
+            size='large'
             onClick={() => navigate(`/game/create`)}
             sx={{
               textTransform: 'none',
@@ -629,24 +634,30 @@ const HomeBody = () => {
           >
             Host new game
           </Button>
+          <Typography
+            color='#A8AEB2'
+            sx={{ fontSize: { xs: '16px', sm: '18px' }, marginTop: '20px' }}
+          >
+            {versionLabel}
+          </Typography>
         </Box>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default HomeBody
+export default HomeBody;
 
 const greyWaveSvg = (
   <path
-    d="M448 0C228.764 0 54.5 30.7284 0 44V128H1440V1.88947e-05C1412 7.64564 1257.54 43 993 43C728.461 43 667.236 0 448 0Z"
-    fill="#f9f9f9"
+    d='M448 0C228.764 0 54.5 30.7284 0 44V128H1440V1.88947e-05C1412 7.64564 1257.54 43 993 43C728.461 43 667.236 0 448 0Z'
+    fill='#f9f9f9'
   ></path>
-)
+);
 
 const darkWaveSvg = (
   <path
-    d="M448 0C228.764 0 54.5 30.7284 0 44V128H1440V1.88947e-05C1412 7.64564 1257.54 43 993 43C728.461 43 667.236 0 448 0Z"
-    fill="#1A2935"
+    d='M448 0C228.764 0 54.5 30.7284 0 44V128H1440V1.88947e-05C1412 7.64564 1257.54 43 993 43C728.461 43 667.236 0 448 0Z'
+    fill='#1A2935'
   ></path>
-)
+);

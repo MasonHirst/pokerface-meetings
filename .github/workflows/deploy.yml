@@ -23,11 +23,16 @@ jobs:
       - name: Install client dependencies
         run: npm ci
         working-directory: client
+
+      - name: Compute App Version
+        run: echo "REACT_APP_VERSION=$((GITHUB_RUN_NUMBER + 44))" >> "$GITHUB_ENV"
+
       - name: Build client into server
         run: npm run build
         working-directory: client
         env:
           CI: false
+          REACT_APP_GIT_SHA: ${{ github.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -66,11 +71,15 @@ jobs:
         run: npm ci
         working-directory: client
 
+      - name: Compute App Version
+        run: echo "REACT_APP_VERSION=$((GITHUB_RUN_NUMBER + 44))" >> "$GITHUB_ENV"
+
       - name: Build client into server
         run: npm run build
         working-directory: client
         env:
           CI: false
+          REACT_APP_GIT_SHA: ${{ github.sha }}
 
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
