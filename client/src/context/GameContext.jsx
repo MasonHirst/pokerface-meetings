@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import spidermanCrying from '../assets/spiderman-crying.gif';
@@ -138,8 +138,7 @@ export const GameProvider = ({ children }) => {
     console.log('%c⚠️ ' + message, 'color: yellow; font-weight: bold;');
   };
 
-  // eslint-disable-next-line
-  function sendMessage(type, body) {
+  const sendMessage = useCallback(function sendMessage(type, body) {
     const reqType = {
       type,
       timeStamp: Date.now()
@@ -156,7 +155,7 @@ export const GameProvider = ({ children }) => {
     });
 
     socket?.send(bodyObj);
-  }
+  }, [socket, game_id, clientToken]);
 
   function sendFunEmojiThrow({ emoji, targetPlayerId, fromSide }) {
     if (!emoji || !targetPlayerId) {

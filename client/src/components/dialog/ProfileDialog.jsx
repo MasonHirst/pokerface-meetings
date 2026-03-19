@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import axios from 'axios';
 import muiStyles from '../../style/muiStyles';
 import { useMediaQuery } from '@mui/material';
@@ -18,7 +18,6 @@ const {
   CloseIcon,
   HelpOutlineIcon,
   LightTooltip,
-  FormControl,
   Switch,
   FormControlLabel,
 } = muiStyles;
