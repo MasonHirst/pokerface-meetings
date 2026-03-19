@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  docker:
-    name: Build and Push Docker Image (Server)
+  build-test-deploy:
+    name: Build, Test, and Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,6 +24,16 @@ jobs:
         run: npm ci
         working-directory: client
 
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Install root dependencies (Playwright)
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Compute App Version
         run: echo "REACT_APP_VERSION=$((GITHUB_RUN_NUMBER + 43))" >> "$GITHUB_ENV"
 
@@ -33,6 +43,9 @@ jobs:
         env:
           CI: false
           REACT_APP_GIT_SHA: ${{ github.sha }}
+
+      - name: Run all tests
+        run: npm test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -43,7 +56,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: server
@@ -53,38 +66,10 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pokerface:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/pokerface:${{ github.sha }}
 
-  fly:
-    name: Deploy to Fly.io (Server)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: client/package-lock.json
-
-      - name: Install client dependencies
-        run: npm ci
-        working-directory: client
-
-      - name: Compute App Version
-        run: echo "REACT_APP_VERSION=$((GITHUB_RUN_NUMBER + 43))" >> "$GITHUB_ENV"
-
-      - name: Build client into server
-        run: npm run build
-        working-directory: client
-        env:
-          CI: false
-          REACT_APP_GIT_SHA: ${{ github.sha }}
-
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Deploy
+      - name: Deploy to Fly.io
         run: flyctl deploy --remote-only
         working-directory: server
         env:

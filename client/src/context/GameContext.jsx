@@ -60,8 +60,8 @@ export const GameProvider = ({ children }) => {
       icon: 'info',
       confirmButtonText: 'Got it',
       customClass: {
-        popup: 'swal2-popup',
-      },
+        popup: 'swal2-popup'
+      }
     });
     localStorage.setItem('PokerfaceShownLatestUpdatesMessage', 'true');
   }
@@ -121,8 +121,8 @@ export const GameProvider = ({ children }) => {
           confirmButtonText: 'Darn',
           confirmButtonColor: '#9c4fd7',
           customClass: {
-            popup: 'swal2-popup',
-          },
+            popup: 'swal2-popup'
+          }
         });
         navigate('/');
       }
@@ -142,7 +142,7 @@ export const GameProvider = ({ children }) => {
   function sendMessage(type, body) {
     const reqType = {
       type,
-      timeStamp: Date.now(),
+      timeStamp: Date.now()
     };
 
     if (type === 'updatedCardChoice') {
@@ -152,7 +152,7 @@ export const GameProvider = ({ children }) => {
     const bodyObj = JSON.stringify({
       body: { ...body, reqType },
       gameId: game_id,
-      token: clientToken,
+      token: clientToken
     });
 
     socket?.send(bodyObj);
@@ -165,7 +165,7 @@ export const GameProvider = ({ children }) => {
     sendMessage('funEmojiThrow', {
       emoji,
       targetPlayerId,
-      fromSide,
+      fromSide
     });
   }
 
@@ -196,8 +196,8 @@ export const GameProvider = ({ children }) => {
       imageWidth: 'min(90vw, 400px',
       confirmButtonText: 'Take me home',
       customClass: {
-        popup: 'swal2-popup',
-      },
+        popup: 'swal2-popup'
+      }
     }).then((result) => {
       if (result.isConfirmed) {
         toggleActiveSocket(false);
@@ -227,24 +227,25 @@ export const GameProvider = ({ children }) => {
       }
       setJoinGameLoading(true);
       let serverUrl;
-      let scheme = 'ws';
-      const { protocol, hostname } = document.location;
-
-      if (protocol === 'https:') {
-        scheme += 's';
-      }
-
-      serverUrl = scheme + '://' + hostname;
       if (process.env.NODE_ENV === 'development') {
-        serverUrl += ':8080';
+        serverUrl = 'ws://localhost:8080';
+      } else {
+        const scheme = document.location.protocol === 'https:' ? 'wss' : 'ws';
+        serverUrl = scheme + '://' + document.location.host;
       }
+
+      const clientToken = encodeURIComponent(
+        localStorage.getItem('PokerfaceLocalUserToken')
+      );
+      const cardImage = encodeURIComponent(
+        localStorage.getItem('PokerfaceCardImage')
+      );
+      const observerOnly = encodeURIComponent(
+        sessionStorage.getItem('PokerfaceObserverOnly')
+      );
 
       const ws = new WebSocket(
-        `${serverUrl}?token=${localStorage.getItem(
-          'PokerfaceLocalUserToken'
-        )}&player_name=${playerName}&game_id=${game_id}&player_card_image=${localStorage.getItem(
-          'PokerfaceCardImage'
-        )}&observer_only=${sessionStorage.getItem('PokerfaceObserverOnly')}`
+        `${serverUrl}?token=${clientToken}&player_name=${encodeURIComponent(playerName)}&game_id=${encodeURIComponent(game_id)}&player_card_image=${cardImage}&observer_only=${observerOnly}`
       );
 
       ws.addEventListener('open', function () {
@@ -414,7 +415,7 @@ export const GameProvider = ({ children }) => {
         gameDeck,
         triggerLatestUpdatesMessage,
         shadowsEnabled,
-        funModeEnabled,
+        funModeEnabled
       }}
     >
       {children}

@@ -28,6 +28,11 @@ cloudinary.config({
 let gameRooms = {};
 let clientsList = {};
 
+function resetInMemoryState() {
+  gameRooms = {};
+  clientsList = {};
+}
+
 function broadcastToRoom(gameRoomId, event_type, body = null) {
   try {
     //? arguments: target game room, event type, message
@@ -87,7 +92,7 @@ function removeUnusedGameRooms() {
   });
 }
 
-async function startSocketServer(app, port, host = 'localhost') {
+function startSocketServer(app, port, host = 'localhost') {
   const isProd = process.env.NODE_ENV === 'production';
   const server = isProd ? app.listen(port) : app.listen(port, host);
   const wss = new WebSocketServer({ server });
@@ -96,11 +101,13 @@ async function startSocketServer(app, port, host = 'localhost') {
     console.log(
       `🚀🚀🚀 SERVER IS LISTENING ON ${isProd ? 'PORT' : host}:${port}`
     );
-    setInterval(() => {
+    const pingInterval = setInterval(() => {
       wss.clients.forEach((client) => {
         client.ping();
-      }, 5000);
-    });
+      });
+    }, 5000);
+    pingInterval.unref();
+    wss.on('close', () => clearInterval(pingInterval));
   });
 
   wss.on('connection', function connection(ws, req) {
@@ -475,6 +482,11 @@ async function startSocketServer(app, port, host = 'localhost') {
       console.error(err);
     }
   });
+
+  return new Promise((resolve, reject) => {
+    server.on('listening', () => resolve(server));
+    server.on('error', reject);
+  });
 }
 
 function addChatToList(gameId, body) {
@@ -524,6 +536,7 @@ module.exports = {
   broadcastToRoom,
   gameRooms,
   startSocketServer,
+  resetInMemoryState,
 
   extractToken: async (req, res, next) => {
     try {
