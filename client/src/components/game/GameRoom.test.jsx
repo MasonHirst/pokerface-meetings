@@ -22,7 +22,7 @@ describe('GameRoom', () => {
     const button = screen.getByRole('button', { name: /join game/i });
     fireEvent.click(button);
 
-    expect(localStorage.getItem('PokerfacePlayerName')).toBe('INTENTIONALLY_BROKEN');
+    expect(localStorage.getItem('PokerfacePlayerName')).toBe('Alice');
   });
 });
 
