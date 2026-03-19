@@ -227,16 +227,11 @@ export const GameProvider = ({ children }) => {
       }
       setJoinGameLoading(true);
       let serverUrl;
-      let scheme = 'ws';
-      const { protocol, hostname } = document.location;
-
-      if (protocol === 'https:') {
-        scheme += 's';
-      }
-
-      serverUrl = scheme + '://' + hostname;
       if (process.env.NODE_ENV === 'development') {
-        serverUrl += ':8080';
+        serverUrl = 'ws://localhost:8080';
+      } else {
+        const scheme = document.location.protocol === 'https:' ? 'wss' : 'ws';
+        serverUrl = scheme + '://' + document.location.host;
       }
 
       const ws = new WebSocket(

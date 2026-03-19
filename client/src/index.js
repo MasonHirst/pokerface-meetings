@@ -74,12 +74,11 @@ if (!savedDecks) {
   localStorage.setItem('PokerfaceSavedDecks', JSON.stringify([]));
 }
 
-const { protocol, hostname } = window.location;
-let serverUrl = protocol + '//' + hostname;
 if (process.env.NODE_ENV === 'development') {
-  serverUrl += ':8080';
+  axios.defaults.baseURL = 'http://localhost:8080';
+} else {
+  axios.defaults.baseURL = window.location.origin;
 }
-axios.defaults.baseURL = serverUrl;
 
 axios.interceptors.request.use(function (config) {
   config.headers.Authorization = localStorage.getItem('PokerfaceLocalUserToken');
