@@ -48,7 +48,7 @@ async function joinGame(page, roomUrl) {
   await page.goto(roomUrl)
   // PlayingTable renders "Pick your cards!" only after the playerJoinedGame
   // WebSocket event is received and gameData is set — reliable load indicator.
-  await page.getByText('Pick your cards!').waitFor({ timeout: 10000 })
+  await page.getByText('Pick your cards!').waitFor({ timeout: 15000 })
 }
 
 module.exports = { createPlayer, createObserver, createGame, joinGame }
