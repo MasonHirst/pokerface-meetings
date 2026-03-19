@@ -1,20 +1,23 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-import { GameContext, GameProvider } from './GameContext';
+import { GameContext } from './GameContext';
 import { renderWithProviders } from '../test-utils/renderWithProviders';
 
-class FakeWebSocket {
-  constructor() {
-    this.send = jest.fn();
-  }
-}
+jest.mock('sweetalert2', () => ({
+  __esModule: true,
+  default: { fire: jest.fn().mockResolvedValue({ isConfirmed: false }) },
+}));
 
 describe('GameContext', () => {
   beforeEach(() => {
     localStorage.setItem('PokerfaceLocalUserToken', 'test-token');
     localStorage.setItem('PokerfacePlayerName', 'Tester');
+    localStorage.setItem('PokerfaceShownLatestUpdatesMessage', 'true');
     sessionStorage.setItem('kickedGames', JSON.stringify([]));
-    global.WebSocket = FakeWebSocket;
+    global.WebSocket = jest.fn().mockImplementation(function () {
+      this.send = jest.fn();
+      this.addEventListener = jest.fn();
+      this.close = jest.fn();
+    });
   });
 
   afterEach(() => {

@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "bash scripts/test-all.sh"
+    "test": "npx playwright test"
   },
   "repository": {
     "type": "git",

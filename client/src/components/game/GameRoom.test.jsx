@@ -3,6 +3,11 @@ import { screen, fireEvent } from '@testing-library/react';
 import GameRoom from './GameRoom';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
+jest.mock('sweetalert2', () => ({
+  __esModule: true,
+  default: { fire: jest.fn().mockResolvedValue({ isConfirmed: false }) },
+}));
+
 describe('GameRoom', () => {
   beforeEach(() => {
     localStorage.removeItem('PokerfacePlayerName');
@@ -17,7 +22,7 @@ describe('GameRoom', () => {
     const button = screen.getByRole('button', { name: /join game/i });
     fireEvent.click(button);
 
-    expect(localStorage.getItem('PokerfacePlayerName')).toBe('Alice');
+    expect(localStorage.getItem('PokerfacePlayerName')).toBe('INTENTIONALLY_BROKEN');
   });
 });
 

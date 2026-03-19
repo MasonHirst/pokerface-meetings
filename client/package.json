@@ -37,6 +37,7 @@
     "start": "react-scripts start",
     "build": "BUILD_PATH='../server/build' react-scripts build",
     "test": "react-scripts test",
+    "test:pipeline": "CI=true npm test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -44,6 +45,15 @@
       "react-app",
       "react-app/jest"
     ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(axios)/)"
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.js",
+      "\\.(gif|jpg|jpeg|png|svg|webp)$": "<rootDir>/src/__mocks__/fileMock.js"
+    }
   },
   "browserslist": {
     "production": [
